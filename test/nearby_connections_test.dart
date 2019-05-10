@@ -14,8 +14,4 @@ void main() {
   tearDown(() {
     channel.setMockMethodCallHandler(null);
   });
-
-  test('getPlatformVersion', () async {
-    expect(await NearbyConnections.platformVersion, '42');
-  });
 }

@@ -31,4 +31,7 @@ android {
     lintOptions {
         disable 'InvalidPackage'
     }
+    dependencies{
+        api 'com.google.android.gms:play-services-nearby:16.0.0'
+    }
 }
