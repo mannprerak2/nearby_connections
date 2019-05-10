@@ -52,8 +52,27 @@ class _MyBodyState extends State<Body> {
           RaisedButton(
             child: Text("askPermission(permission handler)"),
             onPressed: () async {
-              // await PermissionHandler()
-              //     .requestPermissions([PermissionGroup.location]);
+              await Nearby.instance.askPermission();
+            },
+          ),
+          RaisedButton(
+            child: Text("Start Advertising"),
+            onPressed: () async {
+              try {
+                bool a = await Nearby.instance
+                    .startAdvertising("pkmn", STRATEGY.P2P_STAR);
+                Scaffold.of(context)
+                    .showSnackBar(SnackBar(content: Text(a.toString())));
+              } catch (exception) {
+                Scaffold.of(context).showSnackBar(
+                    SnackBar(content: Text(exception.toString())));
+              }
+            },
+          ),
+          RaisedButton(
+            child: Text("Stop Advertising"),
+            onPressed: () async {
+              await Nearby.instance.stopAdvertising();
             },
           ),
         ],
