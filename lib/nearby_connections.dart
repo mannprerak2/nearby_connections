@@ -230,7 +230,7 @@ class Nearby {
 
   Future<bool> rejectConnection(String endpointId) async {
     return await _channel.invokeMethod(
-      'acceptConnection',
+      'rejectConnection',
       <String, dynamic>{
         'endpointId': endpointId,
       },
@@ -248,18 +248,6 @@ class Nearby {
   }
 }
 
-abstract class ConnectionLifecycleCallback {
-  void onConnectionInitiated(String endpointId, ConnectionInfo connectionInfo);
-  void onConnectionResult(String endpointId, Status status);
-  void onDisconnected(String endpointId);
-}
-
-abstract class EndpointDiscoveryCallback {
-  void onEndpointFound(
-      String endpointId, String endpointName, String serviceId);
-  void onEndpointLost(String endpointId);
-}
-
 class ConnectionInfo {
   String endpointName, authenticationToken;
   bool isIncomingConnection;
@@ -267,3 +255,6 @@ class ConnectionInfo {
   ConnectionInfo(
       this.endpointName, this.authenticationToken, this.isIncomingConnection);
 }
+//TODO remove errors on failure for smooth experience
+//TODO expose only relevant parts as library
+//TODO publish to pub.dartlang

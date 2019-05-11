@@ -201,10 +201,13 @@ class _MyBodyState extends State<Body> {
               ),
               RaisedButton(
                 child: Text("Reject Connection"),
-                onPressed: () {
+                onPressed: () async {
                   Navigator.pop(context);
-
-                  Nearby().rejectConnection(id);
+                  try {
+                    await Nearby().rejectConnection(id);
+                  } catch (e) {
+                    showSnackbar(e);
+                  }
                 },
               ),
             ],
