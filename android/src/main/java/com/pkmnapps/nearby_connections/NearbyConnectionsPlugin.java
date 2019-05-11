@@ -216,8 +216,7 @@ public class NearbyConnectionsPlugin implements MethodCallHandler {
 
                 assert endpointId != null;
                 assert bytes != null;
-                String hello = "okay";
-                Nearby.getConnectionsClient(activity).sendPayload(endpointId, Payload.fromBytes(hello.getBytes()));
+                Nearby.getConnectionsClient(activity).sendPayload(endpointId, Payload.fromBytes(bytes));
                 Log.d("NearbyCon java", "sentPayload");
 
                 break;
