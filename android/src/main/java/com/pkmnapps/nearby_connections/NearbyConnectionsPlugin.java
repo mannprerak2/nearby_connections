@@ -2,31 +2,34 @@ package com.pkmnapps.nearby_connections;
 
 import android.Manifest;
 import android.app.Activity;
-import android.content.Context;
-import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.net.Uri;
-import android.provider.Settings;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
-import android.util.Log;
 
 import com.google.android.gms.nearby.Nearby;
 import com.google.android.gms.nearby.connection.AdvertisingOptions;
 import com.google.android.gms.nearby.connection.ConnectionInfo;
 import com.google.android.gms.nearby.connection.ConnectionLifecycleCallback;
 import com.google.android.gms.nearby.connection.ConnectionResolution;
+import com.google.android.gms.nearby.connection.ConnectionsStatusCodes;
+import com.google.android.gms.nearby.connection.DiscoveredEndpointInfo;
+import com.google.android.gms.nearby.connection.DiscoveryOptions;
+import com.google.android.gms.nearby.connection.EndpointDiscoveryCallback;
+import com.google.android.gms.nearby.connection.Payload;
+import com.google.android.gms.nearby.connection.PayloadCallback;
 import com.google.android.gms.nearby.connection.PayloadTransferUpdate;
 import com.google.android.gms.nearby.connection.Strategy;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import io.flutter.plugin.common.MethodCall;
 import io.flutter.plugin.common.MethodChannel;
 import io.flutter.plugin.common.MethodChannel.MethodCallHandler;
 import io.flutter.plugin.common.MethodChannel.Result;
-import io.flutter.plugin.common.PluginRegistry;
 import io.flutter.plugin.common.PluginRegistry.Registrar;
 
 /**
@@ -34,8 +37,8 @@ import io.flutter.plugin.common.PluginRegistry.Registrar;
  */
 public class NearbyConnectionsPlugin implements MethodCallHandler {
     private Activity activity;
-    private static final String SERVICE_ID = "PKMNAPPS_NEARBY_CONNECTION";
-
+    private static final String SERVICE_ID = "com.pkmnapps.nearby_connections";
+    private static MethodChannel channel;
 
     private NearbyConnectionsPlugin(Activity activity) {
         this.activity = activity;
@@ -46,8 +49,7 @@ public class NearbyConnectionsPlugin implements MethodCallHandler {
      */
 
     public static void registerWith(Registrar registrar) {
-
-        final MethodChannel channel = new MethodChannel(registrar.messenger(), "nearby_connections");
+        channel = new MethodChannel(registrar.messenger(), "nearby_connections");
         channel.setMethodCallHandler(new NearbyConnectionsPlugin(registrar.activity()));
     }
 
@@ -74,7 +76,11 @@ public class NearbyConnectionsPlugin implements MethodCallHandler {
                 Nearby.getConnectionsClient(activity).stopAdvertising();
                 result.success(null);
                 break;
-            case "startAdvertising":
+            case "stopDiscovery":
+                Nearby.getConnectionsClient(activity).stopDiscovery();
+                result.success(null);
+                break;
+            case "startAdvertising": {
                 String userNickName = (String) call.argument("userNickName");
                 int strategy = (int) call.argument("strategy");
 
@@ -82,7 +88,7 @@ public class NearbyConnectionsPlugin implements MethodCallHandler {
                 Nearby.getConnectionsClient(activity).startAdvertising(
                         userNickName,
                         SERVICE_ID,
-                        connectionLifecycleCallback,
+                        advertConnectionLifecycleCallback,
                         new AdvertisingOptions.Builder().setStrategy(getStrategy(strategy)).build())
                         .addOnSuccessListener(new OnSuccessListener<Void>() {
                             @Override
@@ -96,26 +102,229 @@ public class NearbyConnectionsPlugin implements MethodCallHandler {
                                 result.error("Failure", e.getMessage(), null);
                             }
                         });
-
                 break;
+            }
+            case "startDiscovery": {
+                String userNickName = (String) call.argument("userNickName");
+                int strategy = (int) call.argument("strategy");
+
+                assert userNickName != null;
+                Nearby.getConnectionsClient(activity).stopAllEndpoints();
+                Nearby.getConnectionsClient(activity).startDiscovery(
+                        userNickName,
+                        endpointDiscoveryCallback,
+                        new DiscoveryOptions.Builder().setStrategy(getStrategy(strategy)).build())
+                        .addOnSuccessListener(new OnSuccessListener<Void>() {
+                            @Override
+                            public void onSuccess(Void aVoid) {
+                                result.success(true);
+                            }
+                        })
+                        .addOnFailureListener(new OnFailureListener() {
+                            @Override
+                            public void onFailure(@NonNull Exception e) {
+                                result.error("Failure", e.getMessage(), null);
+                            }
+                        });
+                break;
+            }
+            case "stopAllEndpoints":
+                Nearby.getConnectionsClient(activity).stopAllEndpoints();
+                result.success(null);
+                break;
+            case "disconnectFromEndpoint": {
+                String endpointId = call.argument("endpointId");
+                assert endpointId != null;
+                Nearby.getConnectionsClient(activity).disconnectFromEndpoint(endpointId);
+                result.success(null);
+                break;
+            }
+            case "requestConnection": {
+                String userNickName = (String) call.argument("userNickName");
+                String endpointId = (String) call.argument("endpointId");
+
+                assert userNickName != null;
+                assert endpointId != null;
+                Nearby.getConnectionsClient(activity)
+                        .requestConnection(userNickName, endpointId, discoverConnectionLifecycleCallback)
+                        .addOnSuccessListener(new OnSuccessListener<Void>() {
+                            @Override
+                            public void onSuccess(Void aVoid) {
+                                result.success(true);
+                            }
+                        })
+                        .addOnFailureListener(new OnFailureListener() {
+                            @Override
+                            public void onFailure(@NonNull Exception e) {
+                                result.error("Failure", e.getMessage(), null);
+                            }
+                        });
+                break;
+            }
+            case "acceptConnection": {
+                String endpointId = (String) call.argument("endpointId");
+
+                assert endpointId != null;
+                Nearby.getConnectionsClient(activity)
+                        .acceptConnection(endpointId, payloadCallback)
+                        .addOnSuccessListener(new OnSuccessListener<Void>() {
+                            @Override
+                            public void onSuccess(Void aVoid) {
+                                result.success(true);
+                            }
+                        })
+                        .addOnFailureListener(new OnFailureListener() {
+                            @Override
+                            public void onFailure(@NonNull Exception e) {
+                                result.error("Failure", e.getMessage(), null);
+                            }
+                        });
+                break;
+            }
+            case "rejectConnection": {
+                String endpointId = (String) call.argument("endpointId");
+
+                assert endpointId != null;
+                Nearby.getConnectionsClient(activity)
+                        .rejectConnection(endpointId)
+                        .addOnSuccessListener(new OnSuccessListener<Void>() {
+                            @Override
+                            public void onSuccess(Void aVoid) {
+                                result.success(true);
+                            }
+                        })
+                        .addOnFailureListener(new OnFailureListener() {
+                            @Override
+                            public void onFailure(@NonNull Exception e) {
+                                result.error("Failure", e.getMessage(), null);
+                            }
+                        });
+                break;
+            }
+            case "sendPayload":{
+                //Nearby.getConnectionsClient(activity).sendPayload()
+                break;
+            }
             default:
                 result.notImplemented();
         }
     }
 
-    private final ConnectionLifecycleCallback connectionLifecycleCallback = new ConnectionLifecycleCallback() {
+    private final ConnectionLifecycleCallback advertConnectionLifecycleCallback = new ConnectionLifecycleCallback() {
         @Override
-        public void onConnectionInitiated(@NonNull String s, @NonNull ConnectionInfo connectionInfo) {
+        public void onConnectionInitiated(@NonNull String endpointId, @NonNull ConnectionInfo connectionInfo) {
+            Map<String, Object> args = new HashMap<>();
+            args.put("endpointId", endpointId);
+            args.put("endpointName", connectionInfo.getEndpointName());
+            args.put("authenticationToken", connectionInfo.getAuthenticationToken());
+            args.put("isIncomingConnection", connectionInfo.isIncomingConnection());
+            channel.invokeMethod("ad.onConnectionInitiated", args);
+        }
+
+        @Override
+        public void onConnectionResult(@NonNull String endpointId, @NonNull ConnectionResolution connectionResolution) {
+            Map<String, Object> args = new HashMap<>();
+            args.put("endpointId", endpointId);
+            int statusCode = -1;
+            switch (connectionResolution.getStatus().getStatusCode()) {
+                case ConnectionsStatusCodes.STATUS_OK:
+                    statusCode = 0;
+                    // We're connected! Can now start sending and receiving data.
+                    break;
+                case ConnectionsStatusCodes.STATUS_CONNECTION_REJECTED:
+                    statusCode = 1;
+                    // The connection was rejected by one or both sides.
+                    break;
+                case ConnectionsStatusCodes.STATUS_ERROR:
+                    statusCode = 2;
+                    // The connection broke before it was able to be accepted.
+                    break;
+                default:
+                    // Unknown status code
+            }
+            args.put("statusCode", statusCode);
+            channel.invokeMethod("ad.onConnectionResult", args);
+        }
+
+        @Override
+        public void onDisconnected(@NonNull String endpointId) {
+            Map<String, Object> args = new HashMap<>();
+            args.put("endpointId", endpointId);
+            channel.invokeMethod("ad.onDisconnected", args);
+        }
+    };
+
+    private final ConnectionLifecycleCallback discoverConnectionLifecycleCallback = new ConnectionLifecycleCallback() {
+        @Override
+        public void onConnectionInitiated(@NonNull String endpointId, @NonNull ConnectionInfo connectionInfo) {
+            Map<String, Object> args = new HashMap<>();
+            args.put("endpointId", endpointId);
+            args.put("endpointName", connectionInfo.getEndpointName());
+            args.put("authenticationToken", connectionInfo.getAuthenticationToken());
+            args.put("isIncomingConnection", connectionInfo.isIncomingConnection());
+            channel.invokeMethod("dis.onConnectionInitiated", args);
+        }
+
+        @Override
+        public void onConnectionResult(@NonNull String endpointId, @NonNull ConnectionResolution connectionResolution) {
+            Map<String, Object> args = new HashMap<>();
+            args.put("endpointId", endpointId);
+            int statusCode = -1;
+            switch (connectionResolution.getStatus().getStatusCode()) {
+                case ConnectionsStatusCodes.STATUS_OK:
+                    statusCode = 0;
+                    // We're connected! Can now start sending and receiving data.
+                    break;
+                case ConnectionsStatusCodes.STATUS_CONNECTION_REJECTED:
+                    statusCode = 1;
+                    // The connection was rejected by one or both sides.
+                    break;
+                case ConnectionsStatusCodes.STATUS_ERROR:
+                    statusCode = 2;
+                    // The connection broke before it was able to be accepted.
+                    break;
+                default:
+                    // Unknown status code
+            }
+            args.put("statusCode", statusCode);
+            channel.invokeMethod("dis.onConnectionResult", args);
+        }
+
+        @Override
+        public void onDisconnected(@NonNull String endpointId) {
+            Map<String, Object> args = new HashMap<>();
+            args.put("endpointId", endpointId);
+            channel.invokeMethod("dis.onDisconnected", args);
+        }
+    };
+
+    private final PayloadCallback payloadCallback = new PayloadCallback() {
+        @Override
+        public void onPayloadReceived(@NonNull String s, @NonNull Payload payload) {
 
         }
 
         @Override
-        public void onConnectionResult(@NonNull String s, @NonNull ConnectionResolution connectionResolution) {
+        public void onPayloadTransferUpdate(@NonNull String s, @NonNull PayloadTransferUpdate payloadTransferUpdate) {
+
+        }
+    };
+
+    private final EndpointDiscoveryCallback endpointDiscoveryCallback = new EndpointDiscoveryCallback() {
+        @Override
+        public void onEndpointFound(@NonNull String endpointId, @NonNull DiscoveredEndpointInfo discoveredEndpointInfo) {
+            Map<String, Object> args = new HashMap<>();
+            args.put("endpointId", endpointId);
+            args.put("endpointName", discoveredEndpointInfo.getEndpointName());
+            args.put("serviceId", discoveredEndpointInfo.getServiceId());
+            channel.invokeMethod("dis.onEndpointFound", args);
         }
 
         @Override
-        public void onDisconnected(@NonNull String s) {
-
+        public void onEndpointLost(@NonNull String endpointId) {
+            Map<String, Object> args = new HashMap<>();
+            args.put("endpointId", endpointId);
+            channel.invokeMethod("dis.onEndpointLost", args);
         }
     };
 

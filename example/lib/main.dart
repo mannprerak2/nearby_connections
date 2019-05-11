@@ -40,7 +40,7 @@ class _MyBodyState extends State<Body> {
           RaisedButton(
             child: Text("checkPermission"),
             onPressed: () async {
-              if (await Nearby.instance.checkPermissions()) {
+              if (await Nearby().checkPermissions()) {
                 Scaffold.of(context)
                     .showSnackBar(SnackBar(content: Text("yes")));
               } else {
@@ -52,15 +52,17 @@ class _MyBodyState extends State<Body> {
           RaisedButton(
             child: Text("askPermission(permission handler)"),
             onPressed: () async {
-              await Nearby.instance.askPermission();
+              await Nearby().askPermission();
             },
           ),
           RaisedButton(
             child: Text("Start Advertising"),
             onPressed: () async {
               try {
-                bool a = await Nearby.instance
-                    .startAdvertising("pkmn", STRATEGY.P2P_STAR);
+                bool a = await Nearby().startAdvertising(
+                  "pkmn",
+                  STRATEGY.P2P_STAR,
+                );
                 Scaffold.of(context)
                     .showSnackBar(SnackBar(content: Text(a.toString())));
               } catch (exception) {
@@ -72,7 +74,7 @@ class _MyBodyState extends State<Body> {
           RaisedButton(
             child: Text("Stop Advertising"),
             onPressed: () async {
-              await Nearby.instance.stopAdvertising();
+              await Nearby().stopAdvertising();
             },
           ),
         ],
@@ -80,3 +82,4 @@ class _MyBodyState extends State<Body> {
     );
   }
 }
+
