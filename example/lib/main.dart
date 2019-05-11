@@ -55,7 +55,7 @@ class _MyBodyState extends State<Body> {
             },
           ),
           RaisedButton(
-            child: Text("askPermission(permission handler)"),
+            child: Text("askPermission(location)"),
             onPressed: () async {
               await Nearby().askPermission();
             },
@@ -120,78 +120,86 @@ class _MyBodyState extends State<Body> {
           RaisedButton(
             child: Text("Start Discovery"),
             onPressed: () async {
-              await Nearby().startDiscovery(
-                userName,
-                strategy,
-                onEndpointFound: (id, name, serviceId) {
-                  showModalBottomSheet(
-                    context: context,
-                    builder: (builder) {
-                      return Center(
-                        child: Column(
-                          children: <Widget>[
-                            Text("id: " + id),
-                            Text("Name: " + name),
-                            Text("ServiceId: " + serviceId),
-                            RaisedButton(
-                              child: Text("Request Connection"),
-                              onPressed: () {
-                                Nearby().requestConnection(
-                                  userName,
-                                  id,
-                                  onConnectionInitiated: (id, info) {
-                                    showModalBottomSheet(
-                                      context: context,
-                                      builder: (builder) {
-                                        return Center(
-                                          child: Column(
-                                            children: <Widget>[
-                                              Text("id: " + id),
-                                              Text("Token: " +
-                                                  info.authenticationToken),
-                                              Text("Name" + info.endpointName),
-                                              Text("Incoming: " +
-                                                  info.isIncomingConnection
-                                                      .toString()),
-                                              RaisedButton(
-                                                child:
-                                                    Text("Accept Connection"),
-                                                onPressed: () {
-                                                  Nearby().acceptConnection(id);
-                                                },
-                                              ),
-                                              RaisedButton(
-                                                child:
-                                                    Text("Reject Connection"),
-                                                onPressed: () {
-                                                  Nearby().rejectConnection(id);
-                                                },
-                                              ),
-                                            ],
-                                          ),
-                                        );
-                                      },
-                                    );
-                                  },
-                                  onConnectionResult: (id, status) {
-                                    showSnackbar(status);
-                                  },
-                                  onDisconnected: (id) {
-                                    showSnackbar(id);
-                                  },
-                                );
-                              },
-                            ),
-                          ],
-                        ),
-                      );
-                    },
-                  );
-                },
-                onEndpointLost: (id) {
-                  showSnackbar(id);
-                },
-              );
+              try {
+                bool a = await Nearby().startDiscovery(
+                  userName,
+                  strategy,
+                  onEndpointFound: (id, name, serviceId) {
+                    showModalBottomSheet(
+                      context: context,
+                      builder: (builder) {
+                        return Center(
+                          child: Column(
+                            children: <Widget>[
+                              Text("id: " + id),
+                              Text("Name: " + name),
+                              Text("ServiceId: " + serviceId),
+                              RaisedButton(
+                                child: Text("Request Connection"),
+                                onPressed: () {
+                                  Nearby().requestConnection(
+                                    userName,
+                                    id,
+                                    onConnectionInitiated: (id, info) {
+                                      showModalBottomSheet(
+                                        context: context,
+                                        builder: (builder) {
+                                          return Center(
+                                            child: Column(
+                                              children: <Widget>[
+                                                Text("id: " + id),
+                                                Text("Token: " +
+                                                    info.authenticationToken),
+                                                Text(
+                                                    "Name" + info.endpointName),
+                                                Text("Incoming: " +
+                                                    info.isIncomingConnection
+                                                        .toString()),
+                                                RaisedButton(
+                                                  child:
+                                                      Text("Accept Connection"),
+                                                  onPressed: () {
+                                                    Nearby()
+                                                        .acceptConnection(id);
+                                                  },
+                                                ),
+                                                RaisedButton(
+                                                  child:
+                                                      Text("Reject Connection"),
+                                                  onPressed: () {
+                                                    Nearby()
+                                                        .rejectConnection(id);
+                                                  },
+                                                ),
+                                              ],
+                                            ),
+                                          );
+                                        },
+                                      );
+                                    },
+                                    onConnectionResult: (id, status) {
+                                      showSnackbar(status);
+                                    },
+                                    onDisconnected: (id) {
+                                      showSnackbar(id);
+                                    },
+                                  );
+                                },
+                              ),
+                            ],
+                          ),
+                        );
+                      },
+                    );
+                  },
+                  onEndpointLost: (id) {
+                    showSnackbar(id);
+                  },
+                );
+                showSnackbar(a);
+              } catch (e) {
+                showSnackbar(e);
+              }
             },
           ),
           RaisedButton(
