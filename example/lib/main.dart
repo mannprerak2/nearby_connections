@@ -1,4 +1,5 @@
 import 'dart:math';
+import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'dart:async';
@@ -35,6 +36,7 @@ class Body extends StatefulWidget {
 class _MyBodyState extends State<Body> {
   final String userName = Random().nextInt(1000).toString();
   final Strategy strategy = Strategy.P2P_STAR;
+  String cId = "0";
 
   @override
   Widget build(BuildContext context) {
@@ -138,6 +140,7 @@ class _MyBodyState extends State<Body> {
                               RaisedButton(
                                 child: Text("Request Connection"),
                                 onPressed: () {
+                                  Navigator.pop(context);
                                   Nearby().requestConnection(
                                     userName,
                                     id,
@@ -160,14 +163,26 @@ class _MyBodyState extends State<Body> {
                                                   child:
                                                       Text("Accept Connection"),
                                                   onPressed: () {
-                                                    Nearby()
-                                                        .acceptConnection(id);
+                                                    cId = id;
+                                                    Nearby().acceptConnection(
+                                                      id,
+                                                      onPayLoadRecieved:
+                                                          (id, bytes) {
+                                                        showSnackbar(id +
+                                                            ": " +
+                                                            String
+                                                                .fromCharCodes(
+                                                                    bytes));
+                                                      },
+                                                    );
                                                   },
                                                 ),
                                                 RaisedButton(
                                                   child:
                                                       Text("Reject Connection"),
                                                   onPressed: () {
+                                                    Navigator.pop(context);
+
                                                     Nearby()
                                                         .rejectConnection(id);
                                                   },
@@ -213,6 +228,14 @@ class _MyBodyState extends State<Body> {
             child: Text("Stop All Endpoints"),
             onPressed: () async {
               await Nearby().stopAllEndpoints();
+            },
+          ),
+          RaisedButton(
+            child: Text("Send Random Payload"),
+            onPressed: () async {
+              String a = Random().nextInt(100).toString();
+              showSnackbar("Sending $a");
+              Nearby().sendPayload(cId, Uint8List.fromList(a.codeUnits));
             },
           ),
         ],

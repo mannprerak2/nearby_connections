@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:typed_data';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
@@ -15,6 +16,8 @@ typedef void OnEndpointFound(
     String endpointId, String endpointName, String serviceId);
 typedef void OnEndpointLost(String endpointId);
 
+typedef void OnPayloadReceived(String endpointId, Uint8List bytes);
+
 class Nearby {
   //for maintaining only 1 instance of this class
   static Nearby _instance;
@@ -28,9 +31,10 @@ class Nearby {
 
   Nearby._() {
     _channel.setMethodCallHandler((handler) {
+      print("=========in handler============");
+
       Map<dynamic, dynamic> args = handler.arguments;
 
-      print("=====================");
       print(handler.method);
       args.forEach((s, d) {
         print(s + " : " + d.toString());
@@ -103,6 +107,13 @@ class Nearby {
           _onEndpointLost?.call(endpointId);
 
           return null;
+        case "onPayloadReceived":
+          String endpointId = args['endpointId'];
+          Uint8List bytes = args['bytes'];
+
+          _onPayloadReceived?.call(endpointId,bytes);
+
+          break;
         default:
           return null;
       }
@@ -115,6 +126,8 @@ class Nearby {
 
   OnEndpointFound _onEndpointFound;
   OnEndpointLost _onEndpointLost;
+
+  OnPayloadReceived _onPayloadReceived;
 
   static const MethodChannel _channel =
       const MethodChannel('nearby_connections');
@@ -201,7 +214,12 @@ class Nearby {
     );
   }
 
-  Future<bool> acceptConnection(String endpointId) async {
+  Future<bool> acceptConnection(
+    String endpointId, {
+    @required OnPayloadReceived onPayLoadRecieved,
+  }) async {
+    this._onPayloadReceived = onPayLoadRecieved;
+
     return await _channel.invokeMethod(
       'acceptConnection',
       <String, dynamic>{
@@ -215,6 +233,16 @@ class Nearby {
       'acceptConnection',
       <String, dynamic>{
         'endpointId': endpointId,
+      },
+    );
+  }
+
+  Future<void> sendPayload(String endpointId, Uint8List bytes) async {
+    return await _channel.invokeMethod(
+      'sendPayload',
+      <String, dynamic>{
+        'endpointId': endpointId,
+        'bytes': bytes,
       },
     );
   }

@@ -75,10 +75,12 @@ public class NearbyConnectionsPlugin implements MethodCallHandler {
                 result.success(null);
                 break;
             case "stopAdvertising":
+                Log.d("NearbyCon java", "stopAdvertising");
                 Nearby.getConnectionsClient(activity).stopAdvertising();
                 result.success(null);
                 break;
             case "stopDiscovery":
+                Log.d("NearbyCon java", "stopDiscovery");
                 Nearby.getConnectionsClient(activity).stopDiscovery();
                 result.success(null);
                 break;
@@ -209,7 +211,15 @@ public class NearbyConnectionsPlugin implements MethodCallHandler {
                 break;
             }
             case "sendPayload": {
-                //Nearby.getConnectionsClient(activity).sendPayload()
+                String endpointId = (String) call.argument("endpointId");
+                byte[] bytes = call.argument("bytes");
+
+                assert endpointId != null;
+                assert bytes != null;
+                String hello = "okay";
+                Nearby.getConnectionsClient(activity).sendPayload(endpointId, Payload.fromBytes(hello.getBytes()));
+                Log.d("NearbyCon java", "sentPayload");
+
                 break;
             }
             default:
@@ -313,13 +323,19 @@ public class NearbyConnectionsPlugin implements MethodCallHandler {
 
     private final PayloadCallback payloadCallback = new PayloadCallback() {
         @Override
-        public void onPayloadReceived(@NonNull String s, @NonNull Payload payload) {
-
+        public void onPayloadReceived(@NonNull String endpointId, @NonNull Payload payload) {
+            Log.d("NearbyCon java", "onPayloadReceived");
+            Map<String, Object> args = new HashMap<>();
+            args.put("endpointId", endpointId);
+            byte[] bytes = payload.asBytes();
+            assert bytes != null;
+            args.put("bytes", bytes);
+            channel.invokeMethod("onPayloadReceived", args);
         }
 
         @Override
         public void onPayloadTransferUpdate(@NonNull String s, @NonNull PayloadTransferUpdate payloadTransferUpdate) {
-
+            //required for files and streams
         }
     };
 
