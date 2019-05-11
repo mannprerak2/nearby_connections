@@ -32,6 +32,7 @@ import io.flutter.plugin.common.MethodChannel.MethodCallHandler;
 import io.flutter.plugin.common.MethodChannel.Result;
 import io.flutter.plugin.common.PluginRegistry.Registrar;
 
+import android.util.Log;
 /**
  * NearbyConnectionsPlugin
  */
@@ -93,6 +94,7 @@ public class NearbyConnectionsPlugin implements MethodCallHandler {
                         .addOnSuccessListener(new OnSuccessListener<Void>() {
                             @Override
                             public void onSuccess(Void aVoid) {
+                                Log.d("NearbyCon java","started advertising");
                                 result.success(true);
                             }
                         })
@@ -109,7 +111,6 @@ public class NearbyConnectionsPlugin implements MethodCallHandler {
                 int strategy = (int) call.argument("strategy");
 
                 assert userNickName != null;
-                Nearby.getConnectionsClient(activity).stopAllEndpoints();
                 Nearby.getConnectionsClient(activity).startDiscovery(
                         userNickName,
                         endpointDiscoveryCallback,
@@ -117,6 +118,7 @@ public class NearbyConnectionsPlugin implements MethodCallHandler {
                         .addOnSuccessListener(new OnSuccessListener<Void>() {
                             @Override
                             public void onSuccess(Void aVoid) {
+                                Log.d("NearbyCon java","started discovery");
                                 result.success(true);
                             }
                         })
@@ -129,10 +131,12 @@ public class NearbyConnectionsPlugin implements MethodCallHandler {
                 break;
             }
             case "stopAllEndpoints":
+                Log.d("NearbyCon java","stopAllEndpoints");
                 Nearby.getConnectionsClient(activity).stopAllEndpoints();
                 result.success(null);
                 break;
             case "disconnectFromEndpoint": {
+                Log.d("NearbyCon java","disconnectFromEndpoint");
                 String endpointId = call.argument("endpointId");
                 assert endpointId != null;
                 Nearby.getConnectionsClient(activity).disconnectFromEndpoint(endpointId);
@@ -140,6 +144,7 @@ public class NearbyConnectionsPlugin implements MethodCallHandler {
                 break;
             }
             case "requestConnection": {
+                Log.d("NearbyCon java","requestConnection");                
                 String userNickName = (String) call.argument("userNickName");
                 String endpointId = (String) call.argument("endpointId");
 
@@ -213,6 +218,7 @@ public class NearbyConnectionsPlugin implements MethodCallHandler {
     private final ConnectionLifecycleCallback advertConnectionLifecycleCallback = new ConnectionLifecycleCallback() {
         @Override
         public void onConnectionInitiated(@NonNull String endpointId, @NonNull ConnectionInfo connectionInfo) {
+            Log.d("NearbyCon java","ad.onConnectionInitiated");
             Map<String, Object> args = new HashMap<>();
             args.put("endpointId", endpointId);
             args.put("endpointName", connectionInfo.getEndpointName());
@@ -223,6 +229,7 @@ public class NearbyConnectionsPlugin implements MethodCallHandler {
 
         @Override
         public void onConnectionResult(@NonNull String endpointId, @NonNull ConnectionResolution connectionResolution) {
+            Log.d("NearbyCon java","ad.onConnectionResult");            
             Map<String, Object> args = new HashMap<>();
             args.put("endpointId", endpointId);
             int statusCode = -1;
@@ -248,6 +255,7 @@ public class NearbyConnectionsPlugin implements MethodCallHandler {
 
         @Override
         public void onDisconnected(@NonNull String endpointId) {
+            Log.d("NearbyCon java","ad.onDisconnected");                        
             Map<String, Object> args = new HashMap<>();
             args.put("endpointId", endpointId);
             channel.invokeMethod("ad.onDisconnected", args);
@@ -257,6 +265,7 @@ public class NearbyConnectionsPlugin implements MethodCallHandler {
     private final ConnectionLifecycleCallback discoverConnectionLifecycleCallback = new ConnectionLifecycleCallback() {
         @Override
         public void onConnectionInitiated(@NonNull String endpointId, @NonNull ConnectionInfo connectionInfo) {
+            Log.d("NearbyCon java","dis.onConnectionInitiated");                                                
             Map<String, Object> args = new HashMap<>();
             args.put("endpointId", endpointId);
             args.put("endpointName", connectionInfo.getEndpointName());
@@ -267,6 +276,7 @@ public class NearbyConnectionsPlugin implements MethodCallHandler {
 
         @Override
         public void onConnectionResult(@NonNull String endpointId, @NonNull ConnectionResolution connectionResolution) {
+            Log.d("NearbyCon java","dis.onConnectionResult");                                    
             Map<String, Object> args = new HashMap<>();
             args.put("endpointId", endpointId);
             int statusCode = -1;
@@ -292,6 +302,7 @@ public class NearbyConnectionsPlugin implements MethodCallHandler {
 
         @Override
         public void onDisconnected(@NonNull String endpointId) {
+            Log.d("NearbyCon java","dis.onDisconnected");                        
             Map<String, Object> args = new HashMap<>();
             args.put("endpointId", endpointId);
             channel.invokeMethod("dis.onDisconnected", args);
@@ -313,6 +324,7 @@ public class NearbyConnectionsPlugin implements MethodCallHandler {
     private final EndpointDiscoveryCallback endpointDiscoveryCallback = new EndpointDiscoveryCallback() {
         @Override
         public void onEndpointFound(@NonNull String endpointId, @NonNull DiscoveredEndpointInfo discoveredEndpointInfo) {
+            Log.d("NearbyCon java","onEndpointFound");
             Map<String, Object> args = new HashMap<>();
             args.put("endpointId", endpointId);
             args.put("endpointName", discoveredEndpointInfo.getEndpointName());
@@ -322,6 +334,7 @@ public class NearbyConnectionsPlugin implements MethodCallHandler {
 
         @Override
         public void onEndpointLost(@NonNull String endpointId) {
+            Log.d("NearbyCon java","onEndpointLost");            
             Map<String, Object> args = new HashMap<>();
             args.put("endpointId", endpointId);
             channel.invokeMethod("dis.onEndpointLost", args);
