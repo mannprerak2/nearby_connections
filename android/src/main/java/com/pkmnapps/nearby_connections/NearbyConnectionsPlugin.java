@@ -96,14 +96,14 @@ public class NearbyConnectionsPlugin implements MethodCallHandler {
                         .addOnSuccessListener(new OnSuccessListener<Void>() {
                             @Override
                             public void onSuccess(Void aVoid) {
+                                Log.d("NearbyCon java", "startAdvertising");
                                 result.success(true);
-
                             }
                         })
                         .addOnFailureListener(new OnFailureListener() {
                             @Override
                             public void onFailure(@NonNull Exception e) {
-                                result.success(false);
+                                result.error("Failure", e.getMessage(), null);
                             }
                         });
                 break;
@@ -120,13 +120,14 @@ public class NearbyConnectionsPlugin implements MethodCallHandler {
                         .addOnSuccessListener(new OnSuccessListener<Void>() {
                             @Override
                             public void onSuccess(Void aVoid) {
+                                Log.d("NearbyCon java", "startDiscovery");
                                 result.success(true);
                             }
                         })
                         .addOnFailureListener(new OnFailureListener() {
                             @Override
                             public void onFailure(@NonNull Exception e) {
-                                result.success(false);
+                                result.error("Failure", e.getMessage(), null);
                             }
                         });
                 break;

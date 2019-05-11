@@ -28,7 +28,8 @@ class Nearby {
 
   Nearby._() {
     _channel.setMethodCallHandler((handler) {
-      Map<String, dynamic> args = handler.arguments;
+      Map<dynamic, dynamic> args = handler.arguments;
+
       print("=====================");
       print(handler.method);
       args.forEach((s, d) {
@@ -89,10 +90,10 @@ class Nearby {
           return null;
 
         case "dis.onEndpointFound":
+          print("in switch");
           String endpointId = args['endpointId'];
           String endpointName = args['endpointName'];
           String serviceId = args['serviceId'];
-
           _onEndpointFound?.call(endpointId, endpointName, serviceId);
 
           return null;
@@ -158,6 +159,8 @@ class Nearby {
     @required OnEndpointLost onEndpointLost,
   }) async {
     assert(userNickName != null && strategy != null);
+    this._onEndpointFound = onEndpointFound;
+    this._onEndpointLost = onEndpointLost;
 
     return await _channel.invokeMethod('startDiscovery', <String, dynamic>{
       'userNickName': userNickName,

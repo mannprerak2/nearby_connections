@@ -125,6 +125,7 @@ class _MyBodyState extends State<Body> {
                   userName,
                   strategy,
                   onEndpointFound: (id, name, serviceId) {
+                    print("in callback");
                     showModalBottomSheet(
                       context: context,
                       builder: (builder) {
