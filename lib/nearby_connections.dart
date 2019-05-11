@@ -3,7 +3,7 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 
-enum STRATEGY { P2P_CLUSTER, P2P_STAR, P2P_POINT_TO_POINT }
+enum Strategy { P2P_CLUSTER, P2P_STAR, P2P_POINT_TO_POINT }
 enum Status { CONNECTED, REJECTED, ERROR }
 
 typedef void OnConnctionInitiated(
@@ -130,7 +130,7 @@ class Nearby {
 
   Future<bool> startAdvertising(
     String userNickName,
-    STRATEGY strategy, {
+    Strategy strategy, {
     @required OnConnctionInitiated onConnectionInitiated,
     @required OnConnectionResult onConnectionResult,
     @required OnDisconnected onDisconnected,
@@ -153,9 +153,9 @@ class Nearby {
 
   Future<bool> startDiscovery(
     String userNickName,
-    STRATEGY strategy, {
-    OnEndpointFound onEndpointFound,
-    OnEndpointLost onEndpointLost,
+    Strategy strategy, {
+    @required OnEndpointFound onEndpointFound,
+    @required OnEndpointLost onEndpointLost,
   }) async {
     assert(userNickName != null && strategy != null);
 

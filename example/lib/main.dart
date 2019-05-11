@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'dart:async';
 
@@ -31,6 +33,9 @@ class Body extends StatefulWidget {
 }
 
 class _MyBodyState extends State<Body> {
+  final String userName = Random().nextInt(1000).toString();
+  final Strategy strategy = Strategy.P2P_STAR;
+
   @override
   Widget build(BuildContext context) {
     // TODO: implement build
@@ -55,19 +60,54 @@ class _MyBodyState extends State<Body> {
               await Nearby().askPermission();
             },
           ),
+          Text("UserName: " + userName),
           RaisedButton(
             child: Text("Start Advertising"),
             onPressed: () async {
               try {
                 bool a = await Nearby().startAdvertising(
-                  "pkmn",
-                  STRATEGY.P2P_STAR,
+                  userName,
+                  strategy,
+                  onConnectionInitiated: (id, info) {
+                    showModalBottomSheet(
+                      context: context,
+                      builder: (builder) {
+                        return Center(
+                          child: Column(
+                            children: <Widget>[
+                              Text("id: " + id),
+                              Text("Token: " + info.authenticationToken),
+                              Text("Name" + info.endpointName),
+                              Text("Incoming: " +
+                                  info.isIncomingConnection.toString()),
+                              RaisedButton(
+                                child: Text("Accept Connection"),
+                                onPressed: () {
+                                  Nearby().acceptConnection(id);
+                                },
+                              ),
+                              RaisedButton(
+                                child: Text("Reject Connection"),
+                                onPressed: () {
+                                  Nearby().rejectConnection(id);
+                                },
+                              ),
+                            ],
+                          ),
+                        );
+                      },
+                    );
+                  },
+                  onConnectionResult: (id, status) {
+                    showSnackbar(status);
+                  },
+                  onDisconnected: (id) {
+                    showSnackbar(id);
+                  },
                 );
-                Scaffold.of(context)
-                    .showSnackBar(SnackBar(content: Text(a.toString())));
+                showSnackbar(a);
               } catch (exception) {
-                Scaffold.of(context).showSnackBar(
-                    SnackBar(content: Text(exception.toString())));
+                showSnackbar(exception);
               }
             },
           ),
@@ -77,9 +117,103 @@ class _MyBodyState extends State<Body> {
               await Nearby().stopAdvertising();
             },
           ),
+          RaisedButton(
+            child: Text("Start Discovery"),
+            onPressed: () async {
+              await Nearby().startDiscovery(
+                userName,
+                strategy,
+                onEndpointFound: (id, name, serviceId) {
+                  showModalBottomSheet(
+                    context: context,
+                    builder: (builder) {
+                      return Center(
+                        child: Column(
+                          children: <Widget>[
+                            Text("id: " + id),
+                            Text("Name: " + name),
+                            Text("ServiceId: " + serviceId),
+                            RaisedButton(
+                              child: Text("Request Connection"),
+                              onPressed: () {
+                                Nearby().requestConnection(
+                                  userName,
+                                  id,
+                                  onConnectionInitiated: (id, info) {
+                                    showModalBottomSheet(
+                                      context: context,
+                                      builder: (builder) {
+                                        return Center(
+                                          child: Column(
+                                            children: <Widget>[
+                                              Text("id: " + id),
+                                              Text("Token: " +
+                                                  info.authenticationToken),
+                                              Text("Name" + info.endpointName),
+                                              Text("Incoming: " +
+                                                  info.isIncomingConnection
+                                                      .toString()),
+                                              RaisedButton(
+                                                child:
+                                                    Text("Accept Connection"),
+                                                onPressed: () {
+                                                  Nearby().acceptConnection(id);
+                                                },
+                                              ),
+                                              RaisedButton(
+                                                child:
+                                                    Text("Reject Connection"),
+                                                onPressed: () {
+                                                  Nearby().rejectConnection(id);
+                                                },
+                                              ),
+                                            ],
+                                          ),
+                                        );
+                                      },
+                                    );
+                                  },
+                                  onConnectionResult: (id, status) {
+                                    showSnackbar(status);
+                                  },
+                                  onDisconnected: (id) {
+                                    showSnackbar(id);
+                                  },
+                                );
+                              },
+                            ),
+                          ],
+                        ),
+                      );
+                    },
+                  );
+                },
+                onEndpointLost: (id) {
+                  showSnackbar(id);
+                },
+              );
+            },
+          ),
+          RaisedButton(
+            child: Text("Stop Discovery"),
+            onPressed: () async {
+              await Nearby().stopDiscovery();
+            },
+          ),
+          RaisedButton(
+            child: Text("Stop All Endpoints"),
+            onPressed: () async {
+              await Nearby().stopAllEndpoints();
+            },
+          ),
         ],
       ),
     );
   }
-}
 
+  void showSnackbar(dynamic a) {
+    Scaffold.of(context).showSnackBar(SnackBar(
+      content: Text(a.toString()),
+    ));
+  }
+}
