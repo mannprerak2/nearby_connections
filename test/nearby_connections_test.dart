@@ -1,6 +1,5 @@
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:nearby_connections/nearby_connections.dart';
 
 void main() {
   const MethodChannel channel = MethodChannel('nearby_connections');

@@ -2,9 +2,6 @@ import 'dart:math';
 import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
-import 'dart:async';
-
-import 'package:flutter/services.dart';
 import 'package:nearby_connections/nearby_connections.dart';
 
 void main() => runApp(MyApp());
