@@ -2,6 +2,8 @@
 
 An android flutter plugin for the Nearby Connections API
 
+[![pub package](https://img.shields.io/pub/v/nearby_connections.svg)](https://pub.dartlang.org/packages/nearby_connections)
+
 ## Getting Started
 
 ### Set Permissions

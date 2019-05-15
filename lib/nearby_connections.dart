@@ -18,6 +18,12 @@ typedef void OnEndpointLost(String endpointId);
 
 typedef void OnPayloadReceived(String endpointId, Uint8List bytes);
 
+/// The NearbyConnection class
+///
+/// Only one instance is maintained
+/// even on calling Nearby() multiple times
+///
+/// All methods are asynchronous.
 class Nearby {
   //for maintaining only 1 instance of this class
   static Nearby _instance;
@@ -111,7 +117,7 @@ class Nearby {
           String endpointId = args['endpointId'];
           Uint8List bytes = args['bytes'];
 
-          _onPayloadReceived?.call(endpointId,bytes);
+          _onPayloadReceived?.call(endpointId, bytes);
 
           break;
         default:
@@ -132,16 +138,26 @@ class Nearby {
   static const MethodChannel _channel =
       const MethodChannel('nearby_connections');
 
+  /// Convinience method
+  ///
+  /// retruns true/false based on location permissions.
+  /// Discovery cannot be started with insufficient permission
   Future<bool> checkPermissions() async => await _channel.invokeMethod(
         'checkPermissions',
       );
 
+  /// Convinience method
+  ///
+  /// Asks location permission
   Future<void> askPermission() async {
     await _channel.invokeMethod(
       'askPermissions',
     );
   }
 
+  /// Start Advertising
+  ///
+  /// [userNickName] and [strategy] should not be null
   Future<bool> startAdvertising(
     String userNickName,
     Strategy strategy, {
@@ -161,10 +177,19 @@ class Nearby {
     });
   }
 
+  /// Stop Advertising
+  ///
+  /// This doesn't disconnect from any connected Endpoint
+  ///
+  /// For disconnection use
+  /// [stopAllEndpoints] or [disconnectFromEndpoint]
   Future<void> stopAdvertising() async {
     await _channel.invokeMethod('stopAdvertising');
   }
 
+  /// Start Discovery
+  ///
+  /// [userNickName] and [strategy] should not be null
   Future<bool> startDiscovery(
     String userNickName,
     Strategy strategy, {
@@ -181,19 +206,44 @@ class Nearby {
     });
   }
 
+  /// Stop Discovery
+  ///
+  /// This doesn't disconnect from any connected Endpoint
+  ///
+  /// It is reccomended to call this method
+  /// once you have connected to an endPoint
+  /// as it uses heavy radio operations
+  /// which may affect connection speed and integrity
   Future<void> stopDiscovery() async {
     await _channel.invokeMethod('stopDiscovery');
   }
 
+  /// Stop All Endpoints
+  ///
+  /// Disconnects all connections,
+  /// this will call the onDisconnected method on callbacks of
+  /// all connected endPoints
   Future<void> stopAllEndpoints() async {
     await _channel.invokeMethod('stopAllEndpoints');
   }
 
+  /// Disconnect from Endpoints
+  ///
+  /// Disconnects the  connections to given endPointId
+  /// this will call the onDisconnected method on callbacks of
+  /// connected endPoint
   Future<void> disconnectFromEndpoint(String endpointId) async {
     await _channel.invokeMethod(
         'disconnectFromEndpoint', <String, dynamic>{'endpointId': endpointId});
   }
 
+  /// Request Connection
+  ///
+  /// Call this method when Discoverer calls the
+  /// [OnEndpointFound] method
+  ///
+  /// This will call the [OnConnctionInitiated] method on
+  /// both the endPoint and this
   Future<bool> requestConnection(
     String userNickName,
     String endpointId, {
@@ -214,6 +264,16 @@ class Nearby {
     );
   }
 
+  /// Accept Connection
+  ///
+  /// Needs be called by both discoverer and advertiser
+  /// to connect
+  ///
+  /// Call this in [OnConnctionInitiated]
+  /// to accept an incoming connection
+  /// 
+  /// [OnConnectionResult] is called on both 
+  /// only if both of them accept the connection
   Future<bool> acceptConnection(
     String endpointId, {
     @required OnPayloadReceived onPayLoadRecieved,
@@ -228,6 +288,15 @@ class Nearby {
     );
   }
 
+  /// Reject Connection
+  ///
+  /// To be called by both discoverer and advertiser
+  ///
+  /// Call this in [OnConnctionInitiated]
+  /// to reject an incoming connection
+  /// 
+  /// [OnConnectionResult] is called on both 
+  /// even if one of them rejects the connection 
   Future<bool> rejectConnection(String endpointId) async {
     return await _channel.invokeMethod(
       'rejectConnection',
@@ -237,6 +306,14 @@ class Nearby {
     );
   }
 
+  /// Send bytes [Uint8List] payload to endpoint
+  /// 
+  /// Convert String to Uint8List as follows
+  /// 
+  /// ```dart
+  /// String a = "hello";
+  /// Uint8List bytes = Uint8List.fromList(a.codeUnits);
+  /// ```
   Future<void> sendPayload(String endpointId, Uint8List bytes) async {
     return await _channel.invokeMethod(
       'sendPayload',
@@ -248,6 +325,14 @@ class Nearby {
   }
 }
 
+/// ConnectionInfo class
+/// 
+/// Its a parameter in [OnConnctionInitiated]
+/// 
+/// [endPointName] is userNickName of requester
+/// 
+/// [authenticationToken] is useful to check the connection security
+/// it must be same on both devices
 class ConnectionInfo {
   String endpointName, authenticationToken;
   bool isIncomingConnection;

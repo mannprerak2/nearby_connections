@@ -1,3 +1,7 @@
+## 0.0.2
+
+* Added dartdoc comments
+
 ## 0.0.1
 
 * Currently only bytes (max 32k array size) payload are supported
