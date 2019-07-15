@@ -120,9 +120,8 @@ class Nearby {
           _onPayloadReceived?.call(endpointId, bytes);
 
           break;
-        default:
-          return null;
       }
+      return null;
     });
   }
 
@@ -271,8 +270,8 @@ class Nearby {
   ///
   /// Call this in [OnConnctionInitiated]
   /// to accept an incoming connection
-  /// 
-  /// [OnConnectionResult] is called on both 
+  ///
+  /// [OnConnectionResult] is called on both
   /// only if both of them accept the connection
   Future<bool> acceptConnection(
     String endpointId, {
@@ -294,9 +293,9 @@ class Nearby {
   ///
   /// Call this in [OnConnctionInitiated]
   /// to reject an incoming connection
-  /// 
-  /// [OnConnectionResult] is called on both 
-  /// even if one of them rejects the connection 
+  ///
+  /// [OnConnectionResult] is called on both
+  /// even if one of them rejects the connection
   Future<bool> rejectConnection(String endpointId) async {
     return await _channel.invokeMethod(
       'rejectConnection',
@@ -307,9 +306,9 @@ class Nearby {
   }
 
   /// Send bytes [Uint8List] payload to endpoint
-  /// 
+  ///
   /// Convert String to Uint8List as follows
-  /// 
+  ///
   /// ```dart
   /// String a = "hello";
   /// Uint8List bytes = Uint8List.fromList(a.codeUnits);
@@ -326,11 +325,11 @@ class Nearby {
 }
 
 /// ConnectionInfo class
-/// 
+///
 /// Its a parameter in [OnConnctionInitiated]
-/// 
+///
 /// [endPointName] is userNickName of requester
-/// 
+///
 /// [authenticationToken] is useful to check the connection security
 /// it must be same on both devices
 class ConnectionInfo {

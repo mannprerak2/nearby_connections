@@ -1,3 +1,11 @@
+## 0.1.1
+
+* Fixed sendPayload future not completing bug
+
+## 0.1.0
+
+* Added pub maintanence suggestions 
+
 ## 0.0.2
 
 * Added dartdoc comments

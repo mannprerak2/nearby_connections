@@ -1,6 +1,6 @@
 name: nearby_connections
-description: A Flutter plugin for the android NearbyConnections API.
-version: 0.0.2
+description: Plugin for the android NearbyConnections API. Currently sending bytes (Uint8List) is possible. 
+version: 0.1.1
 author: Prerak Mann <mannprerak2@gmail.com>
 homepage: https://github.com/mannprerak2/nearby_connections
 
