@@ -1,6 +1,6 @@
 name: nearby_connections
 description: Plugin for the android NearbyConnections API. Currently sending bytes (Uint8List) is possible. 
-version: 0.1.2
+version: 0.1.3
 author: Prerak Mann <mannprerak2@gmail.com>
 homepage: https://github.com/mannprerak2/nearby_connections
 

@@ -6,13 +6,13 @@ An **android** flutter plugin for the Nearby Connections API
 
 ## Table of Content
 * [Setup](#setup)
-* [Work Flow](#Work%20Flow)
-    * [Advertise For connections](#Advertise%20for%20connection)
-    * [Discover Advertisers](#Discover%20Advertisers)
-    * [Request Connection](#Request%20Connection)
-    * [Accept Connection](#Accept%20Connection)
-* [Sending Data](#Sending%20Data)
-    * [Senging Bytes Payload](#Sending%20Bytes%20Payload)
+* [Work Flow](#Work-Flow)
+    * [Advertise For connections](#Advertise-for-connection)
+    * [Discover Advertisers](#Discover-Advertisers)
+    * [Request Connection](#Request-Connection)
+    * [Accept Connection](#Accept-Connection)
+* [Sending Data](#Sending-Data)
+    * [Senging Bytes Payload](#Sending-Bytes-Payload)
 
 ## Setup
 
