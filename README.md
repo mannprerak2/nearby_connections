@@ -1,10 +1,20 @@
 # nearby_connections
 
-An android flutter plugin for the Nearby Connections API
+An **android** flutter plugin for the Nearby Connections API
 
 [![pub package](https://img.shields.io/pub/v/nearby_connections.svg)](https://pub.dartlang.org/packages/nearby_connections)
 
-## Getting Started
+## Table of Content
+* [Setup](#setup)
+* [Work Flow](#Work%20Flow)
+    * [Advertise For connections](#Advertise%20for%20connection)
+    * [Discover Advertisers](#Discover%20Advertisers)
+    * [Request Connection](#Request%20Connection)
+    * [Accept Connection](#Accept%20Connection)
+* [Sending Data](#Sending%20Data)
+    * [Senging Bytes Payload](#Sending%20Bytes%20Payload)
+
+## Setup
 
 ### Set Permissions
 Add these to AndroidManifest.xml
@@ -28,11 +38,11 @@ bool a = await Nearby().checkPermissions()
 Nearby().askPermission()
 ```
 
-### Working Flow
+## Work Flow
 
-The working flow is similar to the [android nearby connections library](https://developers.google.com/nearby/connections/overviewoverview)
+The work flow is similar to the [android nearby connections library](https://developers.google.com/nearby/connections/overviewoverview)
 
-#### Advertise for connection
+### Advertise for connection
 ```dart
 try {
     bool a = await Nearby().startAdvertising(
@@ -52,7 +62,7 @@ try {
     // platform exceptions like unable to start bluetooth or insufficient permissions 
 }
 ```
-#### Discover Advertisers
+### Discover Advertisers
 ```dart
 try {
     bool a = await Nearby().startDiscovery(
@@ -69,11 +79,14 @@ try {
     // platform exceptions like unable to start bluetooth or insufficient permissions
 }
 ```
-#### Start and Stop Discovery
+### Stopping Advertising and Discovery
 ```dart
 Nearby().stopAdvertising();
 Nearby().stopDiscovery();
-
+// endpoints already discovered will still be available to connect
+// even after stopping discovery
+// You should stop discovery once you have found the intended advertiser
+// this will reduce chances for disconnection
 ```
 ### Request Connection
 ```dart
@@ -94,7 +107,7 @@ try{
     // called if request was invalid
 }
 ```
-#### Accept Connections
+### Accept Connection
 ```dart
 Nearby().acceptConnection(
     id,
@@ -103,7 +116,8 @@ Nearby().acceptConnection(
     },
 );
 ```
-### Sending Payload
+## Sending Data
+### Sending Bytes Payload
 
 ```dart
 Nearby().sendPayload(endpointId, bytes_array);

@@ -4,6 +4,11 @@ import 'dart:typed_data';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 
+/// **P2P_CLUSTER** - best for small payloads and multiplayer games
+/// 
+/// **P2P_STAR** - best for medium payloads, higher bandwidth than cluster
+/// 
+/// **P2P_POINT_TO_POINT** - single connection, very high bandwidth
 enum Strategy { P2P_CLUSTER, P2P_STAR, P2P_POINT_TO_POINT }
 enum Status { CONNECTED, REJECTED, ERROR }
 
@@ -17,7 +22,7 @@ typedef void OnEndpointFound(
 typedef void OnEndpointLost(String endpointId);
 
 typedef void OnPayloadReceived(String endpointId, Uint8List bytes);
-
+// typedef void OnPayloadTransferUpdate();
 /// The NearbyConnection class
 ///
 /// Only one instance is maintained
@@ -330,7 +335,7 @@ class Nearby {
 ///
 /// [endPointName] is userNickName of requester
 ///
-/// [authenticationToken] is useful to check the connection security
+/// [authenticationToken] can be used to check the connection security
 /// it must be same on both devices
 class ConnectionInfo {
   String endpointName, authenticationToken;
