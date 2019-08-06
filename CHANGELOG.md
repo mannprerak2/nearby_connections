@@ -1,3 +1,7 @@
+## 0.1.2
+
+* Update documentation and Readme 
+
 ## 0.1.1
 
 * Fixed sendPayload future not completing bug
