@@ -190,7 +190,7 @@ class _MyBodyState extends State<Body> {
                   cId = id;
                   Nearby().acceptConnection(
                     id,
-                    onPayLoadRecieved: (endid, bytes) {
+                    onPayLoadRecieved: (endid, bytes, payloadType) {
                       showSnackbar(endid + ": " + String.fromCharCodes(bytes));
                     },
                   );

@@ -3,6 +3,8 @@ package com.pkmnapps.nearby_connections;
 import android.Manifest;
 import android.app.Activity;
 import android.content.pm.PackageManager;
+import android.net.Uri;
+import android.os.ParcelFileDescriptor;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
@@ -23,6 +25,8 @@ import com.google.android.gms.nearby.connection.Strategy;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 
+import java.io.File;
+import java.io.FileNotFoundException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -221,6 +225,27 @@ public class NearbyConnectionsPlugin implements MethodCallHandler {
                 result.success(true);
                 break;
             }
+            case "sendFilePayload": {
+                String endpointId = (String) call.argument("endpointId");
+                String filePath = (String) call.argument("filePath");
+
+                assert endpointId != null;
+                assert filePath != null;
+
+                try {
+                    File file = new File(filePath);
+
+                    Payload filePayload = Payload.fromFile(file);
+                    Nearby.getConnectionsClient(activity).sendPayload(endpointId, filePayload);
+                    Log.d("NearbyCon java", "sentFilePayload");
+                    result.success(filePayload.getId()); //return payload id to dart
+                } catch (FileNotFoundException e) {
+                    Log.e("NearbyCon java", "File not found", e);
+                    result.error("Failure", "File Not found", null);
+                    return;
+                }
+                break;
+            }
             default:
                 result.notImplemented();
         }
@@ -326,15 +351,31 @@ public class NearbyConnectionsPlugin implements MethodCallHandler {
             Log.d("NearbyCon java", "onPayloadReceived");
             Map<String, Object> args = new HashMap<>();
             args.put("endpointId", endpointId);
-            byte[] bytes = payload.asBytes();
-            assert bytes != null;
-            args.put("bytes", bytes);
+            args.put("payloadId", payload.getId());
+            args.put("type", payload.getType());
+
+            if (payload.getType() == Payload.Type.BYTES) {
+                byte[] bytes = payload.asBytes();
+                assert bytes != null;
+                args.put("bytes", bytes);
+            }
+
             channel.invokeMethod("onPayloadReceived", args);
         }
 
         @Override
-        public void onPayloadTransferUpdate(@NonNull String s, @NonNull PayloadTransferUpdate payloadTransferUpdate) {
+        public void onPayloadTransferUpdate(@NonNull String endpointId, @NonNull PayloadTransferUpdate payloadTransferUpdate) {
             //required for files and streams
+
+            Log.d("NearbyCon java", "onPayloadTransferUpdate");
+            Map<String, Object> args = new HashMap<>();
+            args.put("endpointId", endpointId);
+            args.put("payloadId", payloadTransferUpdate.getPayloadId());
+            args.put("status", payloadTransferUpdate.getStatus());
+            args.put("bytesTransferred", payloadTransferUpdate.getBytesTransferred());
+            args.put("totalBytes", payloadTransferUpdate.getTotalBytes());
+
+            channel.invokeMethod("onPayloadTransferUpdate", args);
         }
     };
 

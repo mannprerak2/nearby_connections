@@ -5,13 +5,14 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 
 /// **P2P_CLUSTER** - best for small payloads and multiplayer games
-/// 
+///
 /// **P2P_STAR** - best for medium payloads, higher bandwidth than cluster
-/// 
+///
 /// **P2P_POINT_TO_POINT** - single connection, very high bandwidth
 enum Strategy { P2P_CLUSTER, P2P_STAR, P2P_POINT_TO_POINT }
 enum Status { CONNECTED, REJECTED, ERROR }
-
+enum PayloadStatus { NONE, SUCCESS, FAILURE, IN_PROGRRESS, CANCELED }
+enum PayloadType { NONE, BYTES, FILES, STREAM }
 typedef void OnConnctionInitiated(
     String endpointId, ConnectionInfo connectionInfo);
 typedef void OnConnectionResult(String endpointId, Status status);
@@ -21,7 +22,22 @@ typedef void OnEndpointFound(
     String endpointId, String endpointName, String serviceId);
 typedef void OnEndpointLost(String endpointId);
 
-typedef void OnPayloadReceived(String endpointId, Uint8List bytes);
+/// For Bytes, this contains the bytes dala
+///
+/// For File, this marks the start of transfer
+///
+/// Uint8List bytes may be null, if [payloadType] is not [PayloadType.BYTES]
+typedef void OnPayloadReceived(
+    String endpointId, Uint8List bytes, PayloadType payloadType);
+
+/// Called only once for Bytes and repeatedly for File until transfer is complete
+typedef void OnPayloadTransferUpdate(
+    {String endpointId,
+    int payloadId,
+    PayloadStatus payloadStatus,
+    int bytesTransferred,
+    int totalBytes});
+
 // typedef void OnPayloadTransferUpdate();
 /// The NearbyConnection class
 ///
@@ -120,10 +136,26 @@ class Nearby {
           return null;
         case "onPayloadReceived":
           String endpointId = args['endpointId'];
+          int type = args['type'];
           Uint8List bytes = args['bytes'];
 
-          _onPayloadReceived?.call(endpointId, bytes);
+          _onPayloadReceived?.call(endpointId, bytes, PayloadType.values[type]);
 
+          break;
+        case "onPayloadTransferUpdate":
+          String endpointId = args['endpointId'];
+          int payloadId = args['payloadId'];
+          int success = args['success'];
+          int bytesTransferred = args['bytesTransferred'];
+          int totalBytes = args['totalBytes'];
+
+          _onPayloadTransferUpdate?.call(
+            endpointId: endpointId,
+            payloadId: payloadId,
+            payloadStatus: PayloadStatus.values[success],
+            bytesTransferred: bytesTransferred,
+            totalBytes: totalBytes,
+          );
           break;
       }
       return null;
@@ -138,6 +170,7 @@ class Nearby {
   OnEndpointLost _onEndpointLost;
 
   OnPayloadReceived _onPayloadReceived;
+  OnPayloadTransferUpdate _onPayloadTransferUpdate;
 
   static const MethodChannel _channel =
       const MethodChannel('nearby_connections');
@@ -281,9 +314,10 @@ class Nearby {
   Future<bool> acceptConnection(
     String endpointId, {
     @required OnPayloadReceived onPayLoadRecieved,
+    OnPayloadTransferUpdate onPayloadTransferUpdate,
   }) async {
     this._onPayloadReceived = onPayLoadRecieved;
-
+    this._onPayloadTransferUpdate = onPayloadTransferUpdate;
     return await _channel.invokeMethod(
       'acceptConnection',
       <String, dynamic>{
@@ -324,6 +358,23 @@ class Nearby {
       <String, dynamic>{
         'endpointId': endpointId,
         'bytes': bytes,
+      },
+    );
+  }
+
+  /// Returns the payloadID as soon as file transfer has begun
+  ///
+  /// File is received in DOWNLOADS_DIRECTORY and is given a generic name
+  /// without extension
+  /// You must also send a bytes payload to send the filename and extension
+  /// so that receiver can rename the file accordingly
+  /// Send the payloadID and filename to receiver as bytes payload
+  Future<int> sendFilePayload(String endpointId, String filePath) async {
+    return await _channel.invokeMethod(
+      'sendFilePayload',
+      <String, dynamic>{
+        'endpointId': endpointId,
+        'filePath': filePath,
       },
     );
   }
