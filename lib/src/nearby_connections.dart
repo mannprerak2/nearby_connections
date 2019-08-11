@@ -96,11 +96,13 @@ class Nearby {
           int type = args['type'];
           Uint8List bytes = args['bytes'];
           int payloadId = args['payloadId'];
+          String filePath = args['filePath'];
 
           Payload payload = Payload(
             type: PayloadType.values[type],
             bytes: bytes,
             id: payloadId,
+            filePath: filePath,
           );
 
           _onPayloadReceived?.call(endpointId, payload);

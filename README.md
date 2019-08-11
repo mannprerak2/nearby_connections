@@ -132,15 +132,20 @@ File is stored in DOWNLOAD_DIRECTORY and given a generic name
 So you would need to rename the file on receivers end.
 
 ```dart
-
 //creates file with generic name (without extension) in Downloads Directory
 Nearby().sendFilePayload(endpointId, filePath);
 
 //Send filename as well so that receiver can rename the file
-Nearby().sendBytesPayload(endpointId,fileNameEncoded);
+Nearby().sendBytesPayload(endpointId,fileNameEncodedWithPayloadId);
+//e.g send a string like "payloadId:FileExtensionOrName" as bytes
 
-// payloads are recieved by callback given to acceptConnection method.
+//payloads are recieved by callback given to acceptConnection method.
 ```
+Every payload has an **ID** which is same for sender and receiver.
+
+You can get the absolute FilePath from Payload in *onPayloadReceived* function
+
+Check **Example** in Repository for more details
 
 
 

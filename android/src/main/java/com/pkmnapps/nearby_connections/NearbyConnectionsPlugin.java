@@ -352,11 +352,14 @@ public class NearbyConnectionsPlugin implements MethodCallHandler {
             args.put("endpointId", endpointId);
             args.put("payloadId", payload.getId());
             args.put("type", payload.getType());
-
+                        
             if (payload.getType() == Payload.Type.BYTES) {
                 byte[] bytes = payload.asBytes();
                 assert bytes != null;
                 args.put("bytes", bytes);
+            }
+            else if (payload.getType() == Payload.Type.BYTES) {
+                args.put("filePath", payload.asFile().asJavaFile().getAbsolutePath());
             }
 
             channel.invokeMethod("onPayloadReceived", args);
