@@ -13,6 +13,7 @@ An **android** flutter plugin for the Nearby Connections API
     * [Accept Connection](#accept-connection)
 * [Sending Data](#sending-data)
     * [Sending Bytes Payload](#sending-bytes-payload)
+    * [Sending Files](#sending-file-payload)
 
 ## Setup
 
@@ -120,7 +121,23 @@ Nearby().acceptConnection(
 ### Sending Bytes Payload
 
 ```dart
-Nearby().sendPayload(endpointId, bytes_array);
+Nearby().sendBytesPayload(endpointId, bytes_array);
+
+// payloads are recieved by callback given to acceptConnection method.
+```
+### Sending File Payload
+You need to send the File Payload and File Name seperately.
+
+File is stored in DOWNLOAD_DIRECTORY and given a generic name
+So you would need to rename the file on receivers end.
+
+```dart
+
+//creates file with generic name (without extension) in Downloads Directory
+Nearby().sendFilePayload(endpointId, filePath);
+
+//Send filename as well so that receiver can rename the file
+Nearby().sendBytesPayload(endpointId,fileNameEncoded);
 
 // payloads are recieved by callback given to acceptConnection method.
 ```

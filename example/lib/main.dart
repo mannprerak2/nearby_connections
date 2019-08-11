@@ -160,7 +160,7 @@ class _MyBodyState extends State<Body> {
             onPressed: () async {
               String a = Random().nextInt(100).toString();
               showSnackbar("Sending $a to $cId");
-              Nearby().sendPayload(cId, Uint8List.fromList(a.codeUnits));
+              Nearby().sendBytesPayload(cId, Uint8List.fromList(a.codeUnits));
             },
           ),
           RaisedButton(

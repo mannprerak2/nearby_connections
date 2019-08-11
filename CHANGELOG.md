@@ -1,3 +1,9 @@
+## 1.0.0
+
+* Added support for Files (sendFilePayload)
+* Breaking Change (sendPayload method signature is changed)
+* Updated Example and Readme for file transfer
+
 ## 0.1.3+1
 
 * Update documentation and Readme 
