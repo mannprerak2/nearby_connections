@@ -1,8 +1,10 @@
+import 'dart:io';
 import 'dart:math';
 import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:nearby_connections/nearby_connections.dart';
+import 'package:image_picker/image_picker.dart';
 
 void main() => runApp(MyApp());
 
@@ -154,11 +156,23 @@ class _MyBodyState extends State<Body> {
             },
           ),
           RaisedButton(
-            child: Text("Send Random Payload"),
+            child: Text("Send Random Bytes Payload"),
             onPressed: () async {
               String a = Random().nextInt(100).toString();
               showSnackbar("Sending $a to $cId");
               Nearby().sendPayload(cId, Uint8List.fromList(a.codeUnits));
+            },
+          ),
+          RaisedButton(
+            child: Text("Send File Payload"),
+            onPressed: () async {
+              File file =
+                  await ImagePicker.pickImage(source: ImageSource.gallery);
+
+              if (file == null) return;
+
+              Nearby().sendFilePayload(cId, file.path);
+              showSnackbar("Sending file to $cId");
             },
           ),
         ],
@@ -172,6 +186,7 @@ class _MyBodyState extends State<Body> {
     ));
   }
 
+  /// Called on a Connection request (on both devices)
   void oci(String id, ConnectionInfo info) {
     showModalBottomSheet(
       context: context,
@@ -190,8 +205,29 @@ class _MyBodyState extends State<Body> {
                   cId = id;
                   Nearby().acceptConnection(
                     id,
-                    onPayLoadRecieved: (endid, bytes, payloadType) {
-                      showSnackbar(endid + ": " + String.fromCharCodes(bytes));
+                    onPayLoadRecieved: (endid, payload) {
+                      if (payload.type == PayloadType.BYTES) {
+                        showSnackbar(
+                            endid + ": " + String.fromCharCodes(payload.bytes));
+                      } else if (payload.type == PayloadType.FILE) {
+                        showSnackbar(endid + ": File transfer started");
+                      }
+                    },
+                    onPayloadTransferUpdate: (endid, payloadTransferUpdate) {
+                      if (payloadTransferUpdate.status ==
+                          PayloadStatus.IN_PROGRRESS) {
+                        print(payloadTransferUpdate.bytesTransferred);
+                      } else if (payloadTransferUpdate.status ==
+                          PayloadStatus.FAILURE) {
+                        print("failed");
+                        showSnackbar(endid + ": FAILED to transfer file");
+                      } else if (payloadTransferUpdate.status ==
+                          PayloadStatus.SUCCESS) {
+                        print(
+                            "success, total bytes = ${payloadTransferUpdate.totalBytes}");
+                        showSnackbar(endid +
+                            ": SUCCESS in file transfer (file is un-named in downloads) ");
+                      }
                     },
                   );
                 },

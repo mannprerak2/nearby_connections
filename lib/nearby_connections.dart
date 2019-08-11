@@ -12,7 +12,7 @@ import 'package:flutter/services.dart';
 enum Strategy { P2P_CLUSTER, P2P_STAR, P2P_POINT_TO_POINT }
 enum Status { CONNECTED, REJECTED, ERROR }
 enum PayloadStatus { NONE, SUCCESS, FAILURE, IN_PROGRRESS, CANCELED }
-enum PayloadType { NONE, BYTES, FILES, STREAM }
+enum PayloadType { NONE, BYTES, FILE, STREAM }
 typedef void OnConnctionInitiated(
     String endpointId, ConnectionInfo connectionInfo);
 typedef void OnConnectionResult(String endpointId, Status status);
@@ -22,21 +22,42 @@ typedef void OnEndpointFound(
     String endpointId, String endpointName, String serviceId);
 typedef void OnEndpointLost(String endpointId);
 
-/// For Bytes, this contains the bytes dala
+/// Bytes may be null if [Payload.type] is not [PayloadType.BYTES] 
+class Payload {
+  int id;
+  PayloadType type;
+  Uint8List bytes;
+
+  Payload({
+    this.id,
+    this.bytes,
+    this.type = PayloadType.NONE,
+  });
+}
+
+/// gives payload status, bytes transfered and total bytes.
+class PayloadTransferUpdate {
+  int id, bytesTransferred, totalBytes;
+  PayloadStatus status;
+
+  PayloadTransferUpdate({
+    this.id,
+    this.bytesTransferred,
+    this.totalBytes,
+    this.status = PayloadStatus.NONE,
+  });
+}
+
+/// For Bytes, this contains the bytes data
 ///
 /// For File, this marks the start of transfer
 ///
-/// Uint8List bytes may be null, if [payloadType] is not [PayloadType.BYTES]
-typedef void OnPayloadReceived(
-    String endpointId, Uint8List bytes, PayloadType payloadType);
+/// Uint8List bytes may be null, if [type] is not [PayloadType.BYTES]
+typedef void OnPayloadReceived(String endpointId, Payload payload);
 
 /// Called only once for Bytes and repeatedly for File until transfer is complete
 typedef void OnPayloadTransferUpdate(
-    {String endpointId,
-    int payloadId,
-    PayloadStatus payloadStatus,
-    int bytesTransferred,
-    int totalBytes});
+    String endpointId, PayloadTransferUpdate payloadTransferUpdate);
 
 // typedef void OnPayloadTransferUpdate();
 /// The NearbyConnection class
@@ -138,24 +159,32 @@ class Nearby {
           String endpointId = args['endpointId'];
           int type = args['type'];
           Uint8List bytes = args['bytes'];
+          int payloadId = args['payloadId'];
 
-          _onPayloadReceived?.call(endpointId, bytes, PayloadType.values[type]);
+          Payload payload = Payload(
+            type: PayloadType.values[type],
+            bytes: bytes,
+            id: payloadId,
+          );
+
+          _onPayloadReceived?.call(endpointId, payload);
 
           break;
         case "onPayloadTransferUpdate":
           String endpointId = args['endpointId'];
           int payloadId = args['payloadId'];
-          int success = args['success'];
+          int status = args['status'];
           int bytesTransferred = args['bytesTransferred'];
           int totalBytes = args['totalBytes'];
 
-          _onPayloadTransferUpdate?.call(
-            endpointId: endpointId,
-            payloadId: payloadId,
-            payloadStatus: PayloadStatus.values[success],
+          PayloadTransferUpdate payloadTransferUpdate = PayloadTransferUpdate(
+            id: payloadId,
+            status: PayloadStatus.values[status],
             bytesTransferred: bytesTransferred,
             totalBytes: totalBytes,
           );
+
+          _onPayloadTransferUpdate?.call(endpointId, payloadTransferUpdate);
           break;
       }
       return null;
@@ -301,8 +330,6 @@ class Nearby {
     );
   }
 
-  /// Accept Connection
-  ///
   /// Needs be called by both discoverer and advertiser
   /// to connect
   ///
