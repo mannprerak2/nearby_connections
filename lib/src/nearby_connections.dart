@@ -149,15 +149,29 @@ class Nearby {
   ///
   /// retruns true/false based on location permissions.
   /// Discovery cannot be started with insufficient permission
-  Future<bool> checkPermissions() async => await _channel.invokeMethod(
-        'checkPermissions',
+  Future<bool> checkLocationPermission() async => await _channel.invokeMethod(
+        'checkLocationPermission',
       );
 
   /// Convinience method
   ///
   /// Asks location permission
-  Future<void> askPermission() async => await _channel.invokeMethod(
-        'askPermissions',
+  Future<void> askLocationPermission() async => await _channel.invokeMethod(
+        'askLocationPermission',
+      );
+  
+  /// Convinience method
+  ///
+  /// retruns true/false based on external storage permissions.
+  Future<bool> checkExternalStoragePermission() async => await _channel.invokeMethod(
+        'checkExternalStoragePermission',
+      );
+
+  /// Convinience method
+  ///
+  /// Asks external storage permission, required for file
+  Future<void> askExternalStoragePermission() async => await _channel.invokeMethod(
+        'askExternalStoragePermission',
       );
 
   /// Start Advertising

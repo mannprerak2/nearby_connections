@@ -33,7 +33,7 @@ class Body extends StatefulWidget {
 }
 
 class _MyBodyState extends State<Body> {
-  final String userName = Random().nextInt(1000).toString();
+  final String userName = Random().nextInt(10000).toString();
   final Strategy strategy = Strategy.P2P_STAR;
   String cId = "0"; //currently connected device ID
   File tempFile; //stores the file being transferred
@@ -42,158 +42,185 @@ class _MyBodyState extends State<Body> {
   @override
   Widget build(BuildContext context) {
     return Center(
-      child: Column(
-        children: <Widget>[
-          Wrap(
-            children: <Widget>[
-              RaisedButton(
-                child: Text("checkPermission"),
-                onPressed: () async {
-                  if (await Nearby().checkPermissions()) {
-                    Scaffold.of(context).showSnackBar(SnackBar(
-                        content: Text("Location permissions granted :)")));
-                  } else {
-                    Scaffold.of(context).showSnackBar(SnackBar(
-                        content: Text("Location permissions not granted :(")));
-                  }
-                },
-              ),
-              RaisedButton(
-                child: Text("askPermission"),
-                onPressed: () async {
-                  await Nearby().askPermission();
-                },
-              ),
-            ],
-          ),
-          Text("User Name: " + userName),
-          Wrap(
-            children: <Widget>[
-              RaisedButton(
-                child: Text("Start Advertising"),
-                onPressed: () async {
-                  try {
-                    bool a = await Nearby().startAdvertising(
-                      userName,
-                      strategy,
-                      onConnectionInitiated: (id, info) {
-                        oci(id, info);
-                      },
-                      onConnectionResult: (id, status) {
-                        showSnackbar(status);
-                      },
-                      onDisconnected: (id) {
-                        showSnackbar("Disconnected: "+id);
-                      },
-                    );
-                    showSnackbar(a);
-                  } catch (exception) {
-                    showSnackbar(exception);
-                  }
-                },
-              ),
-              RaisedButton(
-                child: Text("Stop Advertising"),
-                onPressed: () async {
-                  await Nearby().stopAdvertising();
-                },
-              ),
-            ],
-          ),
-          Wrap(
-            children: <Widget>[
-              RaisedButton(
-                child: Text("Start Discovery"),
-                onPressed: () async {
-                  try {
-                    bool a = await Nearby().startDiscovery(
-                      userName,
-                      strategy,
-                      onEndpointFound: (id, name, serviceId) {
-                        print("in callback");
-                        showModalBottomSheet(
-                          context: context,
-                          builder: (builder) {
-                            return Center(
-                              child: Column(
-                                children: <Widget>[
-                                  Text("id: " + id),
-                                  Text("Name: " + name),
-                                  Text("ServiceId: " + serviceId),
-                                  RaisedButton(
-                                    child: Text("Request Connection"),
-                                    onPressed: () {
-                                      Navigator.pop(context);
-                                      Nearby().requestConnection(
-                                        userName,
-                                        id,
-                                        onConnectionInitiated: (id, info) {
-                                          oci(id, info);
-                                        },
-                                        onConnectionResult: (id, status) {
-                                          showSnackbar(status);
-                                        },
-                                        onDisconnected: (id) {
-                                          showSnackbar(id);
-                                        },
-                                      );
-                                    },
-                                  ),
-                                ],
-                              ),
-                            );
-                          },
-                        );
-                      },
-                      onEndpointLost: (id) {
-                        showSnackbar(id);
-                      },
-                    );
-                    showSnackbar(a);
-                  } catch (e) {
-                    showSnackbar(e);
-                  }
-                },
-              ),
-              RaisedButton(
-                child: Text("Stop Discovery"),
-                onPressed: () async {
-                  await Nearby().stopDiscovery();
-                },
-              ),
-            ],
-          ),
-          RaisedButton(
-            child: Text("Stop All Endpoints"),
-            onPressed: () async {
-              await Nearby().stopAllEndpoints();
-            },
-          ),
-          RaisedButton(
-            child: Text("Send Random Bytes Payload"),
-            onPressed: () async {
-              String a = Random().nextInt(100).toString();
-              showSnackbar("Sending $a to $cId");
-              Nearby().sendBytesPayload(cId, Uint8List.fromList(a.codeUnits));
-            },
-          ),
-          RaisedButton(
-            child: Text("Send File Payload"),
-            onPressed: () async {
-              File file =
-                  await ImagePicker.pickImage(source: ImageSource.gallery);
+      child: Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: ListView(
+          children: <Widget>[
+            Text("Permissions",),
+            Wrap(
+              children: <Widget>[
+                RaisedButton(
+                  child: Text("checkLocationPermission"),
+                  onPressed: () async {
+                    if (await Nearby().checkLocationPermission()) {
+                      Scaffold.of(context).showSnackBar(SnackBar(
+                          content: Text("Location permissions granted :)")));
+                    } else {
+                      Scaffold.of(context).showSnackBar(SnackBar(
+                          content: Text("Location permissions not granted :(")));
+                    }
+                  },
+                ),
+                RaisedButton(
+                  child: Text("askLocationPermission"),
+                  onPressed: () async {
+                    await Nearby().askLocationPermission();
+                  },
+                ),
+                RaisedButton(
+                  child: Text("checkExternalStoragePermission"),
+                  onPressed: () async {
+                    if (await Nearby().checkExternalStoragePermission()) {
+                      Scaffold.of(context).showSnackBar(SnackBar(
+                          content:
+                              Text("External Storage permissions granted :)")));
+                    } else {
+                      Scaffold.of(context).showSnackBar(SnackBar(
+                          content: Text(
+                              "External Storage permissions not granted :(")));
+                    }
+                  },
+                ),
+                RaisedButton(
+                  child: Text("askExternalStoragePermission"),
+                  onPressed: () async {
+                    await Nearby().askExternalStoragePermission();
+                  },
+                ),
+              ],
+            ),
+            Divider(),
+            Text("User Name: " + userName),
+            Wrap(
+              children: <Widget>[
+                RaisedButton(
+                  child: Text("Start Advertising"),
+                  onPressed: () async {
+                    try {
+                      bool a = await Nearby().startAdvertising(
+                        userName,
+                        strategy,
+                        onConnectionInitiated: (id, info) {
+                          oci(id, info);
+                        },
+                        onConnectionResult: (id, status) {
+                          showSnackbar(status);
+                        },
+                        onDisconnected: (id) {
+                          showSnackbar("Disconnected: " + id);
+                        },
+                      );
+                      showSnackbar(a);
+                    } catch (exception) {
+                      showSnackbar(exception);
+                    }
+                  },
+                ),
+                RaisedButton(
+                  child: Text("Stop Advertising"),
+                  onPressed: () async {
+                    await Nearby().stopAdvertising();
+                  },
+                ),
+              ],
+            ),
+            Wrap(
+              children: <Widget>[
+                RaisedButton(
+                  child: Text("Start Discovery"),
+                  onPressed: () async {
+                    try {
+                      bool a = await Nearby().startDiscovery(
+                        userName,
+                        strategy,
+                        onEndpointFound: (id, name, serviceId) {
+                          print("in callback");
+                          showModalBottomSheet(
+                            context: context,
+                            builder: (builder) {
+                              return Center(
+                                child: Column(
+                                  children: <Widget>[
+                                    Text("id: " + id),
+                                    Text("Name: " + name),
+                                    Text("ServiceId: " + serviceId),
+                                    RaisedButton(
+                                      child: Text("Request Connection"),
+                                      onPressed: () {
+                                        Navigator.pop(context);
+                                        Nearby().requestConnection(
+                                          userName,
+                                          id,
+                                          onConnectionInitiated: (id, info) {
+                                            oci(id, info);
+                                          },
+                                          onConnectionResult: (id, status) {
+                                            showSnackbar(status);
+                                          },
+                                          onDisconnected: (id) {
+                                            showSnackbar(id);
+                                          },
+                                        );
+                                      },
+                                    ),
+                                  ],
+                                ),
+                              );
+                            },
+                          );
+                        },
+                        onEndpointLost: (id) {
+                          showSnackbar(id);
+                        },
+                      );
+                      showSnackbar(a);
+                    } catch (e) {
+                      showSnackbar(e);
+                    }
+                  },
+                ),
+                RaisedButton(
+                  child: Text("Stop Discovery"),
+                  onPressed: () async {
+                    await Nearby().stopDiscovery();
+                  },
+                ),
+              ],
+            ),
+            RaisedButton(
+              child: Text("Stop All Endpoints"),
+              onPressed: () async {
+                await Nearby().stopAllEndpoints();
+              },
+            ),
+            Divider(),
+            Text("Sending Data",),
+            RaisedButton(
+              child: Text("Send Random Bytes Payload"),
+              onPressed: () async {
+                String a = Random().nextInt(100).toString();
+                showSnackbar("Sending $a to $cId");
+                Nearby().sendBytesPayload(cId, Uint8List.fromList(a.codeUnits));
+              },
+            ),
+            RaisedButton(
+              child: Text("Send File Payload"),
+              onPressed: () async {
+                File file =
+                    await ImagePicker.pickImage(source: ImageSource.gallery);
 
-              if (file == null) return;
+                if (file == null) return;
 
-              int payloadId = await Nearby().sendFilePayload(cId, file.path);
-              showSnackbar("Sending file to $cId");
-              Nearby().sendBytesPayload(
-                  cId,
-                  Uint8List.fromList(
-                      "$payloadId:${file.path.split('/').last}".codeUnits));
-            },
-          ),
-        ],
+                int payloadId = await Nearby().sendFilePayload(cId, file.path);
+                showSnackbar("Sending file to $cId");
+                Nearby().sendBytesPayload(
+                    cId,
+                    Uint8List.fromList(
+                        "$payloadId:${file.path.split('/').last}".codeUnits));
+              },
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -261,11 +288,9 @@ class _MyBodyState extends State<Body> {
                         showSnackbar(endid + ": FAILED to transfer file");
                       } else if (payloadTransferUpdate.status ==
                           PayloadStatus.SUCCESS) {
-                        print(
+                        showSnackbar(
                             "success, total bytes = ${payloadTransferUpdate.totalBytes}");
-                        showSnackbar(endid +
-                            ": SUCCESS in file transfer (file is un-named in downloads) ");
-
+                        
                         if (map.containsKey(payloadTransferUpdate.id)) {
                           //rename the file now
                           String name = map[payloadTransferUpdate.id];

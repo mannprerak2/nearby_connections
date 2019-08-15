@@ -62,18 +62,33 @@ public class NearbyConnectionsPlugin implements MethodCallHandler {
     public void onMethodCall(MethodCall call, final Result result) {
 
         switch (call.method) {
-            case "checkPermissions":
+            case "checkLocationPermission":
                 if (ContextCompat.checkSelfPermission(activity, Manifest.permission.ACCESS_FINE_LOCATION)
-                        != PackageManager.PERMISSION_GRANTED || ContextCompat.checkSelfPermission(activity, Manifest.permission.ACCESS_COARSE_LOCATION)
-                        != PackageManager.PERMISSION_GRANTED) {
-                    result.success(false);
-                } else {
+                        == PackageManager.PERMISSION_GRANTED && ContextCompat.checkSelfPermission(activity, Manifest.permission.ACCESS_COARSE_LOCATION)
+                        == PackageManager.PERMISSION_GRANTED) {
                     result.success(true);
+                } else {
+                    result.success(false);
                 }
                 break;
-            case "askPermissions":
+            case "askLocationPermission":
                 ActivityCompat.requestPermissions(activity,
                         new String[]{Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION},
+                        0);
+                result.success(null);
+                break;
+            case "checkExternalStoragePermission":
+                if (ContextCompat.checkSelfPermission(activity, Manifest.permission.READ_EXTERNAL_STORAGE)
+                        == PackageManager.PERMISSION_GRANTED && ContextCompat.checkSelfPermission(activity, Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                        == PackageManager.PERMISSION_GRANTED) {
+                    result.success(true);
+                } else {
+                    result.success(false);
+                }
+                break;
+            case "askExternalStoragePermission":
+                ActivityCompat.requestPermissions(activity,
+                        new String[]{Manifest.permission.READ_EXTERNAL_STORAGE,Manifest.permission.WRITE_EXTERNAL_STORAGE},
                         0);
                 result.success(null);
                 break;
@@ -358,7 +373,7 @@ public class NearbyConnectionsPlugin implements MethodCallHandler {
                 assert bytes != null;
                 args.put("bytes", bytes);
             }
-            else if (payload.getType() == Payload.Type.BYTES) {
+            else if (payload.getType() == Payload.Type.FILE) {
                 args.put("filePath", payload.asFile().asJavaFile().getAbsolutePath());
             }
 
