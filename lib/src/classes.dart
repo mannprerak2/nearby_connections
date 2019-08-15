@@ -3,17 +3,17 @@ import 'dart:typed_data';
 
 import 'package:nearby_connections/src/defs.dart';
 
-/// Bytes may be null if [Payload.type] is not [PayloadType.BYTES] 
-/// File may be null if [Payload.type] is not [PayloadType.FILE] 
-/// 
+/// Bytes may be null if [Payload.type] is not [PayloadType.BYTES]
+/// File may be null if [Payload.type] is not [PayloadType.FILE]
+///
 /// Filepath is the complete filepath(with name) of the file
-/// 
+///
 /// The file at this location is incomplete until payloadTransferUpdate
 /// gives SUCCESS for this payloadId
 class Payload {
   int id;
   PayloadType type;
-  
+
   Uint8List bytes;
   String filePath;
 

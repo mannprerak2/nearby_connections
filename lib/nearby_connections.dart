@@ -1,4 +1,4 @@
-/// https://pub.dev/packages/nearby_connections#-readme-tab- 
+/// https://pub.dev/packages/nearby_connections#-readme-tab-
 library nearby_connections;
 
 export 'src/classes.dart';

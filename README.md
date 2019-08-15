@@ -1,6 +1,7 @@
 # nearby_connections
 
 An **android** flutter plugin for the Nearby Connections API
+Currently supports Bytes and Files.
 
 [![pub package](https://img.shields.io/pub/v/nearby_connections.svg)](https://pub.dartlang.org/packages/nearby_connections)
 
@@ -27,8 +28,11 @@ Add these to AndroidManifest.xml
 <uses-permission android:name="android.permission.CHANGE_WIFI_STATE" />
 <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
 <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+
+<!-- Optional: only required for FILE payloads -->
+<uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
 ```
-Since ACCESS_FINE_LOCATION is considered to be dangerous system permissions, in addition to adding them to your manifest, you must request these permissions at runtime.
+Since ACCESS_FINE_LOCATION and READ_EXTERNAL_STORAGE is considered to be dangerous system permissions, in addition to adding them to your manifest, you must request these permissions at runtime.
 
 ##### As a convinience the library provides methods to check and request location permissions
 ```java
@@ -41,7 +45,7 @@ Nearby().askPermission()
 
 ## Work Flow
 
-The work flow is similar to the [android nearby connections library](https://developers.google.com/nearby/connections/overviewoverview)
+The work flow is similar to the [Android Nearby Connections library](https://developers.google.com/nearby/connections/overview)
 
 ### Advertise for connection
 ```dart
