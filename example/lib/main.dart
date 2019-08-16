@@ -19,7 +19,7 @@ class _MyAppState extends State<MyApp> {
     return MaterialApp(
       home: Scaffold(
         appBar: AppBar(
-          title: const Text('Plugin example app'),
+          title: const Text('Nearby Connections example app'),
         ),
         body: Body(),
       ),
@@ -35,9 +35,11 @@ class Body extends StatefulWidget {
 class _MyBodyState extends State<Body> {
   final String userName = Random().nextInt(10000).toString();
   final Strategy strategy = Strategy.P2P_STAR;
+
   String cId = "0"; //currently connected device ID
-  File tempFile; //stores the file being transferred
-  Map<int, String> map = Map();
+  File tempFile; //reference to the file currently being transferred
+  Map<int, String> map =
+      Map(); //store filename mapped to corresponding payloadId
 
   @override
   Widget build(BuildContext context) {
@@ -46,7 +48,9 @@ class _MyBodyState extends State<Body> {
         padding: const EdgeInsets.all(8.0),
         child: ListView(
           children: <Widget>[
-            Text("Permissions",),
+            Text(
+              "Permissions",
+            ),
             Wrap(
               children: <Widget>[
                 RaisedButton(
@@ -57,7 +61,8 @@ class _MyBodyState extends State<Body> {
                           content: Text("Location permissions granted :)")));
                     } else {
                       Scaffold.of(context).showSnackBar(SnackBar(
-                          content: Text("Location permissions not granted :(")));
+                          content:
+                              Text("Location permissions not granted :(")));
                     }
                   },
                 ),
@@ -100,9 +105,7 @@ class _MyBodyState extends State<Body> {
                       bool a = await Nearby().startAdvertising(
                         userName,
                         strategy,
-                        onConnectionInitiated: (id, info) {
-                          oci(id, info);
-                        },
+                        onConnectionInitiated: onConnectionInit,
                         onConnectionResult: (id, status) {
                           showSnackbar(status);
                         },
@@ -110,7 +113,7 @@ class _MyBodyState extends State<Body> {
                           showSnackbar("Disconnected: " + id);
                         },
                       );
-                      showSnackbar(a);
+                      showSnackbar("ADVERTISING: "+a.toString());
                     } catch (exception) {
                       showSnackbar(exception);
                     }
@@ -134,7 +137,7 @@ class _MyBodyState extends State<Body> {
                         userName,
                         strategy,
                         onEndpointFound: (id, name, serviceId) {
-                          print("in callback");
+                          // show sheet automatically to request connection
                           showModalBottomSheet(
                             context: context,
                             builder: (builder) {
@@ -152,7 +155,7 @@ class _MyBodyState extends State<Body> {
                                           userName,
                                           id,
                                           onConnectionInitiated: (id, info) {
-                                            oci(id, info);
+                                            onConnectionInit(id, info);
                                           },
                                           onConnectionResult: (id, status) {
                                             showSnackbar(status);
@@ -170,10 +173,10 @@ class _MyBodyState extends State<Body> {
                           );
                         },
                         onEndpointLost: (id) {
-                          showSnackbar(id);
+                          showSnackbar("Lost Endpoint:" + id);
                         },
                       );
-                      showSnackbar(a);
+                      showSnackbar("DISCOVERING: " + a.toString());
                     } catch (e) {
                       showSnackbar(e);
                     }
@@ -194,7 +197,9 @@ class _MyBodyState extends State<Body> {
               },
             ),
             Divider(),
-            Text("Sending Data",),
+            Text(
+              "Sending Data",
+            ),
             RaisedButton(
               child: Text("Send Random Bytes Payload"),
               onPressed: () async {
@@ -231,8 +236,9 @@ class _MyBodyState extends State<Body> {
     ));
   }
 
-  /// Called on a Connection request (on both devices)
-  void oci(String id, ConnectionInfo info) {
+  /// Called upon Connection request (on both devices)
+  /// Both need to accept connection to start sending/receiving
+  void onConnectionInit(String id, ConnectionInfo info) {
     showModalBottomSheet(
       context: context,
       builder: (builder) {
@@ -290,7 +296,7 @@ class _MyBodyState extends State<Body> {
                           PayloadStatus.SUCCESS) {
                         showSnackbar(
                             "success, total bytes = ${payloadTransferUpdate.totalBytes}");
-                        
+
                         if (map.containsKey(payloadTransferUpdate.id)) {
                           //rename the file now
                           String name = map[payloadTransferUpdate.id];

@@ -1,3 +1,8 @@
+## 1.0.1
+
+* Changed convinience methods for asking permissions(location+storage)
+* Updated example  
+
 ## 1.0.0
 
 * Added support for Files (sendFilePayload)

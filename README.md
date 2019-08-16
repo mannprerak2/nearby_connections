@@ -35,13 +35,17 @@ Add these to AndroidManifest.xml
 ```
 Since ACCESS_FINE_LOCATION and READ_EXTERNAL_STORAGE is considered to be dangerous system permissions, in addition to adding them to your manifest, you must request these permissions at runtime.
 
-##### As a convinience the library provides methods to check and request location permissions
+#### As a **convinience** this library provides methods to check and request location and external read/write permissions
 ```java
 // returns true/false asynchronously 
-bool a = await Nearby().checkPermissions()
+bool a = await Nearby().checkLocationPermissions()
+// asks for permission only if its not given
+Nearby().askLocationPermission()
 
-// asks for permissions only if its not given
-Nearby().askPermission()
+// OPTIONAL: if you need to transfer files and rename it on device
+Nearby().checkExternalStoragePermission()
+// asks for READ + WRTIE EXTERNAL STORAGE permission only if its not given
+Nearby().askExternalStoragePermission() 
 ```
 
 ## Work Flow
@@ -60,7 +64,7 @@ try {
         onConnectionResult: (String id,Status status) {
         // Called when connection is accepted/rejected
         },
-        onDisconnected: (id) {
+        onDisconnected: (String id) {
         // Callled whenever a discoverer disconnects from advertiser
         },
     );
@@ -74,7 +78,7 @@ try {
     bool a = await Nearby().startDiscovery(
         userName,
         strategy,
-        onEndpointFound: (String id,String name, String serviceId) {
+        onEndpointFound: (String id,String userName, String serviceId) {
             // called when an advertiser is found
         },
         onEndpointLost: (String id) {
@@ -120,6 +124,11 @@ Nearby().acceptConnection(
     onPayLoadRecieved: (endid,Uint8List bytes) {
         // called whenever a payload is recieved.
     },
+    onPayloadTransferUpdate: (endid, payloadTransferUpdate) {
+        // gives status of a payload
+        // e.g success/failure/in_progress
+        // bytes transferred and total bytes etc
+    }
 );
 ```
 ## Sending Data
@@ -138,6 +147,7 @@ So you would need to rename the file on receivers end.
 
 ```dart
 //creates file with generic name (without extension) in Downloads Directory
+//its your responsibility to rename the file properly
 Nearby().sendFilePayload(endpointId, filePath);
 
 //Send filename as well so that receiver can rename the file
@@ -150,7 +160,7 @@ Every payload has an **ID** which is same for sender and receiver.
 
 You can get the absolute FilePath from Payload in *onPayloadReceived* function
 
-Check **Example** in Repository for more details
+Checkout the [**Example**](https://github.com/mannprerak2/nearby_connections/tree/master/example) in Repository for more details
 
 
 
