@@ -159,18 +159,20 @@ class Nearby {
   Future<void> askLocationPermission() async => await _channel.invokeMethod(
         'askLocationPermission',
       );
-  
+
   /// Convinience method
   ///
   /// retruns true/false based on external storage permissions.
-  Future<bool> checkExternalStoragePermission() async => await _channel.invokeMethod(
+  Future<bool> checkExternalStoragePermission() async =>
+      await _channel.invokeMethod(
         'checkExternalStoragePermission',
       );
 
   /// Convinience method
   ///
   /// Asks external storage permission, required for file
-  Future<void> askExternalStoragePermission() async => await _channel.invokeMethod(
+  Future<void> askExternalStoragePermission() async =>
+      await _channel.invokeMethod(
         'askExternalStoragePermission',
       );
 
@@ -252,6 +254,7 @@ class Nearby {
   /// this will call the onDisconnected method on callbacks of
   /// connected endPoint
   Future<void> disconnectFromEndpoint(String endpointId) async {
+    assert(endpointId != null);
     await _channel.invokeMethod(
         'disconnectFromEndpoint', <String, dynamic>{'endpointId': endpointId});
   }
@@ -273,6 +276,9 @@ class Nearby {
     this._discoverConnectionInitiated = onConnectionInitiated;
     this._discoverConnectionResult = onConnectionResult;
     this._discoverDisconnected = onDisconnected;
+
+    assert(endpointId != null);
+    assert(userNickName != null);
 
     return await _channel.invokeMethod(
       'requestConnection',
@@ -298,6 +304,9 @@ class Nearby {
   }) async {
     this._onPayloadReceived = onPayLoadRecieved;
     this._onPayloadTransferUpdate = onPayloadTransferUpdate;
+
+    assert(endpointId != null);
+
     return await _channel.invokeMethod(
       'acceptConnection',
       <String, dynamic>{
@@ -316,6 +325,8 @@ class Nearby {
   /// [OnConnectionResult] is called on both
   /// even if one of them rejects the connection
   Future<bool> rejectConnection(String endpointId) async {
+    assert(endpointId != null);
+
     return await _channel.invokeMethod(
       'rejectConnection',
       <String, dynamic>{
@@ -333,6 +344,8 @@ class Nearby {
   /// Uint8List bytes = Uint8List.fromList(a.codeUnits);
   /// ```
   Future<void> sendBytesPayload(String endpointId, Uint8List bytes) async {
+    assert(endpointId != null);
+
     return await _channel.invokeMethod(
       'sendPayload',
       <String, dynamic>{
@@ -350,11 +363,24 @@ class Nearby {
   /// so that receiver can rename the file accordingly
   /// Send the payloadID and filename to receiver as bytes payload
   Future<int> sendFilePayload(String endpointId, String filePath) async {
+    assert(endpointId != null);
+
     return await _channel.invokeMethod(
       'sendFilePayload',
       <String, dynamic>{
         'endpointId': endpointId,
         'filePath': filePath,
+      },
+    );
+  }
+
+  Future<void> cancelPayload(int payloadId) async {
+    assert(payloadId != null);
+    
+    return await _channel.invokeMethod(
+      'cancelPayload',
+      <String, dynamic>{
+        'payloadId': payloadId.toString(),
       },
     );
   }

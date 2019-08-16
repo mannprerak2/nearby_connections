@@ -25,6 +25,8 @@ class Payload {
   });
 }
 
+/// Gives payload status (SUCCESS, FAILURE, IN_PROGRESS)
+/// bytes transferred and total bytes
 class PayloadTransferUpdate {
   int id, bytesTransferred, totalBytes;
   PayloadStatus status;

@@ -1,3 +1,7 @@
+## 1.0.2
+
+* Added payload cancellation and other assertions 
+
 ## 1.0.1
 
 * Changed convinience methods for asking permissions(location+storage)

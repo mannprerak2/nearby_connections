@@ -88,7 +88,7 @@ public class NearbyConnectionsPlugin implements MethodCallHandler {
                 break;
             case "askExternalStoragePermission":
                 ActivityCompat.requestPermissions(activity,
-                        new String[]{Manifest.permission.READ_EXTERNAL_STORAGE,Manifest.permission.WRITE_EXTERNAL_STORAGE},
+                        new String[]{Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.WRITE_EXTERNAL_STORAGE},
                         0);
                 result.success(null);
                 break;
@@ -255,9 +255,17 @@ public class NearbyConnectionsPlugin implements MethodCallHandler {
                     result.success(filePayload.getId()); //return payload id to dart
                 } catch (FileNotFoundException e) {
                     Log.e("nearby_connections", "File not found", e);
-                    result.error("Failure", "File Not found", null);
+                    result.error("Failure", e.getMessage(), null);
                     return;
                 }
+                break;
+            }
+            case "cancelPayload": {
+                String payloadId = (String) call.argument("payloadId");
+
+                assert payloadId != null;
+                Nearby.getConnectionsClient(activity).cancelPayload(Long.parseLong(payloadId));
+                result.success(null);
                 break;
             }
             default:
@@ -367,13 +375,12 @@ public class NearbyConnectionsPlugin implements MethodCallHandler {
             args.put("endpointId", endpointId);
             args.put("payloadId", payload.getId());
             args.put("type", payload.getType());
-                        
+
             if (payload.getType() == Payload.Type.BYTES) {
                 byte[] bytes = payload.asBytes();
                 assert bytes != null;
                 args.put("bytes", bytes);
-            }
-            else if (payload.getType() == Payload.Type.FILE) {
+            } else if (payload.getType() == Payload.Type.FILE) {
                 args.put("filePath", payload.asFile().asJavaFile().getAbsolutePath());
             }
 
