@@ -3,6 +3,8 @@
 An **android** flutter plugin for the [Nearby Connections API]((https://developers.google.com/nearby/connections/overview))
 Currently supports Bytes and Files.
 
+Transfer Data between multiple connected devices using fully offline peer to peer networking.
+
 [![pub package](https://img.shields.io/pub/v/nearby_connections.svg)](https://pub.dartlang.org/packages/nearby_connections)
 
 ## Table of Content
