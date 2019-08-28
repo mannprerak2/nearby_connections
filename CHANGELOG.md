@@ -1,3 +1,7 @@
+## 1.0.2+1
+
+* Updated dartdoc and Readme
+
 ## 1.0.2
 
 * Added payload cancellation and other assertions 
