@@ -156,9 +156,8 @@ class Nearby {
   /// Convinience method
   ///
   /// Asks location permission
-  Future<void> askLocationPermission() async => await _channel.invokeMethod(
-        'askLocationPermission',
-      );
+  void askLocationPermission() =>
+      _channel.invokeMethod('askLocationPermission');
 
   /// Convinience method
   ///
@@ -171,21 +170,18 @@ class Nearby {
   /// Convinience method
   ///
   /// Asks external storage permission, required for file
-  Future<void> askExternalStoragePermission() async =>
-      await _channel.invokeMethod(
-        'askExternalStoragePermission',
-      );
+  void askExternalStoragePermission() =>
+      _channel.invokeMethod('askExternalStoragePermission');
 
   /// Convinience method
   ///
   /// Use this instead of calling both [askLocationPermission()] and [askExternalStoragePermission()]
-  Future<void> askLocationAndExternalStoragePermission() async =>
-      await _channel.invokeMethod(
-        'askLocationAndExternalStoragePermission',
-      );
+  void askLocationAndExternalStoragePermission() =>
+      _channel.invokeMethod('askLocationAndExternalStoragePermission');
 
   /// Start Advertising, Discoverers would be able to discover this advertiser.
   ///
+  /// [serviceId] is a unique identifier for your app, its recommended to use your app package name only, it cannot be null
   /// [userNickName] and [strategy] should not be null
   Future<bool> startAdvertising(
     String userNickName,
@@ -193,8 +189,9 @@ class Nearby {
     @required OnConnctionInitiated onConnectionInitiated,
     @required OnConnectionResult onConnectionResult,
     @required OnDisconnected onDisconnected,
+    String serviceId = "com.pkmnapps.nearby_connections",
   }) async {
-    assert(userNickName != null && strategy != null);
+    assert(userNickName != null && strategy != null && serviceId != null);
 
     this._advertConnectionInitiated = onConnectionInitiated;
     this._advertConnectionResult = onConnectionResult;
@@ -202,7 +199,8 @@ class Nearby {
 
     return await _channel.invokeMethod('startAdvertising', <String, dynamic>{
       'userNickName': userNickName,
-      'strategy': strategy.index
+      'strategy': strategy.index,
+      'serviceId': serviceId,
     });
   }
 
@@ -218,20 +216,23 @@ class Nearby {
 
   /// Start Discovery, You will now be able to discover the advertisers now.
   ///
+  /// [serviceId] is a unique identifier for your app, its recommended to use your app package name only, it cannot be null
   /// [userNickName] and [strategy] should not be null
   Future<bool> startDiscovery(
     String userNickName,
     Strategy strategy, {
     @required OnEndpointFound onEndpointFound,
     @required OnEndpointLost onEndpointLost,
+    String serviceId = "com.pkmnapps.nearby_connections",
   }) async {
-    assert(userNickName != null && strategy != null);
+    assert(userNickName != null && strategy != null && serviceId != null);
     this._onEndpointFound = onEndpointFound;
     this._onEndpointLost = onEndpointLost;
 
     return await _channel.invokeMethod('startDiscovery', <String, dynamic>{
       'userNickName': userNickName,
-      'strategy': strategy.index
+      'strategy': strategy.index,
+      'serviceId': serviceId,
     });
   }
 

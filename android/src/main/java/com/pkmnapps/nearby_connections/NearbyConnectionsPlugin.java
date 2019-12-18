@@ -114,14 +114,18 @@ public class NearbyConnectionsPlugin implements MethodCallHandler {
             case "startAdvertising": {
                 String userNickName = (String) call.argument("userNickName");
                 int strategy = (int) call.argument("strategy");
+                String serviceId = (String) call.argument("serviceId");
 
                 assert userNickName != null;
+                if(serviceId==null || serviceId =="")
+                    serviceId=SERVICE_ID;
+
                 AdvertisingOptions advertisingOptions = new AdvertisingOptions.Builder()
                         .setStrategy(getStrategy(strategy)).build();
 
                 Nearby.getConnectionsClient(activity)
                         .startAdvertising(
-                                userNickName, SERVICE_ID, advertConnectionLifecycleCallback, advertisingOptions)
+                                userNickName, serviceId, advertConnectionLifecycleCallback, advertisingOptions)
                         .addOnSuccessListener(new OnSuccessListener<Void>() {
                             @Override
                             public void onSuccess(Void aVoid) {
@@ -140,12 +144,16 @@ public class NearbyConnectionsPlugin implements MethodCallHandler {
             case "startDiscovery": {
                 String userNickName = (String) call.argument("userNickName");
                 int strategy = (int) call.argument("strategy");
+                String serviceId = (String) call.argument("serviceId");
 
                 assert userNickName != null;
+                if(serviceId==null || serviceId =="")
+                    serviceId=SERVICE_ID;
+
                 DiscoveryOptions discoveryOptions =
                         new DiscoveryOptions.Builder().setStrategy(getStrategy(strategy)).build();
                 Nearby.getConnectionsClient(activity)
-                        .startDiscovery(SERVICE_ID, endpointDiscoveryCallback, discoveryOptions)
+                        .startDiscovery(serviceId, endpointDiscoveryCallback, discoveryOptions)
                         .addOnSuccessListener(new OnSuccessListener<Void>() {
                             @Override
                             public void onSuccess(Void aVoid) {
