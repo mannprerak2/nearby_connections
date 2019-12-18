@@ -1,7 +1,6 @@
 name: nearby_connections
 description: Plugin for the android NearbyConnections API. Bytes and Files Supported.
-version: 1.0.2+1
-author: Prerak Mann <mannprerak2@gmail.com>
+version: 1.0.3
 homepage: https://github.com/mannprerak2/nearby_connections
 
 environment:

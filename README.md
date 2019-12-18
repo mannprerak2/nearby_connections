@@ -45,9 +45,11 @@ bool a = await Nearby().checkLocationPermissions()
 Nearby().askLocationPermission()
 
 // OPTIONAL: if you need to transfer files and rename it on device
-Nearby().checkExternalStoragePermission()
+bool b = Nearby().checkExternalStoragePermission()
 // asks for READ + WRTIE EXTERNAL STORAGE permission only if its not given
 Nearby().askExternalStoragePermission() 
+
+Nearby().askLocationAndExternalStoragePermission() // for all permissions in one go..
 ```
 
 ## Work Flow
@@ -69,6 +71,7 @@ try {
         onDisconnected: (String id) {
         // Callled whenever a discoverer disconnects from advertiser
         },
+        serviceId: "com.yourdomain.appname", // uniquely identifies your app
     );
 } catch (exception) {
     // platform exceptions like unable to start bluetooth or insufficient permissions 
@@ -86,6 +89,7 @@ try {
         onEndpointLost: (String id) {
             //called when an advertiser is lost (only if we weren't connected to it )
         },
+        serviceId: "com.yourdomain.appname", // uniquely identifies your app
     );
 } catch (e) {
     // platform exceptions like unable to start bluetooth or insufficient permissions
@@ -123,10 +127,10 @@ try{
 ```dart
 Nearby().acceptConnection(
     id,
-    onPayLoadRecieved: (endid,Uint8List bytes) {
+    onPayLoadRecieved: (endpointId, payload) {
         // called whenever a payload is recieved.
     },
-    onPayloadTransferUpdate: (endid, payloadTransferUpdate) {
+    onPayloadTransferUpdate: (endpointId, payloadTransferUpdate) {
         // gives status of a payload
         // e.g success/failure/in_progress
         // bytes transferred and total bytes etc
@@ -154,7 +158,7 @@ Nearby().sendFilePayload(endpointId, filePath);
 
 //Send filename as well so that receiver can rename the file
 Nearby().sendBytesPayload(endpointId,fileNameEncodedWithPayloadId);
-//e.g send a string like "payloadId:FileExtensionOrName" as bytes
+//e.g send a string like "payloadId:FileExtensionOrFullName" as bytes
 
 //payloads are recieved by callback given to acceptConnection method.
 ```

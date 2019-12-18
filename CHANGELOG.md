@@ -1,3 +1,9 @@
+## 1.0.3
+
+* Added serviceId parameter in startAdvertising and startDiscovery
+* Added new method askLocationAndExternalStoragePermission()
+* Readme Fixes
+
 ## 1.0.2+1
 
 * Updated dartdoc and Readme
