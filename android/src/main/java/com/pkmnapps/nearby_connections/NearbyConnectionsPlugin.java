@@ -75,6 +75,7 @@ public class NearbyConnectionsPlugin implements MethodCallHandler {
                 ActivityCompat.requestPermissions(activity,
                         new String[]{Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION},
                         0);
+                Log.d("nearby_connections", "askLocationPermission");  
                 result.success(null);
                 break;
             case "checkExternalStoragePermission":
@@ -89,7 +90,15 @@ public class NearbyConnectionsPlugin implements MethodCallHandler {
             case "askExternalStoragePermission":
                 ActivityCompat.requestPermissions(activity,
                         new String[]{Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.WRITE_EXTERNAL_STORAGE},
-                        0);
+                        1);
+                Log.d("nearby_connections", "askExternalStoragePermission");  
+                result.success(null);
+                break;
+            case "askLocationAndExternalStoragePermission":
+                ActivityCompat.requestPermissions(activity,
+                        new String[]{Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION,Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.WRITE_EXTERNAL_STORAGE},
+                        1);
+                Log.d("nearby_connections", "askExternalStoragePermission");  
                 result.success(null);
                 break;
             case "stopAdvertising":

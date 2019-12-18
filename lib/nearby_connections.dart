@@ -3,4 +3,4 @@ library nearby_connections;
 
 export 'src/classes.dart';
 export 'src/defs.dart';
-export 'src/nearby_connections.dart';
+export 'src/nearby.dart';

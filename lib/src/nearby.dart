@@ -176,6 +176,14 @@ class Nearby {
         'askExternalStoragePermission',
       );
 
+  /// Convinience method
+  ///
+  /// Use this instead of calling both [askLocationPermission()] and [askExternalStoragePermission()]
+  Future<void> askLocationAndExternalStoragePermission() async =>
+      await _channel.invokeMethod(
+        'askLocationAndExternalStoragePermission',
+      );
+
   /// Start Advertising, Discoverers would be able to discover this advertiser.
   ///
   /// [userNickName] and [strategy] should not be null
@@ -342,13 +350,13 @@ class Nearby {
   /// ```dart
   /// String a = "hello";
   /// Uint8List bytes = Uint8List.fromList(a.codeUnits);
-  /// 
+  ///
   /// ```
   /// Convert bytes [Uint8List] to String as follows -
   /// ```dart
   /// String str = String.fromCharCodes(payload.bytes);
   /// ```
-  /// 
+  ///
   Future<void> sendBytesPayload(String endpointId, Uint8List bytes) async {
     assert(endpointId != null);
 
@@ -383,7 +391,7 @@ class Nearby {
   /// Use it to cancel/stop a payload transfer
   Future<void> cancelPayload(int payloadId) async {
     assert(payloadId != null);
-    
+
     return await _channel.invokeMethod(
       'cancelPayload',
       <String, dynamic>{
