@@ -20,6 +20,11 @@ Currently supports Bytes and Files.
 
 ## Setup
 
+### Note regarding Location(GPS)
+While using this,
+**Location/GPS service must be turned on** or devices may disconnect
+more often, some devices may disconnect immediately.
+
 ### Set Permissions
 Add these to AndroidManifest.xml
 ```xml
@@ -38,7 +43,7 @@ Add these to AndroidManifest.xml
 Since ACCESS_FINE_LOCATION and READ_EXTERNAL_STORAGE is considered to be dangerous system permissions, in addition to adding them to your manifest, you must request these permissions at runtime.
 
 #### As a **convinience** this library provides methods to check and request location and external read/write permissions
-```java
+```dart
 // returns true/false asynchronously 
 bool a = await Nearby().checkLocationPermissions()
 // asks for permission only if its not given
@@ -56,6 +61,18 @@ Nearby().askLocationAndExternalStoragePermission() // for all permissions in one
 
 The work flow is similar to the [Android Nearby Connections library](https://developers.google.com/nearby/connections/overview)
 
+## NOTE
+
+**Location/GPS service must be turned on** or devices may disconnect
+more often, some devices may disconnect immediately.
+
+For convinience this library provides methods to check and enable location
+```dart
+bool b = await Nearby().checkLocationEnabled();
+
+// opens settings where user can enable it
+Nearby().enableLocationServices();
+``` 
 ### Advertise for connection
 ```dart
 try {

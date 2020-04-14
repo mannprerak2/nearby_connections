@@ -1,3 +1,10 @@
+## 1.1.0
+* Updated Android Nearby version from 16.0.0 to 17.0.0
+* Updated Example
+* **Location/GPS service must be turned on** or devices may disconnect
+more often, some devices may disconnect immediately. 2 convinience methods are added
+`enableLocationServices` and `checkLocationEnabled`
+
 ## 1.0.3
 
 * Added serviceId parameter in startAdvertising and startDiscovery

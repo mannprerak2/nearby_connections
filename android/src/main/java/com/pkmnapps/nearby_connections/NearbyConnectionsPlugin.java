@@ -2,7 +2,10 @@ package com.pkmnapps.nearby_connections;
 
 import android.Manifest;
 import android.app.Activity;
+import android.content.Intent;
+import android.location.LocationManager;
 import android.content.pm.PackageManager;
+import android.provider.Settings;
 
 import androidx.annotation.NonNull;
 import androidx.core.app.ActivityCompat;
@@ -63,42 +66,61 @@ public class NearbyConnectionsPlugin implements MethodCallHandler {
 
         switch (call.method) {
             case "checkLocationPermission":
-                if (ContextCompat.checkSelfPermission(activity, Manifest.permission.ACCESS_FINE_LOCATION)
-                        == PackageManager.PERMISSION_GRANTED && ContextCompat.checkSelfPermission(activity, Manifest.permission.ACCESS_COARSE_LOCATION)
-                        == PackageManager.PERMISSION_GRANTED) {
+                if (ContextCompat.checkSelfPermission(activity,
+                        Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED
+                        && ContextCompat.checkSelfPermission(activity,
+                                Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
                     result.success(true);
                 } else {
                     result.success(false);
                 }
                 break;
             case "askLocationPermission":
-                ActivityCompat.requestPermissions(activity,
-                        new String[]{Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION},
-                        0);
-                Log.d("nearby_connections", "askLocationPermission");  
+                ActivityCompat.requestPermissions(activity, new String[] { Manifest.permission.ACCESS_FINE_LOCATION,
+                        Manifest.permission.ACCESS_COARSE_LOCATION }, 0);
+                Log.d("nearby_connections", "askLocationPermission");
                 result.success(null);
                 break;
+            case "checkLocationEnabled":
+                LocationManager lm = (LocationManager) activity.getSystemService(activity.LOCATION_SERVICE);
+                boolean gps_enabled = false;
+                boolean network_enabled = false;
+                try {
+                    gps_enabled = lm.isProviderEnabled(LocationManager.GPS_PROVIDER);
+                } catch (Exception ex) {
+                }
+                try {
+                    network_enabled = lm.isProviderEnabled(LocationManager.NETWORK_PROVIDER);
+                } catch (Exception ex) {
+                }
+                result.success(gps_enabled || network_enabled);
+                break;
+            case "enableLocationServices":
+                activity.startActivity(new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS));
+                break;
             case "checkExternalStoragePermission":
-                if (ContextCompat.checkSelfPermission(activity, Manifest.permission.READ_EXTERNAL_STORAGE)
-                        == PackageManager.PERMISSION_GRANTED && ContextCompat.checkSelfPermission(activity, Manifest.permission.WRITE_EXTERNAL_STORAGE)
-                        == PackageManager.PERMISSION_GRANTED) {
+                if (ContextCompat.checkSelfPermission(activity,
+                        Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED
+                        && ContextCompat.checkSelfPermission(activity,
+                                Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
                     result.success(true);
                 } else {
                     result.success(false);
                 }
                 break;
             case "askExternalStoragePermission":
-                ActivityCompat.requestPermissions(activity,
-                        new String[]{Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.WRITE_EXTERNAL_STORAGE},
-                        1);
-                Log.d("nearby_connections", "askExternalStoragePermission");  
+                ActivityCompat.requestPermissions(activity, new String[] { Manifest.permission.READ_EXTERNAL_STORAGE,
+                        Manifest.permission.WRITE_EXTERNAL_STORAGE }, 1);
+                Log.d("nearby_connections", "askExternalStoragePermission");
                 result.success(null);
                 break;
             case "askLocationAndExternalStoragePermission":
                 ActivityCompat.requestPermissions(activity,
-                        new String[]{Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION,Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.WRITE_EXTERNAL_STORAGE},
+                        new String[] { Manifest.permission.ACCESS_FINE_LOCATION,
+                                Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.READ_EXTERNAL_STORAGE,
+                                Manifest.permission.WRITE_EXTERNAL_STORAGE },
                         1);
-                Log.d("nearby_connections", "askExternalStoragePermission");  
+                Log.d("nearby_connections", "askExternalStoragePermission");
                 result.success(null);
                 break;
             case "stopAdvertising":
@@ -117,23 +139,21 @@ public class NearbyConnectionsPlugin implements MethodCallHandler {
                 String serviceId = (String) call.argument("serviceId");
 
                 assert userNickName != null;
-                if(serviceId==null || serviceId =="")
-                    serviceId=SERVICE_ID;
+                if (serviceId == null || serviceId == "")
+                    serviceId = SERVICE_ID;
 
                 AdvertisingOptions advertisingOptions = new AdvertisingOptions.Builder()
                         .setStrategy(getStrategy(strategy)).build();
 
-                Nearby.getConnectionsClient(activity)
-                        .startAdvertising(
-                                userNickName, serviceId, advertConnectionLifecycleCallback, advertisingOptions)
+                Nearby.getConnectionsClient(activity).startAdvertising(userNickName, serviceId,
+                        advertConnectionLifecycleCallback, advertisingOptions)
                         .addOnSuccessListener(new OnSuccessListener<Void>() {
                             @Override
                             public void onSuccess(Void aVoid) {
                                 Log.d("nearby_connections", "startAdvertising");
                                 result.success(true);
                             }
-                        })
-                        .addOnFailureListener(new OnFailureListener() {
+                        }).addOnFailureListener(new OnFailureListener() {
                             @Override
                             public void onFailure(@NonNull Exception e) {
                                 result.error("Failure", e.getMessage(), null);
@@ -147,11 +167,11 @@ public class NearbyConnectionsPlugin implements MethodCallHandler {
                 String serviceId = (String) call.argument("serviceId");
 
                 assert userNickName != null;
-                if(serviceId==null || serviceId =="")
-                    serviceId=SERVICE_ID;
+                if (serviceId == null || serviceId == "")
+                    serviceId = SERVICE_ID;
 
-                DiscoveryOptions discoveryOptions =
-                        new DiscoveryOptions.Builder().setStrategy(getStrategy(strategy)).build();
+                DiscoveryOptions discoveryOptions = new DiscoveryOptions.Builder().setStrategy(getStrategy(strategy))
+                        .build();
                 Nearby.getConnectionsClient(activity)
                         .startDiscovery(serviceId, endpointDiscoveryCallback, discoveryOptions)
                         .addOnSuccessListener(new OnSuccessListener<Void>() {
@@ -160,8 +180,7 @@ public class NearbyConnectionsPlugin implements MethodCallHandler {
                                 Log.d("nearby_connections", "startDiscovery");
                                 result.success(true);
                             }
-                        })
-                        .addOnFailureListener(new OnFailureListener() {
+                        }).addOnFailureListener(new OnFailureListener() {
                             @Override
                             public void onFailure(@NonNull Exception e) {
                                 result.error("Failure", e.getMessage(), null);
@@ -196,8 +215,7 @@ public class NearbyConnectionsPlugin implements MethodCallHandler {
                             public void onSuccess(Void aVoid) {
                                 result.success(true);
                             }
-                        })
-                        .addOnFailureListener(new OnFailureListener() {
+                        }).addOnFailureListener(new OnFailureListener() {
                             @Override
                             public void onFailure(@NonNull Exception e) {
                                 result.error("Failure", e.getMessage(), null);
@@ -209,15 +227,13 @@ public class NearbyConnectionsPlugin implements MethodCallHandler {
                 String endpointId = (String) call.argument("endpointId");
 
                 assert endpointId != null;
-                Nearby.getConnectionsClient(activity)
-                        .acceptConnection(endpointId, payloadCallback)
+                Nearby.getConnectionsClient(activity).acceptConnection(endpointId, payloadCallback)
                         .addOnSuccessListener(new OnSuccessListener<Void>() {
                             @Override
                             public void onSuccess(Void aVoid) {
                                 result.success(true);
                             }
-                        })
-                        .addOnFailureListener(new OnFailureListener() {
+                        }).addOnFailureListener(new OnFailureListener() {
                             @Override
                             public void onFailure(@NonNull Exception e) {
                                 result.error("Failure", e.getMessage(), null);
@@ -229,15 +245,13 @@ public class NearbyConnectionsPlugin implements MethodCallHandler {
                 String endpointId = (String) call.argument("endpointId");
 
                 assert endpointId != null;
-                Nearby.getConnectionsClient(activity)
-                        .rejectConnection(endpointId)
+                Nearby.getConnectionsClient(activity).rejectConnection(endpointId)
                         .addOnSuccessListener(new OnSuccessListener<Void>() {
                             @Override
                             public void onSuccess(Void aVoid) {
                                 result.success(true);
                             }
-                        })
-                        .addOnFailureListener(new OnFailureListener() {
+                        }).addOnFailureListener(new OnFailureListener() {
                             @Override
                             public void onFailure(@NonNull Exception e) {
                                 result.error("Failure", e.getMessage(), null);
@@ -269,7 +283,7 @@ public class NearbyConnectionsPlugin implements MethodCallHandler {
                     Payload filePayload = Payload.fromFile(file);
                     Nearby.getConnectionsClient(activity).sendPayload(endpointId, filePayload);
                     Log.d("nearby_connections", "sentFilePayload");
-                    result.success(filePayload.getId()); //return payload id to dart
+                    result.success(filePayload.getId()); // return payload id to dart
                 } catch (FileNotFoundException e) {
                     Log.e("nearby_connections", "File not found", e);
                     result.error("Failure", e.getMessage(), null);
@@ -405,8 +419,9 @@ public class NearbyConnectionsPlugin implements MethodCallHandler {
         }
 
         @Override
-        public void onPayloadTransferUpdate(@NonNull String endpointId, @NonNull PayloadTransferUpdate payloadTransferUpdate) {
-            //required for files and streams
+        public void onPayloadTransferUpdate(@NonNull String endpointId,
+                @NonNull PayloadTransferUpdate payloadTransferUpdate) {
+            // required for files and streams
 
             Log.d("nearby_connections", "onPayloadTransferUpdate");
             Map<String, Object> args = new HashMap<>();
@@ -422,7 +437,8 @@ public class NearbyConnectionsPlugin implements MethodCallHandler {
 
     private final EndpointDiscoveryCallback endpointDiscoveryCallback = new EndpointDiscoveryCallback() {
         @Override
-        public void onEndpointFound(@NonNull String endpointId, @NonNull DiscoveredEndpointInfo discoveredEndpointInfo) {
+        public void onEndpointFound(@NonNull String endpointId,
+                @NonNull DiscoveredEndpointInfo discoveredEndpointInfo) {
             Log.d("nearby_connections", "onEndpointFound");
             Map<String, Object> args = new HashMap<>();
             args.put("endpointId", endpointId);

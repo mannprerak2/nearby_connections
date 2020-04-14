@@ -68,8 +68,8 @@ class _MyBodyState extends State<Body> {
                 ),
                 RaisedButton(
                   child: Text("askLocationPermission"),
-                  onPressed: () async {
-                    await Nearby().askLocationPermission();
+                  onPressed: () {
+                    Nearby().askLocationPermission();
                   },
                 ),
                 RaisedButton(
@@ -88,8 +88,34 @@ class _MyBodyState extends State<Body> {
                 ),
                 RaisedButton(
                   child: Text("askExternalStoragePermission"),
+                  onPressed: () {
+                    Nearby().askExternalStoragePermission();
+                  },
+                ),
+              ],
+            ),
+            Divider(),
+            Text("Location Enabled"),
+            Wrap(
+              children: <Widget>[
+                RaisedButton(
+                  child: Text("checkLocationEnabled"),
                   onPressed: () async {
-                    await Nearby().askExternalStoragePermission();
+                    if (await Nearby().checkLocationEnabled()) {
+                      Scaffold.of(context).showSnackBar(SnackBar(
+                          content:
+                              Text("Location is ON :)")));
+                    } else {
+                      Scaffold.of(context).showSnackBar(SnackBar(
+                          content: Text(
+                              "Location is OFF :(")));
+                    }
+                  },
+                ),
+                RaisedButton(
+                  child: Text("enableLocationServices"),
+                  onPressed: () {
+                    Nearby().enableLocationServices();
                   },
                 ),
               ],
@@ -113,7 +139,7 @@ class _MyBodyState extends State<Body> {
                           showSnackbar("Disconnected: " + id);
                         },
                       );
-                      showSnackbar("ADVERTISING: "+a.toString());
+                      showSnackbar("ADVERTISING: " + a.toString());
                     } catch (exception) {
                       showSnackbar(exception);
                     }

@@ -163,9 +163,22 @@ class Nearby {
   ///
   /// retruns true/false based on external storage permissions.
   Future<bool> checkExternalStoragePermission() async =>
-      await _channel.invokeMethod(
-        'checkExternalStoragePermission',
-      );
+      await _channel.invokeMethod('checkExternalStoragePermission');
+
+  /// Convinience method
+  ///
+  /// Checks if Location/GPS is enabled
+  /// 
+  /// If Location isn't enabled, devices may disconnect often.
+  /// Some devices may immediately disconnect
+  Future<bool> checkLocationEnabled() async =>
+      await _channel.invokeMethod('checkLocationEnabled');
+
+  /// Convinience method
+  ///
+  /// directs user to Location Settings, so they can turn on their Location/GPS
+  void enableLocationServices() =>
+      _channel.invokeMethod('enableLocationServices');
 
   /// Convinience method
   ///
