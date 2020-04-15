@@ -1,3 +1,5 @@
+<img src="https://developers.google.com/nearby/images/nearby_logo.svg" align="right">
+
 # nearby_connections
 
 An **android** flutter plugin for the [Nearby Connections API](https://developers.google.com/nearby/connections/overview)
