@@ -102,13 +102,11 @@ class _MyBodyState extends State<Body> {
                   child: Text("checkLocationEnabled"),
                   onPressed: () async {
                     if (await Nearby().checkLocationEnabled()) {
-                      Scaffold.of(context).showSnackBar(SnackBar(
-                          content:
-                              Text("Location is ON :)")));
+                      Scaffold.of(context).showSnackBar(
+                          SnackBar(content: Text("Location is ON :)")));
                     } else {
-                      Scaffold.of(context).showSnackBar(SnackBar(
-                          content: Text(
-                              "Location is OFF :(")));
+                      Scaffold.of(context).showSnackBar(
+                          SnackBar(content: Text("Location is OFF :(")));
                     }
                   },
                 ),

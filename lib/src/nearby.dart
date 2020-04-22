@@ -168,7 +168,7 @@ class Nearby {
   /// Convinience method
   ///
   /// Checks if Location/GPS is enabled
-  /// 
+  ///
   /// If Location isn't enabled, devices may disconnect often.
   /// Some devices may immediately disconnect
   Future<bool> checkLocationEnabled() async =>
