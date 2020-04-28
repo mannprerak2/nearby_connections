@@ -1,6 +1,6 @@
 name: nearby_connections
 description: Plugin for the android NearbyConnections API. Bytes and Files Supported.
-version: 1.1.0
+version: 1.1.1+1
 homepage: https://github.com/mannprerak2/nearby_connections
 
 environment:
@@ -16,5 +16,7 @@ dev_dependencies:
 
 flutter:
   plugin:
-    androidPackage: com.pkmnapps.nearby_connections
-    pluginClass: NearbyConnectionsPlugin
+    platforms:
+      android:
+        package: com.pkmnapps.nearby_connections
+        pluginClass: NearbyConnectionsPlugin

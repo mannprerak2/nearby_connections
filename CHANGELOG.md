@@ -1,3 +1,6 @@
+## 1.1.1+1
+* Corrected supported platforms in pubpsec
+
 ## 1.1.0
 * Updated Android Nearby version from 16.0.0 to 17.0.0
 * Updated Example
