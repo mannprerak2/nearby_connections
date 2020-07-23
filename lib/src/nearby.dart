@@ -175,7 +175,15 @@ class Nearby {
   /// Convinience method
   ///
   /// directs user to Location Settings, so they can turn on their Location/GPS
-  void enableLocationServices() => _channel.invokeMethod('enableLocationServices');
+  Future<bool> enableLocationServices() async {
+    try {
+      await _channel.invokeMethod('enableLocationServices');
+      return true;
+    } catch (e) {
+      print(e);
+      return false;
+    }
+  }
 
   /// Convinience method
   ///
