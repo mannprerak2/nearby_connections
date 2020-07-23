@@ -32,10 +32,7 @@ class Nearby {
           String authenticationToken = args['authenticationToken'];
           bool isIncomingConnection = args['isIncomingConnection'];
 
-          _advertConnectionInitiated?.call(
-              endpointId,
-              ConnectionInfo(
-                  endpointName, authenticationToken, isIncomingConnection));
+          _advertConnectionInitiated?.call(endpointId, ConnectionInfo(endpointName, authenticationToken, isIncomingConnection));
 
           return null;
         case "ad.onConnectionResult":
@@ -58,10 +55,7 @@ class Nearby {
           String authenticationToken = args['authenticationToken'];
           bool isIncomingConnection = args['isIncomingConnection'];
 
-          _discoverConnectionInitiated?.call(
-              endpointId,
-              ConnectionInfo(
-                  endpointName, authenticationToken, isIncomingConnection));
+          _discoverConnectionInitiated?.call(endpointId, ConnectionInfo(endpointName, authenticationToken, isIncomingConnection));
 
           return null;
         case "dis.onConnectionResult":
@@ -142,8 +136,7 @@ class Nearby {
   OnPayloadReceived _onPayloadReceived;
   OnPayloadTransferUpdate _onPayloadTransferUpdate;
 
-  static const MethodChannel _channel =
-      const MethodChannel('nearby_connections');
+  static const MethodChannel _channel = const MethodChannel('nearby_connections');
 
   /// Convinience method
   ///
@@ -156,14 +149,20 @@ class Nearby {
   /// Convinience method
   ///
   /// Asks location permission
-  void askLocationPermission() =>
-      _channel.invokeMethod('askLocationPermission');
+  Future<bool> askLocationPermission() async {
+    try {
+      await _channel.invokeMethod('askLocationPermission');
+      return true;
+    } catch (e) {
+      print(e);
+      return false;
+    }
+  }
 
   /// Convinience method
   ///
   /// retruns true/false based on external storage permissions.
-  Future<bool> checkExternalStoragePermission() async =>
-      await _channel.invokeMethod('checkExternalStoragePermission');
+  Future<bool> checkExternalStoragePermission() async => await _channel.invokeMethod('checkExternalStoragePermission');
 
   /// Convinience method
   ///
@@ -171,26 +170,22 @@ class Nearby {
   ///
   /// If Location isn't enabled, devices may disconnect often.
   /// Some devices may immediately disconnect
-  Future<bool> checkLocationEnabled() async =>
-      await _channel.invokeMethod('checkLocationEnabled');
+  Future<bool> checkLocationEnabled() async => await _channel.invokeMethod('checkLocationEnabled');
 
   /// Convinience method
   ///
   /// directs user to Location Settings, so they can turn on their Location/GPS
-  void enableLocationServices() =>
-      _channel.invokeMethod('enableLocationServices');
+  void enableLocationServices() => _channel.invokeMethod('enableLocationServices');
 
   /// Convinience method
   ///
   /// Asks external storage permission, required for file
-  void askExternalStoragePermission() =>
-      _channel.invokeMethod('askExternalStoragePermission');
+  void askExternalStoragePermission() => _channel.invokeMethod('askExternalStoragePermission');
 
   /// Convinience method
   ///
   /// Use this instead of calling both [askLocationPermission()] and [askExternalStoragePermission()]
-  void askLocationAndExternalStoragePermission() =>
-      _channel.invokeMethod('askLocationAndExternalStoragePermission');
+  void askLocationAndExternalStoragePermission() => _channel.invokeMethod('askLocationAndExternalStoragePermission');
 
   /// Start Advertising, Discoverers would be able to discover this advertiser.
   ///
@@ -277,8 +272,7 @@ class Nearby {
   /// connected endPoint
   Future<void> disconnectFromEndpoint(String endpointId) async {
     assert(endpointId != null);
-    await _channel.invokeMethod(
-        'disconnectFromEndpoint', <String, dynamic>{'endpointId': endpointId});
+    await _channel.invokeMethod('disconnectFromEndpoint', <String, dynamic>{'endpointId': endpointId});
   }
 
   /// Request Connection
