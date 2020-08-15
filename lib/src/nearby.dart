@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'dart:typed_data';
-
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:nearby_connections/src/defs.dart';
@@ -15,6 +14,7 @@ import 'package:nearby_connections/src/classes.dart';
 class Nearby {
   //Singleton pattern for maintaining only 1 instance of this class
   static Nearby _instance;
+
   factory Nearby() {
     if (_instance == null) {
       _instance = Nearby._();
@@ -177,8 +177,8 @@ class Nearby {
   /// Convinience method
   ///
   /// directs user to Location Settings, so they can turn on their Location/GPS
-  void enableLocationServices() =>
-      _channel.invokeMethod('enableLocationServices');
+  Future<bool> enableLocationServices() async =>
+      await _channel.invokeMethod('enableLocationServices');
 
   /// Convinience method
   ///

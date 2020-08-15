@@ -112,8 +112,14 @@ class _MyBodyState extends State<Body> {
                 ),
                 RaisedButton(
                   child: Text("enableLocationServices"),
-                  onPressed: () {
-                    Nearby().enableLocationServices();
+                  onPressed: () async {
+                    if (await Nearby().enableLocationServices()) {
+                      Scaffold.of(context).showSnackBar(
+                          SnackBar(content: Text("Location Service Enabled :)")));
+                    } else {
+                      Scaffold.of(context).showSnackBar(
+                          SnackBar(content: Text("Enabling Location Service Failed :(")));
+                    }
                   },
                 ),
               ],
