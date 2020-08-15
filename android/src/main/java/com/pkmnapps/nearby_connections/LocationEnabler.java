@@ -1,21 +1,21 @@
 package com.pkmnapps.nearby_connections;
 
 import android.app.Activity;
-import android.content.Context;
 import android.content.Intent;
 import android.content.IntentSender;
-import android.location.LocationManager;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import com.google.android.gms.common.api.ApiException;
 import com.google.android.gms.common.api.ResolvableApiException;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.location.LocationSettingsRequest;
+import com.google.android.gms.location.LocationSettingsResponse;
 import com.google.android.gms.location.LocationSettingsStatusCodes;
-import com.google.android.gms.location.SettingsClient;
-import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
 
 import io.flutter.plugin.common.MethodChannel.Result;
 import io.flutter.plugin.common.PluginRegistry;
@@ -25,14 +25,10 @@ class LocationEnabler implements PluginRegistry.ActivityResultListener {
     @Nullable
     private Activity activity;
 
-    private static final int GPS_ENABLE_REQUEST = 777;
+    private static final int LOCATION_ENABLE_REQUEST = 777;
 
-    private SettingsClient mSettingsClient;
     private LocationSettingsRequest mLocationSettingsRequest;
-
     private Result pendingResult;
-
-    private LocationManager mLocationManager;
 
     private LocationEnabler(@Nullable Activity activity) {
         this.activity = activity;
@@ -43,13 +39,11 @@ class LocationEnabler implements PluginRegistry.ActivityResultListener {
     }
 
     LocationEnabler() {
-        this.activity = null;
+
     }
 
     void setActivity(@Nullable Activity activity) {
         this.activity = activity;
-        mSettingsClient = LocationServices.getSettingsClient(activity);
-        mLocationManager = (LocationManager) activity.getSystemService(Context.LOCATION_SERVICE);
         initiateLocationServiceRequest();
     }
 
@@ -58,7 +52,7 @@ class LocationEnabler implements PluginRegistry.ActivityResultListener {
         if (pendingResult == null) {
             return false;
         }
-        if (requestCode == GPS_ENABLE_REQUEST) {
+        if (requestCode == LOCATION_ENABLE_REQUEST) {
             if (resultCode == Activity.RESULT_OK) {
                 pendingResult.success(true);
             } else {
@@ -72,49 +66,45 @@ class LocationEnabler implements PluginRegistry.ActivityResultListener {
 
     private void initiateLocationServiceRequest() {
         LocationRequest mLocationRequest = LocationRequest.create();
-        LocationSettingsRequest.Builder builder = new LocationSettingsRequest.Builder();
-        builder.addLocationRequest(mLocationRequest);
+        LocationSettingsRequest.Builder builder = new LocationSettingsRequest
+                .Builder()
+                .addLocationRequest(mLocationRequest)
+                .setAlwaysShow(true);
         mLocationSettingsRequest = builder.build();
     }
 
-    private boolean checkLocationService() {
-        boolean gps_enabled = mLocationManager.isProviderEnabled(LocationManager.GPS_PROVIDER);
-        boolean network_enabled = mLocationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER);
-        return gps_enabled || network_enabled;
-    }
-
     void requestLocationEnable(final Result result) {
-        try {
-            if (this.checkLocationService()) {
-                result.success(true);
-                return;
-            }
-        } catch (Exception e) {
-            result.error("LOCATION_SERVICE_ERROR", "Unable to determine location service status", null);
-            return;
-        }
-
         this.pendingResult = result;
-        mSettingsClient.checkLocationSettings(mLocationSettingsRequest).addOnFailureListener(activity,
-                new OnFailureListener() {
-                    @Override
-                    public void onFailure(@NonNull Exception e) {
-                        if (e instanceof ResolvableApiException) {
-                            ResolvableApiException resolvableApiException = (ResolvableApiException) e;
-                            int statusCode = resolvableApiException.getStatusCode();
-                            if (statusCode == LocationSettingsStatusCodes.RESOLUTION_REQUIRED) {
-                                try {
-                                    resolvableApiException.startResolutionForResult(activity, GPS_ENABLE_REQUEST);
-                                } catch (IntentSender.SendIntentException sie) {
-                                    result.error("LOCATION_SERVICE_ERROR", "Unable to resolve location request",
-                                            null);
-                                }
+        Task<LocationSettingsResponse> task = LocationServices.getSettingsClient(activity)
+                .checkLocationSettings(mLocationSettingsRequest);
+
+        task.addOnCompleteListener(new OnCompleteListener<LocationSettingsResponse>() {
+            @Override
+            public void onComplete(@NonNull Task<LocationSettingsResponse> task) {
+                try {
+                    task.getResult(ApiException.class);
+                    result.success(true);
+                } catch (ApiException ex) {
+                    switch (ex.getStatusCode()) {
+                        case LocationSettingsStatusCodes.SUCCESS:
+                            result.success(true);
+                            break;
+                        case LocationSettingsStatusCodes.RESOLUTION_REQUIRED:
+                            try {
+                                ResolvableApiException resolvableApiException =
+                                        (ResolvableApiException) ex;
+                                resolvableApiException
+                                        .startResolutionForResult(activity, LOCATION_ENABLE_REQUEST);
+                            } catch (IntentSender.SendIntentException e) {
+                                result.error("LOCATION_SERVICE_ERROR", e.getMessage(), null);
                             }
-                        } else {
-                            result.error("LOCATION_SERVICE_ERROR", "An unexpected error occurred", null);
-                        }
+                            break;
+                        default:
+                            result.success(false);
                     }
-                });
+                }
+            }
+        });
     }
 
 }

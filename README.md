@@ -72,8 +72,9 @@ For convinience this library provides methods to check and enable location
 ```dart
 bool b = await Nearby().checkLocationEnabled();
 
-// opens settings where user can enable it
-Nearby().enableLocationServices();
+// opens dialogue to enable location service
+// returns true/false if the location service is turned on/off resp.
+bool b = await Nearby().enableLocationServices();
 ``` 
 ### Advertise for connection
 ```dart
