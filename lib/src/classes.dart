@@ -41,7 +41,7 @@ class PayloadTransferUpdate {
 
 /// ConnectionInfo class
 ///
-/// Its a parameter in [OnConnctionInitiated]
+/// Its a parameter in [OnConnectionInitiated]
 ///
 /// [endPointName] is userNickName of requester
 ///

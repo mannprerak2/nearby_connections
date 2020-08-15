@@ -130,7 +130,7 @@ class Nearby {
   }
 
   //for advertisers
-  OnConnctionInitiated _advertConnectionInitiated, _discoverConnectionInitiated;
+  OnConnectionInitiated _advertConnectionInitiated, _discoverConnectionInitiated;
   OnConnectionResult _advertConnectionResult, _discoverConnectionResult;
   OnDisconnected _advertDisconnected, _discoverDisconnected;
 
@@ -145,27 +145,27 @@ class Nearby {
   static const MethodChannel _channel =
       const MethodChannel('nearby_connections');
 
-  /// Convinience method
+  /// convenience method
   ///
-  /// retruns true/false based on location permissions.
+  /// returns true/false based on location permissions.
   /// Discovery cannot be started with insufficient permission
   Future<bool> checkLocationPermission() async => await _channel.invokeMethod(
         'checkLocationPermission',
       );
 
-  /// Convinience method
+  /// convenience method
   ///
   /// Asks location permission
   void askLocationPermission() =>
       _channel.invokeMethod('askLocationPermission');
 
-  /// Convinience method
+  /// convenience method
   ///
-  /// retruns true/false based on external storage permissions.
+  /// returns true/false based on external storage permissions.
   Future<bool> checkExternalStoragePermission() async =>
       await _channel.invokeMethod('checkExternalStoragePermission');
 
-  /// Convinience method
+  /// convenience method
   ///
   /// Checks if Location/GPS is enabled
   ///
@@ -174,19 +174,19 @@ class Nearby {
   Future<bool> checkLocationEnabled() async =>
       await _channel.invokeMethod('checkLocationEnabled');
 
-  /// Convinience method
+  /// convenience method
   ///
   /// directs user to Location Settings, so they can turn on their Location/GPS
   Future<bool> enableLocationServices() async =>
       await _channel.invokeMethod('enableLocationServices');
 
-  /// Convinience method
+  /// convenience method
   ///
   /// Asks external storage permission, required for file
   void askExternalStoragePermission() =>
       _channel.invokeMethod('askExternalStoragePermission');
 
-  /// Convinience method
+  /// convenience method
   ///
   /// Use this instead of calling both [askLocationPermission()] and [askExternalStoragePermission()]
   void askLocationAndExternalStoragePermission() =>
@@ -199,7 +199,7 @@ class Nearby {
   Future<bool> startAdvertising(
     String userNickName,
     Strategy strategy, {
-    @required OnConnctionInitiated onConnectionInitiated,
+    @required OnConnectionInitiated onConnectionInitiated,
     @required OnConnectionResult onConnectionResult,
     @required OnDisconnected onDisconnected,
     String serviceId = "com.pkmnapps.nearby_connections",
@@ -286,12 +286,12 @@ class Nearby {
   /// Call this method when Discoverer calls the
   /// [OnEndpointFound] method
   ///
-  /// This will call the [OnConnctionInitiated] method on
+  /// This will call the [OnConnectionInitiated] method on
   /// both the endPoint and this
   Future<bool> requestConnection(
     String userNickName,
     String endpointId, {
-    @required OnConnctionInitiated onConnectionInitiated,
+    @required OnConnectionInitiated onConnectionInitiated,
     @required OnConnectionResult onConnectionResult,
     @required OnDisconnected onDisconnected,
   }) async {
@@ -314,7 +314,7 @@ class Nearby {
   /// Needs be called by both discoverer and advertiser
   /// to connect
   ///
-  /// Call this in [OnConnctionInitiated]
+  /// Call this in [OnConnectionInitiated]
   /// to accept an incoming connection
   ///
   /// [OnConnectionResult] is called on both
@@ -341,7 +341,7 @@ class Nearby {
   ///
   /// To be called by both discoverer and advertiser
   ///
-  /// Call this in [OnConnctionInitiated]
+  /// Call this in [OnConnectionInitiated]
   /// to reject an incoming connection
   ///
   /// [OnConnectionResult] is called on both

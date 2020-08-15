@@ -17,7 +17,7 @@ enum PayloadType { NONE, BYTES, FILE, STREAM }
 //
 // Advertising lifecycle callbacks
 //
-typedef void OnConnctionInitiated(
+typedef void OnConnectionInitiated(
     String endpointId, ConnectionInfo connectionInfo);
 typedef void OnConnectionResult(String endpointId, Status status);
 typedef void OnDisconnected(String endpointId);
