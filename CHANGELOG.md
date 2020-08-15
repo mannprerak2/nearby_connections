@@ -1,13 +1,6 @@
-## 2.0.1-dev
-* askLocationPermission return type changed to Future<bool>
-* Updated Example accordingly
-* Readme Updated
-
-## 2.0.0-dev
-* enableLocationService return type changed to Future<bool>
-* Updated Example accordingly
-* Readme Fixes
-* Typos Fixed
+## 2.0.0
+* `askLocationPermission` & `enableLocationService` return type changed to Future<bool>
+* Fix typose, uUpdated example and readme
 
 ## 1.1.1+1
 * Corrected supported platforms in pubpsec
