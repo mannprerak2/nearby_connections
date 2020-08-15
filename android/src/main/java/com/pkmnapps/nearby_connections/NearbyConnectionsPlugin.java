@@ -48,8 +48,8 @@ public class NearbyConnectionsPlugin implements MethodCallHandler, FlutterPlugin
     private Activity activity;
     private static final String SERVICE_ID = "com.pkmnapps.nearby_connections";
     private static MethodChannel channel;
-    private static LocationEnabler locationEnabler;
-    private static ActivityPluginBinding activityBinding;
+    private static LocationHelper locationHelper;
+    private static ActivityPluginBinding activityPluginBinding;
     private static PluginRegistry.Registrar pluginRegistrar;
 
     private NearbyConnectionsPlugin(Activity activity) {
@@ -63,8 +63,8 @@ public class NearbyConnectionsPlugin implements MethodCallHandler, FlutterPlugin
 
     public static void registerWith(Registrar registrar) {
         pluginRegistrar = registrar;
-        locationEnabler = new LocationEnabler(registrar);
-        locationEnabler.setActivity(registrar.activity());
+        locationHelper = new LocationHelper(registrar);
+        locationHelper.setActivity(registrar.activity());
         initiate();
         channel = new MethodChannel(registrar.messenger(), "nearby_connections");
         channel.setMethodCallHandler(new NearbyConnectionsPlugin(registrar.activity()));
@@ -85,10 +85,7 @@ public class NearbyConnectionsPlugin implements MethodCallHandler, FlutterPlugin
                 }
                 break;
             case "askLocationPermission":
-                ActivityCompat.requestPermissions(activity, new String[]{Manifest.permission.ACCESS_FINE_LOCATION,
-                        Manifest.permission.ACCESS_COARSE_LOCATION}, 0);
-                Log.d("nearby_connections", "askLocationPermission");
-                result.success(null);
+                locationHelper.requestLocationPermission(result);
                 break;
             case "checkLocationEnabled":
                 LocationManager lm = (LocationManager) activity.getSystemService(activity.LOCATION_SERVICE);
@@ -105,7 +102,7 @@ public class NearbyConnectionsPlugin implements MethodCallHandler, FlutterPlugin
                 result.success(gps_enabled || network_enabled);
                 break;
             case "enableLocationServices":
-                locationEnabler.requestLocationEnable(result);
+                locationHelper.requestLocationEnable(result);
                 break;
             case "checkExternalStoragePermission":
                 if (ContextCompat.checkSelfPermission(activity,
@@ -480,18 +477,18 @@ public class NearbyConnectionsPlugin implements MethodCallHandler, FlutterPlugin
 
     @Override
     public void onAttachedToEngine(@NonNull FlutterPluginBinding binding) {
-        locationEnabler = new LocationEnabler();
+        locationHelper = new LocationHelper();
     }
 
     @Override
     public void onDetachedFromEngine(@NonNull FlutterPluginBinding binding) {
-        locationEnabler = null;
+        locationHelper = null;
     }
 
     private static void attachToActivity(ActivityPluginBinding binding) {
-        activityBinding = binding;
+        activityPluginBinding = binding;
         try {
-            locationEnabler.setActivity(binding.getActivity());
+            locationHelper.setActivity(binding.getActivity());
             initiate();
         } catch (Exception e) {
             e.printStackTrace();
@@ -499,8 +496,9 @@ public class NearbyConnectionsPlugin implements MethodCallHandler, FlutterPlugin
     }
 
     private void detachActivity() {
-        activityBinding.removeActivityResultListener(locationEnabler);
-        activityBinding = null;
+        activityPluginBinding.removeRequestPermissionsResultListener(locationHelper);
+        activityPluginBinding.removeActivityResultListener(locationHelper);
+        activityPluginBinding = null;
     }
 
     @Override
@@ -525,9 +523,11 @@ public class NearbyConnectionsPlugin implements MethodCallHandler, FlutterPlugin
 
     private static void initiate() {
         if (pluginRegistrar != null) {
-            pluginRegistrar.addActivityResultListener(locationEnabler);
+            pluginRegistrar.addActivityResultListener(locationHelper);
+            pluginRegistrar.addRequestPermissionsResultListener(locationHelper);
         } else {
-            activityBinding.addActivityResultListener(locationEnabler);
+            activityPluginBinding.addActivityResultListener(locationHelper);
+            activityPluginBinding.addRequestPermissionsResultListener(locationHelper);
         }
     }
 

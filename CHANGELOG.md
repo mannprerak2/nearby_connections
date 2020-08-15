@@ -1,3 +1,8 @@
+## 2.0.1-dev
+* askLocationPermission return type changed to Future<bool>
+* Updated Example accordingly
+* Readme Updated
+
 ## 2.0.0-dev
 * enableLocationService return type changed to Future<bool>
 * Updated Example accordingly
