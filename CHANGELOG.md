@@ -1,3 +1,9 @@
+## 2.0.0-dev
+* enableLocationService return type changed to Future<bool>
+* Updated Example accordingly
+* Readme Fixes
+* Typos Fixed
+
 ## 1.1.1+1
 * Corrected supported platforms in pubpsec
 
@@ -5,7 +11,7 @@
 * Updated Android Nearby version from 16.0.0 to 17.0.0
 * Updated Example
 * **Location/GPS service must be turned on** or devices may disconnect
-more often, some devices may disconnect immediately. 2 convinience methods are added
+more often, some devices may disconnect immediately. 2 convenience methods are added
 `enableLocationServices` and `checkLocationEnabled`
 
 ## 1.0.3
@@ -24,7 +30,7 @@ more often, some devices may disconnect immediately. 2 convinience methods are a
 
 ## 1.0.1
 
-* Changed convinience methods for asking permissions(location+storage)
+* Changed convenience methods for asking permissions(location+storage)
 * Updated example  
 
 ## 1.0.0
@@ -43,7 +49,7 @@ more often, some devices may disconnect immediately. 2 convinience methods are a
 
 ## 0.1.0
 
-* Added pub maintanence suggestions 
+* Added pub maintenance suggestions 
 
 ## 0.0.2
 

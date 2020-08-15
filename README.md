@@ -44,7 +44,7 @@ Add these to AndroidManifest.xml
 ```
 Since ACCESS_FINE_LOCATION and READ_EXTERNAL_STORAGE is considered to be dangerous system permissions, in addition to adding them to your manifest, you must request these permissions at runtime.
 
-#### As a **convinience** this library provides methods to check and request location and external read/write permissions
+#### As a **convenience** this library provides methods to check and request location and external read/write permissions
 ```dart
 // returns true/false asynchronously 
 bool a = await Nearby().checkLocationPermissions()
@@ -68,12 +68,13 @@ The work flow is similar to the [Android Nearby Connections library](https://dev
 **Location/GPS service must be turned on** or devices may disconnect
 more often, some devices may disconnect immediately.
 
-For convinience this library provides methods to check and enable location
+For convenience this library provides methods to check and enable location
 ```dart
 bool b = await Nearby().checkLocationEnabled();
 
-// opens settings where user can enable it
-Nearby().enableLocationServices();
+// opens dialogue to enable location service
+// returns true/false if the location service is turned on/off resp.
+bool b = await Nearby().enableLocationServices();
 ``` 
 ### Advertise for connection
 ```dart

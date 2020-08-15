@@ -35,3 +35,7 @@ android {
         api 'com.google.android.gms:play-services-nearby:17.0.0'
     }
 }
+
+dependencies {
+    implementation 'com.google.android.gms:play-services-location:17.0.0'
+}

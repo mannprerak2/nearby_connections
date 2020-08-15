@@ -2,10 +2,9 @@ package com.pkmnapps.nearby_connections;
 
 import android.Manifest;
 import android.app.Activity;
-import android.content.Intent;
-import android.location.LocationManager;
 import android.content.pm.PackageManager;
-import android.provider.Settings;
+import android.location.LocationManager;
+import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.core.app.ActivityCompat;
@@ -32,31 +31,41 @@ import java.io.FileNotFoundException;
 import java.util.HashMap;
 import java.util.Map;
 
+import io.flutter.embedding.engine.plugins.FlutterPlugin;
+import io.flutter.embedding.engine.plugins.activity.ActivityAware;
+import io.flutter.embedding.engine.plugins.activity.ActivityPluginBinding;
 import io.flutter.plugin.common.MethodCall;
 import io.flutter.plugin.common.MethodChannel;
 import io.flutter.plugin.common.MethodChannel.MethodCallHandler;
 import io.flutter.plugin.common.MethodChannel.Result;
+import io.flutter.plugin.common.PluginRegistry;
 import io.flutter.plugin.common.PluginRegistry.Registrar;
-
-import android.util.Log;
 
 /**
  * NearbyConnectionsPlugin
  */
-public class NearbyConnectionsPlugin implements MethodCallHandler {
+public class NearbyConnectionsPlugin implements MethodCallHandler, FlutterPlugin, ActivityAware {
     private Activity activity;
     private static final String SERVICE_ID = "com.pkmnapps.nearby_connections";
     private static MethodChannel channel;
+    private static LocationEnabler locationEnabler;
+    private static ActivityPluginBinding activityBinding;
+    private static PluginRegistry.Registrar pluginRegistrar;
 
     private NearbyConnectionsPlugin(Activity activity) {
         this.activity = activity;
     }
+
 
     /**
      * Plugin registration.
      */
 
     public static void registerWith(Registrar registrar) {
+        pluginRegistrar = registrar;
+        locationEnabler = new LocationEnabler(registrar);
+        locationEnabler.setActivity(registrar.activity());
+        initiate();
         channel = new MethodChannel(registrar.messenger(), "nearby_connections");
         channel.setMethodCallHandler(new NearbyConnectionsPlugin(registrar.activity()));
     }
@@ -69,15 +78,15 @@ public class NearbyConnectionsPlugin implements MethodCallHandler {
                 if (ContextCompat.checkSelfPermission(activity,
                         Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED
                         && ContextCompat.checkSelfPermission(activity,
-                                Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+                        Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
                     result.success(true);
                 } else {
                     result.success(false);
                 }
                 break;
             case "askLocationPermission":
-                ActivityCompat.requestPermissions(activity, new String[] { Manifest.permission.ACCESS_FINE_LOCATION,
-                        Manifest.permission.ACCESS_COARSE_LOCATION }, 0);
+                ActivityCompat.requestPermissions(activity, new String[]{Manifest.permission.ACCESS_FINE_LOCATION,
+                        Manifest.permission.ACCESS_COARSE_LOCATION}, 0);
                 Log.d("nearby_connections", "askLocationPermission");
                 result.success(null);
                 break;
@@ -96,29 +105,29 @@ public class NearbyConnectionsPlugin implements MethodCallHandler {
                 result.success(gps_enabled || network_enabled);
                 break;
             case "enableLocationServices":
-                activity.startActivity(new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS));
+                locationEnabler.requestLocationEnable(result);
                 break;
             case "checkExternalStoragePermission":
                 if (ContextCompat.checkSelfPermission(activity,
                         Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED
                         && ContextCompat.checkSelfPermission(activity,
-                                Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
+                        Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
                     result.success(true);
                 } else {
                     result.success(false);
                 }
                 break;
             case "askExternalStoragePermission":
-                ActivityCompat.requestPermissions(activity, new String[] { Manifest.permission.READ_EXTERNAL_STORAGE,
-                        Manifest.permission.WRITE_EXTERNAL_STORAGE }, 1);
+                ActivityCompat.requestPermissions(activity, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE,
+                        Manifest.permission.WRITE_EXTERNAL_STORAGE}, 1);
                 Log.d("nearby_connections", "askExternalStoragePermission");
                 result.success(null);
                 break;
             case "askLocationAndExternalStoragePermission":
                 ActivityCompat.requestPermissions(activity,
-                        new String[] { Manifest.permission.ACCESS_FINE_LOCATION,
+                        new String[]{Manifest.permission.ACCESS_FINE_LOCATION,
                                 Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.READ_EXTERNAL_STORAGE,
-                                Manifest.permission.WRITE_EXTERNAL_STORAGE },
+                                Manifest.permission.WRITE_EXTERNAL_STORAGE},
                         1);
                 Log.d("nearby_connections", "askExternalStoragePermission");
                 result.success(null);
@@ -154,11 +163,11 @@ public class NearbyConnectionsPlugin implements MethodCallHandler {
                                 result.success(true);
                             }
                         }).addOnFailureListener(new OnFailureListener() {
-                            @Override
-                            public void onFailure(@NonNull Exception e) {
-                                result.error("Failure", e.getMessage(), null);
-                            }
-                        });
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        result.error("Failure", e.getMessage(), null);
+                    }
+                });
                 break;
             }
             case "startDiscovery": {
@@ -181,11 +190,11 @@ public class NearbyConnectionsPlugin implements MethodCallHandler {
                                 result.success(true);
                             }
                         }).addOnFailureListener(new OnFailureListener() {
-                            @Override
-                            public void onFailure(@NonNull Exception e) {
-                                result.error("Failure", e.getMessage(), null);
-                            }
-                        });
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        result.error("Failure", e.getMessage(), null);
+                    }
+                });
                 break;
             }
             case "stopAllEndpoints":
@@ -216,11 +225,11 @@ public class NearbyConnectionsPlugin implements MethodCallHandler {
                                 result.success(true);
                             }
                         }).addOnFailureListener(new OnFailureListener() {
-                            @Override
-                            public void onFailure(@NonNull Exception e) {
-                                result.error("Failure", e.getMessage(), null);
-                            }
-                        });
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        result.error("Failure", e.getMessage(), null);
+                    }
+                });
                 break;
             }
             case "acceptConnection": {
@@ -234,11 +243,11 @@ public class NearbyConnectionsPlugin implements MethodCallHandler {
                                 result.success(true);
                             }
                         }).addOnFailureListener(new OnFailureListener() {
-                            @Override
-                            public void onFailure(@NonNull Exception e) {
-                                result.error("Failure", e.getMessage(), null);
-                            }
-                        });
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        result.error("Failure", e.getMessage(), null);
+                    }
+                });
                 break;
             }
             case "rejectConnection": {
@@ -252,11 +261,11 @@ public class NearbyConnectionsPlugin implements MethodCallHandler {
                                 result.success(true);
                             }
                         }).addOnFailureListener(new OnFailureListener() {
-                            @Override
-                            public void onFailure(@NonNull Exception e) {
-                                result.error("Failure", e.getMessage(), null);
-                            }
-                        });
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        result.error("Failure", e.getMessage(), null);
+                    }
+                });
                 break;
             }
             case "sendPayload": {
@@ -420,7 +429,7 @@ public class NearbyConnectionsPlugin implements MethodCallHandler {
 
         @Override
         public void onPayloadTransferUpdate(@NonNull String endpointId,
-                @NonNull PayloadTransferUpdate payloadTransferUpdate) {
+                                            @NonNull PayloadTransferUpdate payloadTransferUpdate) {
             // required for files and streams
 
             Log.d("nearby_connections", "onPayloadTransferUpdate");
@@ -438,7 +447,7 @@ public class NearbyConnectionsPlugin implements MethodCallHandler {
     private final EndpointDiscoveryCallback endpointDiscoveryCallback = new EndpointDiscoveryCallback() {
         @Override
         public void onEndpointFound(@NonNull String endpointId,
-                @NonNull DiscoveredEndpointInfo discoveredEndpointInfo) {
+                                    @NonNull DiscoveredEndpointInfo discoveredEndpointInfo) {
             Log.d("nearby_connections", "onEndpointFound");
             Map<String, Object> args = new HashMap<>();
             args.put("endpointId", endpointId);
@@ -468,4 +477,58 @@ public class NearbyConnectionsPlugin implements MethodCallHandler {
                 return Strategy.P2P_CLUSTER;
         }
     }
+
+    @Override
+    public void onAttachedToEngine(@NonNull FlutterPluginBinding binding) {
+        locationEnabler = new LocationEnabler();
+    }
+
+    @Override
+    public void onDetachedFromEngine(@NonNull FlutterPluginBinding binding) {
+        locationEnabler = null;
+    }
+
+    private static void attachToActivity(ActivityPluginBinding binding) {
+        activityBinding = binding;
+        try {
+            locationEnabler.setActivity(binding.getActivity());
+            initiate();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void detachActivity() {
+        activityBinding.removeActivityResultListener(locationEnabler);
+        activityBinding = null;
+    }
+
+    @Override
+    public void onAttachedToActivity(@NonNull ActivityPluginBinding binding) {
+        attachToActivity(binding);
+    }
+
+    @Override
+    public void onDetachedFromActivity() {
+        this.detachActivity();
+    }
+
+    @Override
+    public void onDetachedFromActivityForConfigChanges() {
+        this.detachActivity();
+    }
+
+    @Override
+    public void onReattachedToActivityForConfigChanges(@NonNull ActivityPluginBinding binding) {
+        attachToActivity(binding);
+    }
+
+    private static void initiate() {
+        if (pluginRegistrar != null) {
+            pluginRegistrar.addActivityResultListener(locationEnabler);
+        } else {
+            activityBinding.addActivityResultListener(locationEnabler);
+        }
+    }
+
 }
