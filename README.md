@@ -47,16 +47,17 @@ Since ACCESS_FINE_LOCATION and READ_EXTERNAL_STORAGE is considered to be dangero
 #### As a **convenience** this library provides methods to check and request location and external read/write permissions
 ```dart
 // returns true/false asynchronously 
-bool a = await Nearby().checkLocationPermissions()
+bool a = await Nearby().checkLocationPermissions();
 // asks for permission only if its not given
-Nearby().askLocationPermission()
+// returns true/false if the location permission is granted on/off resp.
+bool b = Nearby().askLocationPermission();
 
 // OPTIONAL: if you need to transfer files and rename it on device
-bool b = Nearby().checkExternalStoragePermission()
+bool b = Nearby().checkExternalStoragePermission();
 // asks for READ + WRTIE EXTERNAL STORAGE permission only if its not given
-Nearby().askExternalStoragePermission() 
+Nearby().askExternalStoragePermission() ;
 
-Nearby().askLocationAndExternalStoragePermission() // for all permissions in one go..
+Nearby().askLocationAndExternalStoragePermission(); // for all permissions in one go..
 ```
 
 ## Work Flow

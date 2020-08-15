@@ -1,11 +1,14 @@
 package com.pkmnapps.nearby_connections;
 
+import android.Manifest;
 import android.app.Activity;
 import android.content.Intent;
 import android.content.IntentSender;
+import android.content.pm.PackageManager;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.app.ActivityCompat;
 
 import com.google.android.gms.common.api.ApiException;
 import com.google.android.gms.common.api.ResolvableApiException;
@@ -20,31 +23,27 @@ import com.google.android.gms.tasks.Task;
 import io.flutter.plugin.common.MethodChannel.Result;
 import io.flutter.plugin.common.PluginRegistry;
 
-class LocationEnabler implements PluginRegistry.ActivityResultListener {
+class LocationHelper implements PluginRegistry.ActivityResultListener, PluginRegistry.RequestPermissionsResultListener {
 
     @Nullable
     private Activity activity;
 
     private static final int LOCATION_ENABLE_REQUEST = 777;
+    private static final int REQUEST_LOCATION_PERMISSION = 7777;
 
     private LocationSettingsRequest mLocationSettingsRequest;
     private Result pendingResult;
 
-    private LocationEnabler(@Nullable Activity activity) {
+    private LocationHelper(@Nullable Activity activity) {
         this.activity = activity;
     }
 
-    LocationEnabler(PluginRegistry.Registrar registrar) {
+    LocationHelper(PluginRegistry.Registrar registrar) {
         this(registrar.activity());
     }
 
-    LocationEnabler() {
+    LocationHelper() {
         this.activity = null;
-    }
-
-    void setActivity(@Nullable Activity activity) {
-        this.activity = activity;
-        initiateLocationServiceRequest();
     }
 
     @Override
@@ -62,6 +61,30 @@ class LocationEnabler implements PluginRegistry.ActivityResultListener {
             return true;
         }
         return false;
+    }
+
+    @Override
+    public boolean onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+        if (requestCode == REQUEST_LOCATION_PERMISSION && permissions.length > 0) {
+            if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                if (pendingResult != null) {
+                    pendingResult.success(true);
+                    pendingResult = null;
+                }
+            } else {
+                if (pendingResult != null) {
+                    pendingResult.success(false);
+                    pendingResult = null;
+                }
+            }
+            return true;
+        }
+        return false;
+    }
+
+    void setActivity(@Nullable Activity activity) {
+        this.activity = activity;
+        initiateLocationServiceRequest();
     }
 
     private void initiateLocationServiceRequest() {
@@ -105,6 +128,12 @@ class LocationEnabler implements PluginRegistry.ActivityResultListener {
                 }
             }
         });
+    }
+
+    void requestLocationPermission(Result result) {
+        this.pendingResult = result;
+        ActivityCompat.requestPermissions(activity, new String[]{Manifest.permission.ACCESS_FINE_LOCATION,
+                Manifest.permission.ACCESS_COARSE_LOCATION}, REQUEST_LOCATION_PERMISSION);
     }
 
 }

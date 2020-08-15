@@ -3,8 +3,8 @@ import 'dart:math';
 import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
-import 'package:nearby_connections/nearby_connections.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:nearby_connections/nearby_connections.dart';
 
 void main() => runApp(MyApp());
 
@@ -68,8 +68,15 @@ class _MyBodyState extends State<Body> {
                 ),
                 RaisedButton(
                   child: Text("askLocationPermission"),
-                  onPressed: () {
-                    Nearby().askLocationPermission();
+                  onPressed: () async {
+                    if (await Nearby().askLocationPermission()) {
+                      Scaffold.of(context).showSnackBar(SnackBar(
+                          content: Text("Location Permission granted :)")));
+                    } else {
+                      Scaffold.of(context).showSnackBar(SnackBar(
+                          content:
+                              Text("Location permissions not granted :(")));
+                    }
                   },
                 ),
                 RaisedButton(
@@ -114,11 +121,12 @@ class _MyBodyState extends State<Body> {
                   child: Text("enableLocationServices"),
                   onPressed: () async {
                     if (await Nearby().enableLocationServices()) {
-                      Scaffold.of(context).showSnackBar(
-                          SnackBar(content: Text("Location Service Enabled :)")));
+                      Scaffold.of(context).showSnackBar(SnackBar(
+                          content: Text("Location Service Enabled :)")));
                     } else {
-                      Scaffold.of(context).showSnackBar(
-                          SnackBar(content: Text("Enabling Location Service Failed :(")));
+                      Scaffold.of(context).showSnackBar(SnackBar(
+                          content:
+                              Text("Enabling Location Service Failed :(")));
                     }
                   },
                 ),

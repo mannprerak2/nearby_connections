@@ -1,9 +1,10 @@
 import 'dart:async';
 import 'dart:typed_data';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
-import 'package:nearby_connections/src/defs.dart';
 import 'package:nearby_connections/src/classes.dart';
+import 'package:nearby_connections/src/defs.dart';
 
 /// The NearbyConnection class
 ///
@@ -130,7 +131,8 @@ class Nearby {
   }
 
   //for advertisers
-  OnConnectionInitiated _advertConnectionInitiated, _discoverConnectionInitiated;
+  OnConnectionInitiated _advertConnectionInitiated,
+      _discoverConnectionInitiated;
   OnConnectionResult _advertConnectionResult, _discoverConnectionResult;
   OnDisconnected _advertDisconnected, _discoverDisconnected;
 
@@ -156,8 +158,8 @@ class Nearby {
   /// convenience method
   ///
   /// Asks location permission
-  void askLocationPermission() =>
-      _channel.invokeMethod('askLocationPermission');
+  Future<bool> askLocationPermission() async =>
+      await _channel.invokeMethod('askLocationPermission');
 
   /// convenience method
   ///
