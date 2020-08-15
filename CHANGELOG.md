@@ -2,6 +2,7 @@
 * enableLocationService return type changed to Future<bool>
 * Updated Example accordingly
 * Readme Fixes
+* Typos Fixed
 
 ## 1.1.1+1
 * Corrected supported platforms in pubpsec

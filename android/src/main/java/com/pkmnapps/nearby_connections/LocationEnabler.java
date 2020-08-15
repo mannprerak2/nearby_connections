@@ -39,7 +39,7 @@ class LocationEnabler implements PluginRegistry.ActivityResultListener {
     }
 
     LocationEnabler() {
-
+        this.activity = null;
     }
 
     void setActivity(@Nullable Activity activity) {
