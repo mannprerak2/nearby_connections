@@ -55,7 +55,7 @@ public class NearbyConnectionsPlugin implements MethodCallHandler, FlutterPlugin
     private NearbyConnectionsPlugin(Activity activity) {
         this.activity = activity;
     }
-
+    public NearbyConnectionsPlugin(){}
 
     /**
      * Plugin registration.

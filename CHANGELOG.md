@@ -1,3 +1,6 @@
+## 2.0.1
+* Fix missing default constructor bug in android.
+
 ## 2.0.0
 * `askLocationPermission` & `enableLocationService` return type changed to Future<bool>
 * Fix typose, uUpdated example and readme
