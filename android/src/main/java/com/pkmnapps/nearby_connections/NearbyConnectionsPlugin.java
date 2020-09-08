@@ -58,12 +58,12 @@ public class NearbyConnectionsPlugin implements MethodCallHandler, FlutterPlugin
     public NearbyConnectionsPlugin(){}
 
     /**
-     * Plugin registration.
+     * Legacy Plugin registration.
      */
 
     public static void registerWith(Registrar registrar) {
         pluginRegistrar = registrar;
-        locationHelper = new LocationHelper(registrar);
+        locationHelper = new LocationHelper(registrar.activity());
         locationHelper.setActivity(registrar.activity());
         initiate();
         channel = new MethodChannel(registrar.messenger(), "nearby_connections");
@@ -478,6 +478,8 @@ public class NearbyConnectionsPlugin implements MethodCallHandler, FlutterPlugin
     @Override
     public void onAttachedToEngine(@NonNull FlutterPluginBinding binding) {
         locationHelper = new LocationHelper();
+        channel = new MethodChannel(binding.getBinaryMessenger(), "nearby_connections");
+        channel.setMethodCallHandler(this);
     }
 
     @Override
@@ -503,6 +505,7 @@ public class NearbyConnectionsPlugin implements MethodCallHandler, FlutterPlugin
 
     @Override
     public void onAttachedToActivity(@NonNull ActivityPluginBinding binding) {
+        this.activity = binding.getActivity();
         attachToActivity(binding);
     }
 

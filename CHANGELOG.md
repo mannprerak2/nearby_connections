@@ -1,3 +1,6 @@
+## 2.0.2
+* Fix missingPluginException.
+
 ## 2.0.1
 * Fix missing default constructor bug in android.
 

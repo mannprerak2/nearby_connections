@@ -34,12 +34,8 @@ class LocationHelper implements PluginRegistry.ActivityResultListener, PluginReg
     private LocationSettingsRequest mLocationSettingsRequest;
     private Result pendingResult;
 
-    private LocationHelper(@Nullable Activity activity) {
+    public LocationHelper(@Nullable Activity activity) {
         this.activity = activity;
-    }
-
-    LocationHelper(PluginRegistry.Registrar registrar) {
-        this(registrar.activity());
     }
 
     LocationHelper() {
