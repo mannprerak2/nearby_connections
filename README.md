@@ -8,7 +8,8 @@ Currently supports Bytes and Files.
 **Transfer Data between multiple connected devices using fully offline peer to peer networking**
 
 [![pub package](https://img.shields.io/pub/v/nearby_connections.svg)](https://pub.dartlang.org/packages/nearby_connections)
-
+[![Stars](https://img.shields.io/github/stars/mannprerak2/nearby_connections?logo=github&style=flat&color=green)](https://github.com/mannprerak2/nearby_connections)
+[![Forks](https://img.shields.io/github/forks/mannprerak2/nearby_connections?logo=github&style=flat&color=purple)](https://github.com/mannprerak2/nearby_connections)
 ## Table of Content
 * [Setup](#setup)
 * [Work Flow](#work-flow)
