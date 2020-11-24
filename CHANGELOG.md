@@ -1,3 +1,6 @@
+## 3.0.0-nullsafety.0
+* Migrated to Null Safety.
+
 ## 2.0.2
 * Fix missingPluginException.
 
