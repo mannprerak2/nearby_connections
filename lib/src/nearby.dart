@@ -14,24 +14,24 @@ import 'package:nearby_connections/src/defs.dart';
 /// All methods are asynchronous.
 class Nearby {
   //Singleton pattern for maintaining only 1 instance of this class
-  static Nearby _instance;
+  static Nearby? _instance;
 
   factory Nearby() {
     if (_instance == null) {
       _instance = Nearby._();
     }
-    return _instance;
+    return _instance!;
   }
 
   Nearby._() {
     _channel.setMethodCallHandler((handler) {
-      Map<dynamic, dynamic> args = handler.arguments;
+      Map<dynamic, dynamic>? args = handler.arguments;
       switch (handler.method) {
         case "ad.onConnectionInitiated":
-          String endpointId = args['endpointId'];
-          String endpointName = args['endpointName'];
-          String authenticationToken = args['authenticationToken'];
-          bool isIncomingConnection = args['isIncomingConnection'];
+          String? endpointId = args!['endpointId'];
+          String? endpointName = args['endpointName'];
+          String? authenticationToken = args['authenticationToken'];
+          bool? isIncomingConnection = args['isIncomingConnection'];
 
           _advertConnectionInitiated?.call(
               endpointId,
@@ -40,24 +40,24 @@ class Nearby {
 
           return null;
         case "ad.onConnectionResult":
-          String endpointId = args['endpointId'];
+          String? endpointId = args!['endpointId'];
           Status statusCode = Status.values[args['statusCode']];
 
           _advertConnectionResult?.call(endpointId, statusCode);
 
           return null;
         case "ad.onDisconnected":
-          String endpointId = args['endpointId'];
+          String? endpointId = args!['endpointId'];
 
           _advertDisconnected?.call(endpointId);
 
           return null;
 
         case "dis.onConnectionInitiated":
-          String endpointId = args['endpointId'];
-          String endpointName = args['endpointName'];
-          String authenticationToken = args['authenticationToken'];
-          bool isIncomingConnection = args['isIncomingConnection'];
+          String? endpointId = args!['endpointId'];
+          String? endpointName = args['endpointName'];
+          String? authenticationToken = args['authenticationToken'];
+          bool? isIncomingConnection = args['isIncomingConnection'];
 
           _discoverConnectionInitiated?.call(
               endpointId,
@@ -66,38 +66,38 @@ class Nearby {
 
           return null;
         case "dis.onConnectionResult":
-          String endpointId = args['endpointId'];
+          String? endpointId = args!['endpointId'];
           Status statusCode = Status.values[args['statusCode']];
 
           _discoverConnectionResult?.call(endpointId, statusCode);
 
           return null;
         case "dis.onDisconnected":
-          String endpointId = args['endpointId'];
+          String? endpointId = args!['endpointId'];
 
           _discoverDisconnected?.call(endpointId);
 
           return null;
 
         case "dis.onEndpointFound":
-          String endpointId = args['endpointId'];
-          String endpointName = args['endpointName'];
-          String serviceId = args['serviceId'];
+          String? endpointId = args!['endpointId'];
+          String? endpointName = args['endpointName'];
+          String? serviceId = args['serviceId'];
           _onEndpointFound?.call(endpointId, endpointName, serviceId);
 
           return null;
         case "dis.onEndpointLost":
-          String endpointId = args['endpointId'];
+          String? endpointId = args!['endpointId'];
 
           _onEndpointLost?.call(endpointId);
 
           return null;
         case "onPayloadReceived":
-          String endpointId = args['endpointId'];
+          String? endpointId = args!['endpointId'];
           int type = args['type'];
-          Uint8List bytes = args['bytes'];
-          int payloadId = args['payloadId'];
-          String filePath = args['filePath'];
+          Uint8List? bytes = args['bytes'];
+          int? payloadId = args['payloadId'];
+          String? filePath = args['filePath'];
 
           Payload payload = Payload(
             type: PayloadType.values[type],
@@ -110,11 +110,11 @@ class Nearby {
 
           break;
         case "onPayloadTransferUpdate":
-          String endpointId = args['endpointId'];
-          int payloadId = args['payloadId'];
+          String? endpointId = args!['endpointId'];
+          int? payloadId = args['payloadId'];
           int status = args['status'];
-          int bytesTransferred = args['bytesTransferred'];
-          int totalBytes = args['totalBytes'];
+          int? bytesTransferred = args['bytesTransferred'];
+          int? totalBytes = args['totalBytes'];
 
           PayloadTransferUpdate payloadTransferUpdate = PayloadTransferUpdate(
             id: payloadId,
@@ -127,22 +127,22 @@ class Nearby {
           break;
       }
       return null;
-    });
+    } as Future<dynamic> Function(MethodCall)?);
   }
 
   //for advertisers
-  OnConnectionInitiated _advertConnectionInitiated,
+  OnConnectionInitiated? _advertConnectionInitiated,
       _discoverConnectionInitiated;
-  OnConnectionResult _advertConnectionResult, _discoverConnectionResult;
-  OnDisconnected _advertDisconnected, _discoverDisconnected;
+  OnConnectionResult? _advertConnectionResult, _discoverConnectionResult;
+  OnDisconnected? _advertDisconnected, _discoverDisconnected;
 
   //for discoverers
-  OnEndpointFound _onEndpointFound;
-  OnEndpointLost _onEndpointLost;
+  OnEndpointFound? _onEndpointFound;
+  OnEndpointLost? _onEndpointLost;
 
   //for receiving payload
-  OnPayloadReceived _onPayloadReceived;
-  OnPayloadTransferUpdate _onPayloadTransferUpdate;
+  OnPayloadReceived? _onPayloadReceived;
+  OnPayloadTransferUpdate? _onPayloadTransferUpdate;
 
   static const MethodChannel _channel =
       const MethodChannel('nearby_connections');
@@ -151,20 +151,20 @@ class Nearby {
   ///
   /// returns true/false based on location permissions.
   /// Discovery cannot be started with insufficient permission
-  Future<bool> checkLocationPermission() async => await _channel.invokeMethod(
+  Future<bool?> checkLocationPermission() async => await _channel.invokeMethod(
         'checkLocationPermission',
       );
 
   /// convenience method
   ///
   /// Asks location permission
-  Future<bool> askLocationPermission() async =>
+  Future<bool?> askLocationPermission() async =>
       await _channel.invokeMethod('askLocationPermission');
 
   /// convenience method
   ///
   /// returns true/false based on external storage permissions.
-  Future<bool> checkExternalStoragePermission() async =>
+  Future<bool?> checkExternalStoragePermission() async =>
       await _channel.invokeMethod('checkExternalStoragePermission');
 
   /// convenience method
@@ -173,13 +173,13 @@ class Nearby {
   ///
   /// If Location isn't enabled, devices may disconnect often.
   /// Some devices may immediately disconnect
-  Future<bool> checkLocationEnabled() async =>
+  Future<bool?> checkLocationEnabled() async =>
       await _channel.invokeMethod('checkLocationEnabled');
 
   /// convenience method
   ///
   /// directs user to Location Settings, so they can turn on their Location/GPS
-  Future<bool> enableLocationServices() async =>
+  Future<bool?> enableLocationServices() async =>
       await _channel.invokeMethod('enableLocationServices');
 
   /// convenience method
@@ -198,12 +198,12 @@ class Nearby {
   ///
   /// [serviceId] is a unique identifier for your app, its recommended to use your app package name only, it cannot be null
   /// [userNickName] and [strategy] should not be null
-  Future<bool> startAdvertising(
+  Future<bool?> startAdvertising(
     String userNickName,
     Strategy strategy, {
-    @required OnConnectionInitiated onConnectionInitiated,
-    @required OnConnectionResult onConnectionResult,
-    @required OnDisconnected onDisconnected,
+    required OnConnectionInitiated onConnectionInitiated,
+    required OnConnectionResult onConnectionResult,
+    required OnDisconnected onDisconnected,
     String serviceId = "com.pkmnapps.nearby_connections",
   }) async {
     assert(userNickName != null && strategy != null && serviceId != null);
@@ -233,11 +233,11 @@ class Nearby {
   ///
   /// [serviceId] is a unique identifier for your app, its recommended to use your app package name only, it cannot be null
   /// [userNickName] and [strategy] should not be null
-  Future<bool> startDiscovery(
+  Future<bool?> startDiscovery(
     String userNickName,
     Strategy strategy, {
-    @required OnEndpointFound onEndpointFound,
-    @required OnEndpointLost onEndpointLost,
+    required OnEndpointFound onEndpointFound,
+    required OnEndpointLost onEndpointLost,
     String serviceId = "com.pkmnapps.nearby_connections",
   }) async {
     assert(userNickName != null && strategy != null && serviceId != null);
@@ -290,12 +290,12 @@ class Nearby {
   ///
   /// This will call the [OnConnectionInitiated] method on
   /// both the endPoint and this
-  Future<bool> requestConnection(
+  Future<bool?> requestConnection(
     String userNickName,
     String endpointId, {
-    @required OnConnectionInitiated onConnectionInitiated,
-    @required OnConnectionResult onConnectionResult,
-    @required OnDisconnected onDisconnected,
+    required OnConnectionInitiated onConnectionInitiated,
+    required OnConnectionResult onConnectionResult,
+    required OnDisconnected onDisconnected,
   }) async {
     this._discoverConnectionInitiated = onConnectionInitiated;
     this._discoverConnectionResult = onConnectionResult;
@@ -321,10 +321,10 @@ class Nearby {
   ///
   /// [OnConnectionResult] is called on both
   /// only if both of them accept the connection
-  Future<bool> acceptConnection(
+  Future<bool?> acceptConnection(
     String endpointId, {
-    @required OnPayloadReceived onPayLoadRecieved,
-    OnPayloadTransferUpdate onPayloadTransferUpdate,
+    required OnPayloadReceived onPayLoadRecieved,
+    OnPayloadTransferUpdate? onPayloadTransferUpdate,
   }) async {
     this._onPayloadReceived = onPayLoadRecieved;
     this._onPayloadTransferUpdate = onPayloadTransferUpdate;
@@ -348,7 +348,7 @@ class Nearby {
   ///
   /// [OnConnectionResult] is called on both
   /// even if one of them rejects the connection
-  Future<bool> rejectConnection(String endpointId) async {
+  Future<bool?> rejectConnection(String endpointId) async {
     assert(endpointId != null);
 
     return await _channel.invokeMethod(
@@ -392,7 +392,7 @@ class Nearby {
   /// You must also send a bytes payload to send the filename and extension
   /// so that receiver can rename the file accordingly
   /// Send the payloadID and filename to receiver as bytes payload
-  Future<int> sendFilePayload(String endpointId, String filePath) async {
+  Future<int?> sendFilePayload(String endpointId, String filePath) async {
     assert(endpointId != null);
 
     return await _channel.invokeMethod(
