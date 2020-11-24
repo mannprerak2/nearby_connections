@@ -11,14 +11,14 @@ import 'package:nearby_connections/src/defs.dart';
 /// The file at this location is incomplete until payloadTransferUpdate
 /// gives SUCCESS for this payloadId
 class Payload {
-  int? id;
+  int id;
   PayloadType type;
 
   Uint8List? bytes;
   String? filePath;
 
   Payload({
-    this.id,
+    required this.id,
     this.bytes,
     this.type = PayloadType.NONE,
     this.filePath,
@@ -28,13 +28,13 @@ class Payload {
 /// Gives payload status (SUCCESS, FAILURE, IN_PROGRESS)
 /// bytes transferred and total bytes
 class PayloadTransferUpdate {
-  int? id, bytesTransferred, totalBytes;
+  int id, bytesTransferred, totalBytes;
   PayloadStatus status;
 
   PayloadTransferUpdate({
-    this.id,
-    this.bytesTransferred,
-    this.totalBytes,
+    required this.id,
+    required this.bytesTransferred,
+    required this.totalBytes,
     this.status = PayloadStatus.NONE,
   });
 }
@@ -48,8 +48,8 @@ class PayloadTransferUpdate {
 /// [authenticationToken] can be used to check the connection security
 /// it must be same on both devices
 class ConnectionInfo {
-  String? endpointName, authenticationToken;
-  bool? isIncomingConnection;
+  String endpointName, authenticationToken;
+  bool isIncomingConnection;
 
   ConnectionInfo(
       this.endpointName, this.authenticationToken, this.isIncomingConnection);
