@@ -57,10 +57,10 @@ class _MyBodyState extends State<Body> {
                   child: Text("checkLocationPermission"),
                   onPressed: () async {
                     if (await Nearby().checkLocationPermission()) {
-                      Scaffold.of(context).showSnackBar(SnackBar(
+                      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
                           content: Text("Location permissions granted :)")));
                     } else {
-                      Scaffold.of(context).showSnackBar(SnackBar(
+                      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
                           content:
                               Text("Location permissions not granted :(")));
                     }
@@ -70,10 +70,10 @@ class _MyBodyState extends State<Body> {
                   child: Text("askLocationPermission"),
                   onPressed: () async {
                     if (await Nearby().askLocationPermission()) {
-                      Scaffold.of(context).showSnackBar(SnackBar(
+                      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
                           content: Text("Location Permission granted :)")));
                     } else {
-                      Scaffold.of(context).showSnackBar(SnackBar(
+                      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
                           content:
                               Text("Location permissions not granted :(")));
                     }
@@ -83,11 +83,11 @@ class _MyBodyState extends State<Body> {
                   child: Text("checkExternalStoragePermission"),
                   onPressed: () async {
                     if (await Nearby().checkExternalStoragePermission()) {
-                      Scaffold.of(context).showSnackBar(SnackBar(
+                      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
                           content:
                               Text("External Storage permissions granted :)")));
                     } else {
-                      Scaffold.of(context).showSnackBar(SnackBar(
+                      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
                           content: Text(
                               "External Storage permissions not granted :(")));
                     }
@@ -109,10 +109,10 @@ class _MyBodyState extends State<Body> {
                   child: Text("checkLocationEnabled"),
                   onPressed: () async {
                     if (await Nearby().checkLocationEnabled()) {
-                      Scaffold.of(context).showSnackBar(
+                      ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(content: Text("Location is ON :)")));
                     } else {
-                      Scaffold.of(context).showSnackBar(
+                      ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(content: Text("Location is OFF :(")));
                     }
                   },
@@ -121,10 +121,10 @@ class _MyBodyState extends State<Body> {
                   child: Text("enableLocationServices"),
                   onPressed: () async {
                     if (await Nearby().enableLocationServices()) {
-                      Scaffold.of(context).showSnackBar(SnackBar(
+                      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
                           content: Text("Location Service Enabled :)")));
                     } else {
-                      Scaffold.of(context).showSnackBar(SnackBar(
+                      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
                           content:
                               Text("Enabling Location Service Failed :(")));
                     }
@@ -269,7 +269,7 @@ class _MyBodyState extends State<Body> {
   }
 
   void showSnackbar(dynamic a) {
-    Scaffold.of(context).showSnackBar(SnackBar(
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
       content: Text(a.toString()),
     ));
   }
