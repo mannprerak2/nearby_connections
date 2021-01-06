@@ -324,7 +324,7 @@ class _MyBodyState extends State<Body> {
                     },
                     onPayloadTransferUpdate: (endid, payloadTransferUpdate) {
                       if (payloadTransferUpdate.status ==
-                          PayloadStatus.IN_PROGRRESS) {
+                          PayloadStatus.IN_PROGRESS) {
                         print(payloadTransferUpdate.bytesTransferred);
                       } else if (payloadTransferUpdate.status ==
                           PayloadStatus.FAILURE) {
