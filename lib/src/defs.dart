@@ -9,7 +9,7 @@ import 'package:nearby_connections/src/classes.dart';
 /// **P2P_POINT_TO_POINT** - single connection, very high bandwidth
 enum Strategy { P2P_CLUSTER, P2P_STAR, P2P_POINT_TO_POINT }
 enum Status { CONNECTED, REJECTED, ERROR }
-enum PayloadStatus { NONE, SUCCESS, FAILURE, IN_PROGRRESS, CANCELED }
+enum PayloadStatus { NONE, SUCCESS, FAILURE, IN_PROGRESS, CANCELED }
 enum PayloadType { NONE, BYTES, FILE, STREAM }
 
 //
@@ -29,7 +29,7 @@ typedef void OnDisconnected(String endpointId);
 //
 typedef void OnEndpointFound(
     String endpointId, String endpointName, String serviceId);
-typedef void OnEndpointLost(String endpointId);
+typedef void OnEndpointLost(String? endpointId);
 
 //
 //

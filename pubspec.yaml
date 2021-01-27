@@ -1,10 +1,10 @@
 name: nearby_connections
 description: Plugin for the android NearbyConnections API. Bytes and Files Supported.
-version: 2.0.2
+version: 3.0.0-nullsafety.1
 homepage: https://github.com/mannprerak2/nearby_connections
 
 environment:
-  sdk: ">=2.1.0 <3.0.0"
+  sdk: '>=2.12.0-29.10.beta <3.0.0'
   flutter: ">=1.20.0 <2.0.0"
 
 dependencies:

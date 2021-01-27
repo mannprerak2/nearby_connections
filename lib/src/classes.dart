@@ -14,11 +14,11 @@ class Payload {
   int id;
   PayloadType type;
 
-  Uint8List bytes;
-  String filePath;
+  Uint8List? bytes;
+  String? filePath;
 
   Payload({
-    this.id,
+    required this.id,
     this.bytes,
     this.type = PayloadType.NONE,
     this.filePath,
@@ -32,9 +32,9 @@ class PayloadTransferUpdate {
   PayloadStatus status;
 
   PayloadTransferUpdate({
-    this.id,
-    this.bytesTransferred,
-    this.totalBytes,
+    required this.id,
+    required this.bytesTransferred,
+    required this.totalBytes,
     this.status = PayloadStatus.NONE,
   });
 }

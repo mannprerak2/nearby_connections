@@ -1,3 +1,9 @@
+## 3.0.0-nullsafety.1
+* Fix typo in PayloadStatus enum (`IN_PROGRRESS -> IN_PROGRESS`).
+
+## 3.0.0-nullsafety.0
+* Migrated to Null Safety.
+
 ## 2.0.2
 * Fix missingPluginException.
 
