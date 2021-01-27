@@ -39,7 +39,7 @@ class _MyBodyState extends State<Body> {
 
   File tempFile; //reference to the file currently being transferred
   Map<int, String> map =
-  Map(); //store filename mapped to corresponding payloadId
+      Map(); //store filename mapped to corresponding payloadId
 
   @override
   Widget build(BuildContext context) {
@@ -62,7 +62,7 @@ class _MyBodyState extends State<Body> {
                     } else {
                       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
                           content:
-                          Text("Location permissions not granted :(")));
+                              Text("Location permissions not granted :(")));
                     }
                   },
                 ),
@@ -75,7 +75,7 @@ class _MyBodyState extends State<Body> {
                     } else {
                       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
                           content:
-                          Text("Location permissions not granted :(")));
+                              Text("Location permissions not granted :(")));
                     }
                   },
                 ),
@@ -85,7 +85,7 @@ class _MyBodyState extends State<Body> {
                     if (await Nearby().checkExternalStoragePermission()) {
                       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
                           content:
-                          Text("External Storage permissions granted :)")));
+                              Text("External Storage permissions granted :)")));
                     } else {
                       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
                           content: Text(
@@ -126,7 +126,7 @@ class _MyBodyState extends State<Body> {
                     } else {
                       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
                           content:
-                          Text("Enabling Location Service Failed :(")));
+                              Text("Enabling Location Service Failed :(")));
                     }
                   },
                 ),
@@ -148,7 +148,8 @@ class _MyBodyState extends State<Body> {
                           showSnackbar(status);
                         },
                         onDisconnected: (id) {
-                          showSnackbar("Disconnected: ${endpointMap[id].endpointName}, id $id");
+                          showSnackbar(
+                              "Disconnected: ${endpointMap[id].endpointName}, id $id");
                           setState(() {
                             endpointMap.remove(id);
                           });
@@ -205,7 +206,8 @@ class _MyBodyState extends State<Body> {
                                             setState(() {
                                               endpointMap.remove(id);
                                             });
-                                            showSnackbar("Disconnected from: ${endpointMap[id].endpointName}, id $id");
+                                            showSnackbar(
+                                                "Disconnected from: ${endpointMap[id].endpointName}, id $id");
                                           },
                                         );
                                       },
@@ -217,7 +219,8 @@ class _MyBodyState extends State<Body> {
                           );
                         },
                         onEndpointLost: (id) {
-                          showSnackbar("Lost discovered Endpoint: ${endpointMap[id].endpointName}, id $id");
+                          showSnackbar(
+                              "Lost discovered Endpoint: ${endpointMap[id].endpointName}, id $id");
                         },
                       );
                       showSnackbar("DISCOVERING: " + a.toString());
@@ -255,7 +258,8 @@ class _MyBodyState extends State<Body> {
                   String a = Random().nextInt(100).toString();
 
                   showSnackbar("Sending $a to ${value.endpointName}, id: $key");
-                  Nearby().sendBytesPayload(key, Uint8List.fromList(a.codeUnits));
+                  Nearby()
+                      .sendBytesPayload(key, Uint8List.fromList(a.codeUnits));
                 });
               },
             ),
@@ -263,12 +267,14 @@ class _MyBodyState extends State<Body> {
               child: Text("Send File Payload"),
               onPressed: () async {
                 File file =
-                await ImagePicker.pickImage(source: ImageSource.gallery);
+                    await ImagePicker.pickImage(source: ImageSource.gallery);
 
                 if (file == null) return;
 
-                for(MapEntry<String, ConnectionInfo> m in endpointMap.entries){
-                  int payloadId = await Nearby().sendFilePayload(m.key, file.path);
+                for (MapEntry<String, ConnectionInfo> m
+                    in endpointMap.entries) {
+                  int payloadId =
+                      await Nearby().sendFilePayload(m.key, file.path);
                   showSnackbar("Sending file to ${m.key}");
                   Nearby().sendBytesPayload(
                       m.key,
