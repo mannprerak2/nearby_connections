@@ -266,8 +266,8 @@ class _MyBodyState extends State<Body> {
             RaisedButton(
               child: Text("Send File Payload"),
               onPressed: () async {
-                File file =
-                    await ImagePicker.pickImage(source: ImageSource.gallery);
+                PickedFile file =
+                    await ImagePicker().getImage(source: ImageSource.gallery);
 
                 if (file == null) return;
 
