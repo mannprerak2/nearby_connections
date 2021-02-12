@@ -53,7 +53,7 @@ class _MyBodyState extends State<Body> {
             ),
             Wrap(
               children: <Widget>[
-                RaisedButton(
+                ElevatedButton(
                   child: Text("checkLocationPermission"),
                   onPressed: () async {
                     if (await Nearby().checkLocationPermission()) {
@@ -66,7 +66,7 @@ class _MyBodyState extends State<Body> {
                     }
                   },
                 ),
-                RaisedButton(
+                ElevatedButton(
                   child: Text("askLocationPermission"),
                   onPressed: () async {
                     if (await Nearby().askLocationPermission()) {
@@ -79,7 +79,7 @@ class _MyBodyState extends State<Body> {
                     }
                   },
                 ),
-                RaisedButton(
+                ElevatedButton(
                   child: Text("checkExternalStoragePermission"),
                   onPressed: () async {
                     if (await Nearby().checkExternalStoragePermission()) {
@@ -93,7 +93,7 @@ class _MyBodyState extends State<Body> {
                     }
                   },
                 ),
-                RaisedButton(
+                ElevatedButton(
                   child: Text("askExternalStoragePermission"),
                   onPressed: () {
                     Nearby().askExternalStoragePermission();
@@ -105,7 +105,7 @@ class _MyBodyState extends State<Body> {
             Text("Location Enabled"),
             Wrap(
               children: <Widget>[
-                RaisedButton(
+                ElevatedButton(
                   child: Text("checkLocationEnabled"),
                   onPressed: () async {
                     if (await Nearby().checkLocationEnabled()) {
@@ -117,7 +117,7 @@ class _MyBodyState extends State<Body> {
                     }
                   },
                 ),
-                RaisedButton(
+                ElevatedButton(
                   child: Text("enableLocationServices"),
                   onPressed: () async {
                     if (await Nearby().enableLocationServices()) {
@@ -136,7 +136,7 @@ class _MyBodyState extends State<Body> {
             Text("User Name: " + userName),
             Wrap(
               children: <Widget>[
-                RaisedButton(
+                ElevatedButton(
                   child: Text("Start Advertising"),
                   onPressed: () async {
                     try {
@@ -161,7 +161,7 @@ class _MyBodyState extends State<Body> {
                     }
                   },
                 ),
-                RaisedButton(
+                ElevatedButton(
                   child: Text("Stop Advertising"),
                   onPressed: () async {
                     await Nearby().stopAdvertising();
@@ -171,7 +171,7 @@ class _MyBodyState extends State<Body> {
             ),
             Wrap(
               children: <Widget>[
-                RaisedButton(
+                ElevatedButton(
                   child: Text("Start Discovery"),
                   onPressed: () async {
                     try {
@@ -189,7 +189,7 @@ class _MyBodyState extends State<Body> {
                                     Text("id: " + id),
                                     Text("Name: " + name),
                                     Text("ServiceId: " + serviceId),
-                                    RaisedButton(
+                                    ElevatedButton(
                                       child: Text("Request Connection"),
                                       onPressed: () {
                                         Navigator.pop(context);
@@ -229,7 +229,7 @@ class _MyBodyState extends State<Body> {
                     }
                   },
                 ),
-                RaisedButton(
+                ElevatedButton(
                   child: Text("Stop Discovery"),
                   onPressed: () async {
                     await Nearby().stopDiscovery();
@@ -238,7 +238,7 @@ class _MyBodyState extends State<Body> {
               ],
             ),
             Text("Number of connected devices: ${endpointMap.length}"),
-            RaisedButton(
+            ElevatedButton(
               child: Text("Stop All Endpoints"),
               onPressed: () async {
                 await Nearby().stopAllEndpoints();
@@ -251,7 +251,7 @@ class _MyBodyState extends State<Body> {
             Text(
               "Sending Data",
             ),
-            RaisedButton(
+            ElevatedButton(
               child: Text("Send Random Bytes Payload"),
               onPressed: () async {
                 endpointMap.forEach((key, value) {
@@ -263,7 +263,7 @@ class _MyBodyState extends State<Body> {
                 });
               },
             ),
-            RaisedButton(
+            ElevatedButton(
               child: Text("Send File Payload"),
               onPressed: () async {
                 PickedFile file =
@@ -308,7 +308,7 @@ class _MyBodyState extends State<Body> {
               Text("Token: " + info.authenticationToken),
               Text("Name" + info.endpointName),
               Text("Incoming: " + info.isIncomingConnection.toString()),
-              RaisedButton(
+              ElevatedButton(
                 child: Text("Accept Connection"),
                 onPressed: () {
                   Navigator.pop(context);
@@ -371,7 +371,7 @@ class _MyBodyState extends State<Body> {
                   );
                 },
               ),
-              RaisedButton(
+              ElevatedButton(
                 child: Text("Reject Connection"),
                 onPressed: () async {
                   Navigator.pop(context);
