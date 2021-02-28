@@ -21,3 +21,6 @@ flutter:
       android:
         package: com.pkmnapps.nearby_connections
         pluginClass: NearbyConnectionsPlugin
+      ios:
+        package: com.pkmnapps.nearby_connections
+        pluginClass: NearbyConnectionsPlugin
