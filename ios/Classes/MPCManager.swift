@@ -97,8 +97,6 @@ class MPCManager: NSObject {
             if(device?.state == MCSessionState.notConnected){
                 device?.invite(with: self.browser)
             }
-        } catch let error {
-            print(error.localizedDescription)
         }
     }
 

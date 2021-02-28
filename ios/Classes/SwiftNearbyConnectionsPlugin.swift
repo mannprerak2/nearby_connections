@@ -13,11 +13,11 @@ enum MethodCall: String {
 
   case adOnConnectionInitiated = "ad.onConnectionInitiated"
   case adOnConnectionResult = "ad.onConnectionResult"
-  case adOnDisconnected = "ad.onConnectionResult"
+  case adOnDisconnected = "ad.onDisconnected"
 
   case disOnConnectionInitiated = "dis.onConnectionInitiated"
   case disOnConnectionResult = "dis.onConnectionResult"
-  case disOnDisconnected = "dis.onConnectionResult"
+  case disOnDisconnected = "dis.onDisconnected"
   case disOnEndpointFound = "dis.onEndpointFound"
   case disOnEndpointLost = "dis.onEndpointLost"
 
@@ -33,7 +33,7 @@ enum MethodCall: String {
 public class SwiftNearbyConnectionsPlugin: NSObject, FlutterPlugin {
   public static func register(with registrar: FlutterPluginRegistrar) {
   let channel = FlutterMethodChannel(name: "nearby_connections", binaryMessenger: registrar.messenger())
-  let instance = SwiftNearbyConnectionsPlugin()
+  let instance = SwiftNearbyConnectionsPlugin(channel: channel)
   registrar.addMethodCallDelegate(instance, channel: channel)
   }
 
@@ -85,8 +85,6 @@ public class SwiftNearbyConnectionsPlugin: NSObject, FlutterPlugin {
         let dict = convertToDictionary(text: stringData)
         self.channel.invokeMethod(INVOKE_MESSAGE_RECEIVE_METHOD, arguments: dict)
       }
-    } catch let e {
-      print(e.localizedDescription)
     }
   }
 
@@ -192,7 +190,7 @@ public class SwiftNearbyConnectionsPlugin: NSObject, FlutterPlugin {
         return
       }
       do {
-        let jsonData = try JSONSerialization.data(withJSONObject: dict["bytes"])
+        let jsonData = try JSONSerialization.data(withJSONObject: dict)
         if let device = MPCManager.instance.findDevice(for: dict["endpointId"] as! String) {
           currentReceivedDevice = device
           try device.send(data: jsonData)
