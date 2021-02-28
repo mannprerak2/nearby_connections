@@ -4,21 +4,30 @@ import MultipeerConnectivity
 import SwiftyJSON
 
 let SERVICE_TYPE = "nearby_connections"
-let INVOKE_CHANGE_STATE_METHOD = "invoke_change_state_method"
-let INVOKE_MESSAGE_RECEIVE_METHOD = "invoke_message_receive_method"
+let INVOKE_CHANGE_STATE_METHOD = "ios.stateChanged"
+let INVOKE_MESSAGE_RECEIVE_METHOD = "ios.messageReceived"
 
 enum MethodCall: String {
-  case initNearbyService = "init_nearby_service"
-  case startAdvertisingPeer = "start_advertising_peer"
-  case startBrowsingForPeers = "start_browsing_for_peers"
+  case startAdvertisingPeer = "startAdvertising"
+  case startBrowsingForPeers = "startDiscovery"
 
-  case stopAdvertisingPeer = "stop_advertising_peer"
-  case stopBrowsingForPeers = "stop_browsing_for_peers"
+  case adOnConnectionInitiated = "ad.onConnectionInitiated"
+  case adOnConnectionResult = "ad.onConnectionResult"
+  case adOnDisconnected = "ad.onConnectionResult"
 
-  case invitePeer = "invite_peer"
-  case disconnectPeer = "disconnect_peer"
+  case disOnConnectionInitiated = "dis.onConnectionInitiated"
+  case disOnConnectionResult = "dis.onConnectionResult"
+  case disOnDisconnected = "dis.onConnectionResult"
+  case disOnEndpointFound = "dis.onEndpointFound"
+  case disOnEndpointLost = "dis.onEndpointLost"
 
-  case sendMessage = "send_message"
+  case stopAdvertisingPeer = "stopAdvertising"
+  case stopBrowsingForPeers = "stopDiscovery"
+
+  case invitePeer = "requestConnection"
+  case disconnectPeer = "disconnectFromEndpoint"
+
+  case sendMessage = "sendPayload"
 }
 
 public class SwiftNearbyConnectionsPlugin: NSObject, FlutterPlugin {
@@ -39,21 +48,9 @@ public class SwiftNearbyConnectionsPlugin: NSObject, FlutterPlugin {
 
     func toStringAnyObject() -> [String: Any] {
       return [
-        "deviceId": deviceId,
-        "deviceName": deviceName,
+        "endpointId": deviceId,
+        "userNickName": deviceName,
         "state": state
-      ]
-    }
-  }
-
-  struct MessageJson {
-    var deviceId:String
-    var message:String
-
-    func toStringAnyObject() -> [String: Any] {
-      return [
-        "deviceId": deviceId,
-        "message": message
       ]
     }
   }
@@ -61,6 +58,25 @@ public class SwiftNearbyConnectionsPlugin: NSObject, FlutterPlugin {
   @objc func stateChanged(){
     let devices = MPCManager.instance.devices.compactMap({return DeviceJson(deviceId: $0.peerID.displayName, deviceName: $0.peerID.displayName, state: $0.state.rawValue)})
     channel.invokeMethod(INVOKE_CHANGE_STATE_METHOD, arguments: JSON(devices.compactMap({return $0.toStringAnyObject()})).rawString())
+  }
+
+  @objc func adOnConnectionInitiated(){
+  }
+  @objc func adOnConnectionResult(){
+  }
+  @objc func adOnDisconnected(){
+  }
+
+
+  @objc func disOnConnectionInitiated(){
+  }
+  @objc func disOnConnectionResult(){
+  }
+  @objc func disOnDisconnected(){
+  }
+  @objc func disOnEndpointFound(){
+  }
+  @objc func disOnEndpointLost(){
   }
 
   @objc func messageReceived(notification: Notification) {
@@ -91,6 +107,16 @@ public class SwiftNearbyConnectionsPlugin: NSObject, FlutterPlugin {
 
     NotificationCenter.default.addObserver(self, selector: #selector(stateChanged), name: MPCManager.Notifications.deviceDidChangeState, object: nil)
 
+    NotificationCenter.default.addObserver(self, selector: #selector(adOnConnectionInitiated), name: MPCManager.Notifications.adOnConnectionInitiated, object: nil)
+    NotificationCenter.default.addObserver(self, selector: #selector(adOnConnectionResult), name: MPCManager.Notifications.adOnConnectionResult, object: nil)
+    NotificationCenter.default.addObserver(self, selector: #selector(adOnDisconnected), name: MPCManager.Notifications.adOnDisconnected, object: nil)
+
+    NotificationCenter.default.addObserver(self, selector: #selector(disOnConnectionInitiated), name: MPCManager.Notifications.disOnConnectionInitiated, object: nil)
+    NotificationCenter.default.addObserver(self, selector: #selector(disOnConnectionResult), name: MPCManager.Notifications.disOnConnectionResult, object: nil)
+    NotificationCenter.default.addObserver(self, selector: #selector(disOnDisconnected), name: MPCManager.Notifications.disOnDisconnected, object: nil)
+    NotificationCenter.default.addObserver(self, selector: #selector(disOnEndpointFound), name: MPCManager.Notifications.disOnEndpointFound, object: nil)
+    NotificationCenter.default.addObserver(self, selector: #selector(disOnEndpointLost), name: MPCManager.Notifications.disOnEndpointLost, object: nil)
+
     NotificationCenter.default.addObserver(self, selector: #selector(messageReceived), name: Device.messageReceivedNotification, object: nil)
 
     MPCManager.instance.deviceDidChange = {[weak self] in
@@ -100,24 +126,34 @@ public class SwiftNearbyConnectionsPlugin: NSObject, FlutterPlugin {
 
   public func handle(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
     switch MethodCall(rawValue: call.method) {
-    case .initNearbyService:
+    case .startAdvertisingPeer:
       guard let data = call.arguments as? Dictionary<String, AnyObject> else {
         result(false)
         return
       }
-      let serviceType:String = data["serviceType"] as? String ?? SERVICE_TYPE
-      var deviceName:String = data["deviceName"] as? String ?? ""
+      let serviceType:String = data["serviceId"] as? String ?? SERVICE_TYPE
+      var deviceName:String = data["userNickName"] as? String ?? ""
       if (deviceName.isEmpty){
         deviceName =  UIDevice.current.name
       }
 
-      MPCManager.instance.setup(serviceType: serviceType, deviceName: deviceName)
+      MPCManager.instance.setup(serviceType: serviceType, deviceName: deviceName, isAdvert: true)
       currentReceivedDevice = Device(peerID: MPCManager.instance.localPeerID)
-      result(true)
-    case .startAdvertisingPeer:
       MPCManager.instance.startAdvertisingPeer()
       result(true)
     case .startBrowsingForPeers:
+      guard let data = call.arguments as? Dictionary<String, AnyObject> else {
+        result(false)
+        return
+      }
+      let serviceType:String = data["serviceId"] as? String ?? SERVICE_TYPE
+      var deviceName:String = data["userNickName"] as? String ?? ""
+      if (deviceName.isEmpty){
+        deviceName =  UIDevice.current.name
+      }
+
+      MPCManager.instance.setup(serviceType: serviceType, deviceName: deviceName, isAdvert: false)
+      currentReceivedDevice = Device(peerID: MPCManager.instance.localPeerID)
       MPCManager.instance.startBrowsingForPeers()
       result(true)
     case .stopAdvertisingPeer:
@@ -130,9 +166,8 @@ public class SwiftNearbyConnectionsPlugin: NSObject, FlutterPlugin {
       guard let data = call.arguments as? Dictionary<String, AnyObject> else {
         result(false)
         return
-
       }
-      guard let deviceId: String = data["deviceId"] as? String else {
+      guard let deviceId: String = data["endpointId"] as? String else {
         result(false)
         return
       }
@@ -143,9 +178,8 @@ public class SwiftNearbyConnectionsPlugin: NSObject, FlutterPlugin {
       guard let data = call.arguments as? Dictionary<String, AnyObject> else {
         result(false)
         return
-
       }
-      let deviceId:String? = data["deviceId"] as? String ?? nil
+      let deviceId:String? = data["endpointId"] as? String ?? nil
       if (deviceId != nil) {
         MPCManager.instance.disconnectPeer(deviceID: deviceId!)
         result(true)
@@ -158,8 +192,8 @@ public class SwiftNearbyConnectionsPlugin: NSObject, FlutterPlugin {
         return
       }
       do {
-        let jsonData = try JSONSerialization.data(withJSONObject: dict, options: .prettyPrinted)
-        if let device = MPCManager.instance.findDevice(for: dict["deviceId"] as! String) {
+        let jsonData = try JSONSerialization.data(withJSONObject: dict["bytes"])
+        if let device = MPCManager.instance.findDevice(for: dict["endpointId"] as! String) {
           currentReceivedDevice = device
           try device.send(data: jsonData)
           result(true)

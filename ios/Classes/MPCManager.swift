@@ -15,6 +15,16 @@ class MPCManager: NSObject {
 
     struct Notifications {
         static let deviceDidChangeState = Notification.Name("deviceDidChangeState")
+
+        static let adOnConnectionInitiated = Notification.Name("adOnConnectionInitiated")
+        static let adOnConnectionResult = Notification.Name("adOnConnectionResult")
+        static let adOnDisconnected = Notification.Name("adOnDisconnected")
+
+        static let disOnConnectionInitiated = Notification.Name("disOnConnectionInitiated")
+        static let disOnConnectionResult = Notification.Name("disOnConnectionResult")
+        static let disOnDisconnected = Notification.Name("disOnDisconnected")
+        static let disOnEndpointFound = Notification.Name("disOnEndpointFound")
+        static let disOnEndpointLost = Notification.Name("disOnEndpointLost")
     }
 
     static let instance = MPCManager()
@@ -30,25 +40,13 @@ class MPCManager: NSObject {
 
     var deviceDidChange: (() -> Void)?
 
-    //    override init() {
-    //        if let data = UserDefaults.standard.data(forKey: "peerID"), let id = NSKeyedUnarchiver.unarchiveObject(with: data) as? MCPeerID {
-    //            self.localPeerID = id
-    //        } else {
-    //            let peerID = MCPeerID(displayName: UIDevice.current.name)
-    //            let data = NSKeyedArchiver.archivedData(withRootObject: peerID)
-    //            UserDefaults.standard.set(data, forKey: "peerID")
-    //            self.localPeerID = peerID
-    //        }
-    //        super.init()
-    //    }
-
     deinit{
         if let taskEnterBackground = enterbackgroundNotification {
             NotificationCenter.default.removeObserver(taskEnterBackground)
         }
     }
 
-    func setup(serviceType: String, deviceName: String) {
+    func setup(serviceType: String, deviceName: String, isAdvert: Bool) {
         if let data = UserDefaults.standard.data(forKey: deviceName), let id = NSKeyedUnarchiver.unarchiveObject(with: data) as? MCPeerID {
             self.localPeerID = id
         } else {
@@ -57,12 +55,14 @@ class MPCManager: NSObject {
             UserDefaults.standard.set(data, forKey: deviceName)
             self.localPeerID = peerID
         }
-
-        self.advertiser = MCNearbyServiceAdvertiser(peer: localPeerID, discoveryInfo: nil, serviceType: serviceType)
-        self.advertiser.delegate = self
-
-        self.browser = MCNearbyServiceBrowser(peer: localPeerID, serviceType: serviceType)
-        self.browser.delegate = self
+        if(isAdvert){
+            self.advertiser = MCNearbyServiceAdvertiser(peer: localPeerID, discoveryInfo: nil, serviceType: serviceType)
+            self.advertiser.delegate = self
+        }
+        else{
+            self.browser = MCNearbyServiceBrowser(peer: localPeerID, serviceType: serviceType)
+            self.browser.delegate = self
+        }
         enterbackgroundNotification = NotificationCenter.default.addObserver(
             forName: UIApplication.didEnterBackgroundNotification,
             object: nil,
@@ -88,9 +88,6 @@ class MPCManager: NSObject {
     }
 
     func stopBrowsingForPeers() {
-        for device in self.devices {
-            device.disconnect()
-        }
         self.browser.stopBrowsingForPeers()
     }
 
@@ -110,8 +107,14 @@ class MPCManager: NSObject {
         device?.disconnect()
     }
 
+    func disconnectAllPeers(){
+        for device in self.devices {
+            device.disconnect()
+        }
+    }
+
     func addNewDevice(for id: MCPeerID) -> Device {
-        devices = devices.filter{$0.peerID.displayName != id.displayName}
+        // devices = devices.filter{$0.peerID.displayName != id.displayName}
         let device = Device(peerID: id)
         self.devices.append(device)
         return device

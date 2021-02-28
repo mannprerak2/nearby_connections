@@ -31,8 +31,8 @@ struct ReceivedResponse {
     var message: MessageReponse
 
     init(json: JSON) {
-        deviceID = json["deviceID"].string
-        message = MessageReponse(json: json["message"])
+        deviceID = json["endpointId"].string
+        message = MessageReponse(json: json["bytes"])
     }
 }
 
