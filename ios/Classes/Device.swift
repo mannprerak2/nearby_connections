@@ -3,6 +3,7 @@ import MultipeerConnectivity
 import SwiftyJSON
 
 class Device: NSObject {
+    var endpointId: Int
     let peerID: MCPeerID
     var session: MCSession?
     var state = MCSessionState.notConnected
@@ -12,6 +13,7 @@ class Device: NSObject {
 
     init(peerID: MCPeerID) {
         self.peerID = peerID
+        self.UUID = UUID().uuidString
         super.init()
     }
 

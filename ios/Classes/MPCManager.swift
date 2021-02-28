@@ -32,11 +32,7 @@ class MPCManager: NSObject {
     var localPeerID: MCPeerID!
     var enterbackgroundNotification: NSObjectProtocol!
     private var backgroundTaskID: UIBackgroundTaskIdentifier = .invalid
-    var devices: [Device] = [] {
-        didSet {
-            deviceDidChange?()
-        }
-    }
+    var devices: [Device] = []
 
     var deviceDidChange: (() -> Void)?
 
@@ -76,7 +72,6 @@ class MPCManager: NSObject {
 
     func startAdvertisingPeer() {
         self.advertiser.startAdvertisingPeer()
-
     }
 
     func startBrowsingForPeers() {
@@ -91,9 +86,9 @@ class MPCManager: NSObject {
         self.browser.stopBrowsingForPeers()
     }
 
-    func invitePeer(deviceID: String) {
+    func invitePeer(endpointId: String) {
         do {
-            let device = MPCManager.instance.findDevice(for: deviceID)
+            let device = MPCManager.instance.findDevice(for: endpointId)
             if(device?.state == MCSessionState.notConnected){
                 device?.invite(with: self.browser)
             }
@@ -118,9 +113,9 @@ class MPCManager: NSObject {
         return device
     }
 
-    func findDevice(for deviceId: String) -> Device? {
+    func findDevice(for endpointId: String) -> Device? {
         for device in self.devices {
-            if device.peerID.displayName == deviceId { return device }
+            if device.endpointId == endpointId { return device }
         }
         return nil
     }
@@ -168,6 +163,7 @@ extension MPCManager: MCNearbyServiceBrowserDelegate {
     func browser(_ browser: MCNearbyServiceBrowser, foundPeer peerID: MCPeerID, withDiscoveryInfo info: [String : String]?) {
         // found peer, create a device with this peerID
         addNewDevice(for: peerID)
+        
     }
 
     func browser(_ browser: MCNearbyServiceBrowser, lostPeer peerID: MCPeerID) {
