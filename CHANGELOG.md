@@ -1,3 +1,6 @@
+# 3.0.0
+* Bump version to 3.0.0 (dart sdk `>=2.12.0 <3.0.0`).
+
 ## 3.0.0-nullsafety.1
 * Fix typo in PayloadStatus enum (`IN_PROGRRESS -> IN_PROGRESS`).
 
