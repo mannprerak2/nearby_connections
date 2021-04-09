@@ -36,8 +36,7 @@ class Nearby {
               endpointId,
               ConnectionInfo(
                   endpointName, authenticationToken, isIncomingConnection));
-
-          return null;
+          break;
         case "ad.onConnectionResult":
           String endpointId = args['endpointId'] ?? '-1';
           Status statusCode =
@@ -45,13 +44,13 @@ class Nearby {
 
           _advertConnectionResult?.call(endpointId, statusCode);
 
-          return null;
+          break;
         case "ad.onDisconnected":
           String endpointId = args['endpointId'] ?? '-1';
 
           _advertDisconnected?.call(endpointId);
 
-          return null;
+          break;
 
         case "dis.onConnectionInitiated":
           String endpointId = args['endpointId'] ?? '-1';
@@ -64,7 +63,7 @@ class Nearby {
               ConnectionInfo(
                   endpointName, authenticationToken, isIncomingConnection));
 
-          return null;
+          break;
         case "dis.onConnectionResult":
           String endpointId = args['endpointId'] ?? '-1';
           Status statusCode =
@@ -72,13 +71,13 @@ class Nearby {
 
           _discoverConnectionResult?.call(endpointId, statusCode);
 
-          return null;
+          break;
         case "dis.onDisconnected":
           String endpointId = args['endpointId'] ?? '-1';
 
           _discoverDisconnected?.call(endpointId);
 
-          return null;
+          break;
 
         case "dis.onEndpointFound":
           String endpointId = args['endpointId'] ?? '-1';
@@ -86,13 +85,13 @@ class Nearby {
           String serviceId = args['serviceId'] ?? '-1';
           _onEndpointFound?.call(endpointId, endpointName, serviceId);
 
-          return null;
+          break;
         case "dis.onEndpointLost":
           String endpointId = args['endpointId'] ?? '-1';
 
           _onEndpointLost?.call(endpointId);
 
-          return null;
+          break;
         case "onPayloadReceived":
           String endpointId = args['endpointId'] ?? '-1';
           int type = args['type'] ?? PayloadType.NONE;
@@ -127,8 +126,8 @@ class Nearby {
           _onPayloadTransferUpdate?.call(endpointId, payloadTransferUpdate);
           break;
       }
-      return null;
-    } as Future<dynamic> Function(MethodCall)?);
+      return Future.value();
+    });
   }
 
   //for advertisers

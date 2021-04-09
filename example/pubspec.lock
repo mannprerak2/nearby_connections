@@ -129,7 +129,7 @@ packages:
     source: hosted
     version: "1.3.0"
   nearby_connections:
-    dependency: "direct dev"
+    dependency: "direct main"
     description:
       path: ".."
       relative: true
