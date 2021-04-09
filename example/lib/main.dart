@@ -37,7 +37,7 @@ class _MyBodyState extends State<Body> {
   final Strategy strategy = Strategy.P2P_STAR;
   Map<String, ConnectionInfo> endpointMap = Map();
 
-  File tempFile; //reference to the file currently being transferred
+  File? tempFile; //reference to the file currently being transferred
   Map<int, String> map =
       Map(); //store filename mapped to corresponding payloadId
 
@@ -149,7 +149,7 @@ class _MyBodyState extends State<Body> {
                         },
                         onDisconnected: (id) {
                           showSnackbar(
-                              "Disconnected: ${endpointMap[id].endpointName}, id $id");
+                              "Disconnected: ${endpointMap[id]!.endpointName}, id $id");
                           setState(() {
                             endpointMap.remove(id);
                           });
@@ -207,7 +207,7 @@ class _MyBodyState extends State<Body> {
                                               endpointMap.remove(id);
                                             });
                                             showSnackbar(
-                                                "Disconnected from: ${endpointMap[id].endpointName}, id $id");
+                                                "Disconnected from: ${endpointMap[id]!.endpointName}, id $id");
                                           },
                                         );
                                       },
@@ -220,7 +220,7 @@ class _MyBodyState extends State<Body> {
                         },
                         onEndpointLost: (id) {
                           showSnackbar(
-                              "Lost discovered Endpoint: ${endpointMap[id].endpointName}, id $id");
+                              "Lost discovered Endpoint: ${endpointMap[id]!.endpointName}, id $id");
                         },
                       );
                       showSnackbar("DISCOVERING: " + a.toString());
@@ -266,7 +266,7 @@ class _MyBodyState extends State<Body> {
             ElevatedButton(
               child: Text("Send File Payload"),
               onPressed: () async {
-                PickedFile file =
+                PickedFile? file =
                     await ImagePicker().getImage(source: ImageSource.gallery);
 
                 if (file == null) return;
@@ -319,7 +319,7 @@ class _MyBodyState extends State<Body> {
                     id,
                     onPayLoadRecieved: (endid, payload) async {
                       if (payload.type == PayloadType.BYTES) {
-                        String str = String.fromCharCodes(payload.bytes);
+                        String str = String.fromCharCodes(payload.bytes!);
                         showSnackbar(endid + ": " + str);
 
                         if (str.contains(':')) {
@@ -329,9 +329,9 @@ class _MyBodyState extends State<Body> {
                           String fileName = (str.split(':')[1]);
 
                           if (map.containsKey(payloadId)) {
-                            if (await tempFile.exists()) {
-                              tempFile.rename(
-                                  tempFile.parent.path + "/" + fileName);
+                            if (await tempFile!.exists()) {
+                              tempFile!.rename(
+                                  tempFile!.parent.path + "/" + fileName);
                             } else {
                               showSnackbar("File doesn't exist");
                             }
@@ -342,7 +342,7 @@ class _MyBodyState extends State<Body> {
                         }
                       } else if (payload.type == PayloadType.FILE) {
                         showSnackbar(endid + ": File transfer started");
-                        tempFile = File(payload.filePath);
+                        tempFile = File(payload.filePath!);
                       }
                     },
                     onPayloadTransferUpdate: (endid, payloadTransferUpdate) {
@@ -360,8 +360,8 @@ class _MyBodyState extends State<Body> {
 
                         if (map.containsKey(payloadTransferUpdate.id)) {
                           //rename the file now
-                          String name = map[payloadTransferUpdate.id];
-                          tempFile.rename(tempFile.parent.path + "/" + name);
+                          String name = map[payloadTransferUpdate.id]!;
+                          tempFile!.rename(tempFile!.parent.path + "/" + name);
                         } else {
                           //bytes not received till yet
                           map[payloadTransferUpdate.id] = "";
