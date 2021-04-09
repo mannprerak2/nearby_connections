@@ -387,7 +387,7 @@ class Nearby {
   /// You must also send a bytes payload to send the filename and extension
   /// so that receiver can rename the file accordingly
   /// Send the payloadID and filename to receiver as bytes payload
-  Future<int?> sendFilePayload(String endpointId, String filePath) async {
+  Future<int> sendFilePayload(String endpointId, String filePath) async {
     return await _channel.invokeMethod(
       'sendFilePayload',
       <String, dynamic>{
