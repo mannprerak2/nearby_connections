@@ -1,3 +1,6 @@
+## 3.0.1
+- Fix issues when running with sound null safety.
+
 ## 3.0.0
 * Bump version to 3.0.0 (dart sdk `>=2.12.0 <3.0.0`).
 
