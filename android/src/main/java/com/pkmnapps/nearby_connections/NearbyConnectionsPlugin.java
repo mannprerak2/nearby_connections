@@ -5,6 +5,9 @@ import android.app.Activity;
 import android.content.pm.PackageManager;
 import android.location.LocationManager;
 import android.util.Log;
+import android.os.Build.VERSION;
+import android.os.Build.VERSION_CODES;
+import android.net.Uri;
 
 import androidx.annotation.NonNull;
 import androidx.core.app.ActivityCompat;
@@ -418,7 +421,13 @@ public class NearbyConnectionsPlugin implements MethodCallHandler, FlutterPlugin
                 assert bytes != null;
                 args.put("bytes", bytes);
             } else if (payload.getType() == Payload.Type.FILE) {
-                args.put("filePath", payload.asFile().asJavaFile().getAbsolutePath());
+                if (VERSION.SDK_INT >= VERSION_CODES.Q) {
+                    // TODO: fix this
+                    args.put("filePath", payload.asFile().asJavaFile().getAbsolutePath());
+                }
+                else{
+                    args.put("filePath", payload.asFile().asJavaFile().getAbsolutePath());
+                }
             }
 
             channel.invokeMethod("onPayloadReceived", args);
