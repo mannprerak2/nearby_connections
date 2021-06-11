@@ -170,15 +170,15 @@ Nearby().sendBytesPayload(endpointId, bytes_array);
 ### Sending File Payload
 You need to send the File Payload and File Name seperately.
 
-File is stored in DOWNLOAD_DIRECTORY and given a generic name
-So you would need to rename the file on receivers end.
+File is stored in `DOWNLOAD_DIRECTORY/.nearby/` and given a generic name.
+You need to copy the file to another directory of your choice.
 
 ```dart
 //creates file with generic name (without extension) in Downloads Directory
 //its your responsibility to rename the file properly
 Nearby().sendFilePayload(endpointId, filePath);
 
-//Send filename as well so that receiver can rename the file
+//Send filename as well so that receiver can move and rename the file
 Nearby().sendBytesPayload(endpointId,fileNameEncodedWithPayloadId);
 //e.g send a string like "payloadId:FileExtensionOrFullName" as bytes
 
@@ -186,9 +186,15 @@ Nearby().sendBytesPayload(endpointId,fileNameEncodedWithPayloadId);
 ```
 Every payload has an **ID** which is same for sender and receiver.
 
-You can get the absolute FilePath from Payload in *onPayloadReceived* function
+You can get the `uri` of the file from Payload in *onPayloadReceived* function.
+We have a convinience method to copy the file to a location you want-
+```dart
+// Convinience method to copy file using it's `uri`.
+final newPath = '${await getExternalStorageDirectory}/$fileName';
+await Nearby().copyFileAndDeleteOriginal(uri, newPath);
+```
 
-Checkout the [**Example**](https://github.com/mannprerak2/nearby_connections/tree/master/example) in Repository for more details
+Checkout the [**Example**](https://github.com/mannprerak2/nearby_connections/tree/master/example) in Repository for more details.
 
 
 
