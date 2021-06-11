@@ -15,13 +15,17 @@ class Payload {
   PayloadType type;
 
   Uint8List? bytes;
+
+  @Deprecated('Use uri instead, Only available on Android 10 and below.')
   String? filePath;
+  String? uri;
 
   Payload({
     required this.id,
     this.bytes,
     this.type = PayloadType.NONE,
     this.filePath,
+    this.uri,
   });
 }
 

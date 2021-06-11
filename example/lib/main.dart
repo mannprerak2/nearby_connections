@@ -1,7 +1,7 @@
-import 'dart:io';
 import 'dart:math';
 import 'dart:typed_data';
 
+import 'package:path_provider/path_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:nearby_connections/nearby_connections.dart';
@@ -37,7 +37,7 @@ class _MyBodyState extends State<Body> {
   final Strategy strategy = Strategy.P2P_STAR;
   Map<String, ConnectionInfo> endpointMap = Map();
 
-  File? tempFile; //reference to the file currently being transferred
+  String? tempFileUri; //reference to the file currently being transferred
   Map<int, String> map =
       Map(); //store filename mapped to corresponding payloadId
 
@@ -283,6 +283,17 @@ class _MyBodyState extends State<Body> {
                 }
               },
             ),
+            ElevatedButton(
+              child: Text("Print file names."),
+              onPressed: () async {
+                final dir = (await getExternalStorageDirectory())!;
+                final files = (await dir.list(recursive: true).toList())
+                    .map((f) => f.path)
+                    .toList()
+                    .join('\n');
+                showSnackbar(files);
+              },
+            ),
           ],
         ),
       ),
@@ -293,6 +304,15 @@ class _MyBodyState extends State<Body> {
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(
       content: Text(a.toString()),
     ));
+  }
+
+  Future<bool> moveFile(String uri, String fileName) async {
+    String parentDir = (await getExternalStorageDirectory())!.absolute.path;
+    final b =
+        await Nearby().copyFileAndDeleteOriginal(uri, '$parentDir/$fileName');
+
+    showSnackbar("Moved file:" + b.toString());
+    return b;
   }
 
   /// Called upon Connection request (on both devices)
@@ -329,9 +349,8 @@ class _MyBodyState extends State<Body> {
                           String fileName = (str.split(':')[1]);
 
                           if (map.containsKey(payloadId)) {
-                            if (await tempFile!.exists()) {
-                              tempFile!.rename(
-                                  tempFile!.parent.path + "/" + fileName);
+                            if (tempFileUri != null) {
+                              moveFile(tempFileUri!, fileName);
                             } else {
                               showSnackbar("File doesn't exist");
                             }
@@ -342,7 +361,7 @@ class _MyBodyState extends State<Body> {
                         }
                       } else if (payload.type == PayloadType.FILE) {
                         showSnackbar(endid + ": File transfer started");
-                        tempFile = File(payload.filePath!);
+                        tempFileUri = payload.uri;
                       }
                     },
                     onPayloadTransferUpdate: (endid, payloadTransferUpdate) {
@@ -361,7 +380,7 @@ class _MyBodyState extends State<Body> {
                         if (map.containsKey(payloadTransferUpdate.id)) {
                           //rename the file now
                           String name = map[payloadTransferUpdate.id]!;
-                          tempFile!.rename(tempFile!.parent.path + "/" + name);
+                          moveFile(tempFileUri!, name);
                         } else {
                           //bytes not received till yet
                           map[payloadTransferUpdate.id] = "";

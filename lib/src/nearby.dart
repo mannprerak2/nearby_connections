@@ -97,13 +97,15 @@ class Nearby {
           int type = args['type'] ?? PayloadType.NONE;
           Uint8List bytes = args['bytes'] ?? Uint8List(0);
           int payloadId = args['payloadId'] ?? -1;
-          String filePath = args['filePath'] ?? '';
+          String? filePath = args['filePath'];
+          String? uri = args['uri'];
 
           Payload payload = Payload(
             type: PayloadType.values[type],
             bytes: bytes,
             id: payloadId,
             filePath: filePath,
+            uri: uri,
           );
 
           _onPayloadReceived?.call(endpointId, payload);
@@ -195,6 +197,16 @@ class Nearby {
   /// Use this instead of calling both [askLocationPermission()] and [askExternalStoragePermission()]
   void askLocationAndExternalStoragePermission() =>
       _channel.invokeMethod('askLocationAndExternalStoragePermission');
+
+  /// convenience method
+  ///
+  /// Copy file from [sourceUri] to [destinationFilepath] and delete original.
+  Future<bool> copyFileAndDeleteOriginal(
+          String sourceUri, String destinationFilepath) async =>
+      await _channel.invokeMethod('copyFileAndDeleteOriginal', {
+        'sourceUri': sourceUri,
+        'destinationFilepath': destinationFilepath,
+      });
 
   /// Start Advertising, Discoverers would be able to discover this advertiser.
   ///

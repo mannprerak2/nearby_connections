@@ -1,3 +1,6 @@
+## 3.1.0
+- Expose `uri` for file payloads and deprecated `filepath`.
+
 ## 3.0.1
 - Fix issues when running with sound null safety.
 
