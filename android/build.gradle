@@ -32,7 +32,7 @@ android {
         disable 'InvalidPackage'
     }
     dependencies{
-        api 'com.google.android.gms:play-services-nearby:17.0.0'
+        api 'com.google.android.gms:play-services-nearby:18.0.0'
     }
 }
 

@@ -31,6 +31,10 @@ import com.google.android.gms.tasks.OnSuccessListener;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.FileOutputStream;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -131,6 +135,25 @@ public class NearbyConnectionsPlugin implements MethodCallHandler, FlutterPlugin
                         1);
                 Log.d("nearby_connections", "askExternalStoragePermission");
                 result.success(null);
+                break;
+            case "copyFileAndDeleteOriginal":
+                Log.d("nearby_connections", "copyFileAndDeleteOriginal");
+                String sourceUri = (String) call.argument("sourceUri");
+                String destinationFilepath = (String) call.argument("destinationFilepath");
+
+                try {
+                    // Copy the file to a new location.
+                    Uri uri = Uri.parse(sourceUri);
+                    InputStream in = activity.getContentResolver().openInputStream(uri);
+                    copyStream(in, new FileOutputStream(new File(destinationFilepath)));
+                    // Delete the original file.
+                    activity.getContentResolver().delete(uri, null, null);
+                    result.success(true);
+                } catch (IOException e) {
+                    // Log the error.
+                    Log.e("nearby_connections", e.getMessage());
+                    result.success(false);
+                }
                 break;
             case "stopAdvertising":
                 Log.d("nearby_connections", "stopAdvertising");
@@ -421,11 +444,9 @@ public class NearbyConnectionsPlugin implements MethodCallHandler, FlutterPlugin
                 assert bytes != null;
                 args.put("bytes", bytes);
             } else if (payload.getType() == Payload.Type.FILE) {
-                if (VERSION.SDK_INT >= VERSION_CODES.Q) {
-                    // TODO: fix this
-                    args.put("filePath", payload.asFile().asJavaFile().getAbsolutePath());
-                }
-                else{
+                args.put("uri", payload.asFile().asUri().toString());
+                if (VERSION.SDK_INT < VERSION_CODES.Q) {
+                    // This is deprecated and only available on Android 10 and below.
                     args.put("filePath", payload.asFile().asJavaFile().getAbsolutePath());
                 }
             }
@@ -542,5 +563,18 @@ public class NearbyConnectionsPlugin implements MethodCallHandler, FlutterPlugin
             activityPluginBinding.addRequestPermissionsResultListener(locationHelper);
         }
     }
-
+    /** Copies a stream from one location to another. */
+    private static void copyStream(InputStream in, OutputStream out) throws IOException {
+        try {
+            byte[] buffer = new byte[1024];
+            int read;
+        while ((read = in.read(buffer)) != -1) {
+            out.write(buffer, 0, read);
+        }
+        out.flush();
+        } finally {
+            in.close();
+            out.close();
+        }
+    }
 }
