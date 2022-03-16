@@ -173,6 +173,12 @@ class Nearby {
 
   /// convenience method
   ///
+  /// returns true/false based on bluetooth permissions.
+  Future<bool> checkBluetoothPermission() async =>
+      await _channel.invokeMethod('checkBluetoothPermission') ?? false;
+
+  /// convenience method
+  ///
   /// Checks if Location/GPS is enabled
   ///
   /// If Location isn't enabled, devices may disconnect often.
@@ -191,6 +197,12 @@ class Nearby {
   /// Asks external storage permission, required for file
   void askExternalStoragePermission() =>
       _channel.invokeMethod('askExternalStoragePermission');
+
+  /// convenience method
+  ///
+  /// Asks bluetooth permissions, required for apps running on Android 12 and higher
+  void askBluetoothPermission() =>
+      _channel.invokeMethod('askBluetoothPermission');
 
   /// convenience method
   ///
