@@ -128,22 +128,30 @@ public class NearbyConnectionsPlugin implements MethodCallHandler, FlutterPlugin
                 result.success(null);
                 break;
             case "checkBluetoothPermission": // required for apps running on Android 12 and higher
-                if (
-                    ContextCompat.checkSelfPermission(activity, Manifest.permission.BLUETOOTH_ADVERTISE) == PackageManager.PERMISSION_GRANTED && 
-                    ContextCompat.checkSelfPermission(activity, Manifest.permission.BLUETOOTH_CONNECT) == PackageManager.PERMISSION_GRANTED &&
-                    ContextCompat.checkSelfPermission(activity, Manifest.permission.BLUETOOTH_SCAN) == PackageManager.PERMISSION_GRANTED 
-                ) {
+                if (VERSION.SDK_INT >= VERSION_CODES.S) {
+                    if (
+                        ContextCompat.checkSelfPermission(activity, Manifest.permission.BLUETOOTH_ADVERTISE) == PackageManager.PERMISSION_GRANTED && 
+                        ContextCompat.checkSelfPermission(activity, Manifest.permission.BLUETOOTH_CONNECT) == PackageManager.PERMISSION_GRANTED &&
+                        ContextCompat.checkSelfPermission(activity, Manifest.permission.BLUETOOTH_SCAN) == PackageManager.PERMISSION_GRANTED 
+                    ) {
+                        result.success(true);
+                    } else {
+                        result.success(false);
+                    }
+                } else{
                     result.success(true);
-                } else {
-                    result.success(false);
                 }
                 break;
             case "askBluetoothPermission":
-                ActivityCompat.requestPermissions(activity,
-                    new String[]{Manifest.permission.BLUETOOTH_ADVERTISE, Manifest.permission.BLUETOOTH_CONNECT, Manifest.permission.BLUETOOTH_SCAN},
-                1);
-                Log.d("nearby_connections", "askBluetoothPermission");
-                result.success(null);
+                if (VERSION.SDK_INT >= VERSION_CODES.S) {
+                    ActivityCompat.requestPermissions(activity,
+                        new String[]{Manifest.permission.BLUETOOTH_ADVERTISE, Manifest.permission.BLUETOOTH_CONNECT, Manifest.permission.BLUETOOTH_SCAN},
+                    1);
+                    Log.d("nearby_connections", "askBluetoothPermission");
+                    result.success(null);
+                } else{
+                    result.success(null);
+                }
                 break;
             case "askLocationAndExternalStoragePermission":
                 ActivityCompat.requestPermissions(activity,

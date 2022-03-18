@@ -1,3 +1,8 @@
+## 3.2.0
+- Update for Android 12 support. Apps may need to set `compileSdkVersion 32` in build.gradle.
+- Added convinience methods `checkBluetoothPermission` and `askBluetoothPermission`
+required for Android 12+ devices.
+
 ## 3.1.0
 - Expose `uri` for file payloads and deprecated `filepath`.
 - Added convinience method `copyFileAndDeleteOriginal` for moving file using

@@ -99,6 +99,25 @@ class _MyBodyState extends State<Body> {
                     Nearby().askExternalStoragePermission();
                   },
                 ),
+                ElevatedButton(
+                  child: Text("checkBluetoothPermission (Android 12+)"),
+                  onPressed: () async {
+                    if (await Nearby().checkBluetoothPermission()) {
+                      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                          content: Text("Bluethooth permissions granted :)")));
+                    } else {
+                      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                          content:
+                              Text("Bluetooth permissions not granted :(")));
+                    }
+                  },
+                ),
+                ElevatedButton(
+                  child: Text("askBluetoothPermission (Android 12+)"),
+                  onPressed: () {
+                    Nearby().askBluetoothPermission();
+                  },
+                ),
               ],
             ),
             Divider(),
