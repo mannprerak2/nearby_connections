@@ -5,6 +5,8 @@ import 'package:flutter/services.dart';
 import 'package:nearby_connections/src/classes.dart';
 import 'package:nearby_connections/src/defs.dart';
 
+import 'messages.g.dart'; // import pigeon generated file for ease of method channel calls
+
 /// The NearbyConnection class
 ///
 /// Only one instance is maintained
@@ -12,6 +14,8 @@ import 'package:nearby_connections/src/defs.dart';
 ///
 /// All methods are asynchronous.
 class Nearby {
+  final NearbyApi _api = NearbyApi();
+
   //Singleton pattern for maintaining only 1 instance of this class
   static Nearby? _instance;
 
@@ -78,55 +82,6 @@ class Nearby {
           _discoverDisconnected?.call(endpointId);
 
           break;
-
-        case "dis.onEndpointFound":
-          String endpointId = args['endpointId'] ?? '-1';
-          String endpointName = args['endpointName'] ?? '-1';
-          String serviceId = args['serviceId'] ?? '-1';
-          _onEndpointFound?.call(endpointId, endpointName, serviceId);
-
-          break;
-        case "dis.onEndpointLost":
-          String endpointId = args['endpointId'] ?? '-1';
-
-          _onEndpointLost?.call(endpointId);
-
-          break;
-        case "onPayloadReceived":
-          String endpointId = args['endpointId'] ?? '-1';
-          int type = args['type'] ?? PayloadType.NONE;
-          Uint8List bytes = args['bytes'] ?? Uint8List(0);
-          int payloadId = args['payloadId'] ?? -1;
-          String? filePath = args['filePath'];
-          String? uri = args['uri'];
-
-          Payload payload = Payload(
-            type: PayloadType.values[type],
-            bytes: bytes,
-            id: payloadId,
-            filePath: filePath,
-            uri: uri,
-          );
-
-          _onPayloadReceived?.call(endpointId, payload);
-
-          break;
-        case "onPayloadTransferUpdate":
-          String endpointId = args['endpointId'] ?? '-1';
-          int payloadId = args['payloadId'] ?? -1;
-          int status = args['status'] ?? Status.ERROR.index;
-          int bytesTransferred = args['bytesTransferred'] ?? 0;
-          int totalBytes = args['totalBytes'] ?? 0;
-
-          PayloadTransferUpdate payloadTransferUpdate = PayloadTransferUpdate(
-            id: payloadId,
-            status: PayloadStatus.values[status],
-            bytesTransferred: bytesTransferred,
-            totalBytes: totalBytes,
-          );
-
-          _onPayloadTransferUpdate?.call(endpointId, payloadTransferUpdate);
-          break;
       }
       return Future.value();
     });
@@ -154,28 +109,25 @@ class Nearby {
   /// returns true/false based on location permissions.
   /// Discovery cannot be started with insufficient permission
   Future<bool> checkLocationPermission() async =>
-      await _channel.invokeMethod(
-        'checkLocationPermission',
-      ) ??
-      false;
+      await _api.checkLocationPermission();
 
   /// convenience method
   ///
   /// Asks location permission
   Future<bool> askLocationPermission() async =>
-      await _channel.invokeMethod('askLocationPermission') ?? false;
+      await _api.askLocationPermission();
 
   /// convenience method
   ///
   /// returns true/false based on external storage permissions.
   Future<bool> checkExternalStoragePermission() async =>
-      await _channel.invokeMethod('checkExternalStoragePermission') ?? false;
+      await _api.checkExternalStoragePermission();
 
   /// convenience method
   ///
   /// returns true/false based on bluetooth permissions.
   Future<bool> checkBluetoothPermission() async =>
-      await _channel.invokeMethod('checkBluetoothPermission') ?? false;
+      await _api.checkBluetoothPermission();
 
   /// convenience method
   ///
@@ -184,41 +136,38 @@ class Nearby {
   /// If Location isn't enabled, devices may disconnect often.
   /// Some devices may immediately disconnect
   Future<bool> checkLocationEnabled() async =>
-      await _channel.invokeMethod('checkLocationEnabled') ?? false;
+      await _api.checkLocationEnabled();
 
   /// convenience method
   ///
   /// directs user to Location Settings, so they can turn on their Location/GPS
   Future<bool> enableLocationServices() async =>
-      await _channel.invokeMethod('enableLocationServices') ?? false;
+      await _api.enableLocationServices();
 
   /// convenience method
   ///
   /// Asks external storage permission, required for file
   void askExternalStoragePermission() =>
-      _channel.invokeMethod('askExternalStoragePermission');
+      _api.askExternalStoragePermission();
 
   /// convenience method
   ///
   /// Asks bluetooth permissions, required for apps running on Android 12 and higher
   void askBluetoothPermission() =>
-      _channel.invokeMethod('askBluetoothPermission');
+      _api.askBluetoothPermission();
 
   /// convenience method
   ///
   /// Use this instead of calling both [askLocationPermission()] and [askExternalStoragePermission()]
   void askLocationAndExternalStoragePermission() =>
-      _channel.invokeMethod('askLocationAndExternalStoragePermission');
+      _api.askLocationAndExternalStoragePermission();
 
   /// convenience method
   ///
   /// Copy file from [sourceUri] to [destinationFilepath] and delete original.
   Future<bool> copyFileAndDeleteOriginal(
           String sourceUri, String destinationFilepath) async =>
-      await _channel.invokeMethod('copyFileAndDeleteOriginal', {
-        'sourceUri': sourceUri,
-        'destinationFilepath': destinationFilepath,
-      });
+      await _api.copyFileAndDeleteOriginal(sourceUri, destinationFilepath);
 
   /// Start Advertising, Discoverers would be able to discover this advertiser.
   ///
@@ -236,12 +185,7 @@ class Nearby {
     this._advertConnectionResult = onConnectionResult;
     this._advertDisconnected = onDisconnected;
 
-    return await _channel.invokeMethod('startAdvertising', <String, dynamic>{
-          'userNickName': userNickName,
-          'strategy': strategy.index,
-          'serviceId': serviceId,
-        }) ??
-        false;
+    return await _api.startAdvertising(IdentifierMessage(userNickname: userNickName, strategy: strategy.index, serviceId: serviceId));
   }
 
   /// Stop Advertising
@@ -251,7 +195,7 @@ class Nearby {
   /// For disconnection use
   /// [stopAllEndpoints] or [disconnectFromEndpoint]
   Future<void> stopAdvertising() async {
-    await _channel.invokeMethod('stopAdvertising');
+    await _api.stopAdvertising();
   }
 
   /// Start Discovery, You will now be able to discover the advertisers now.
@@ -268,12 +212,7 @@ class Nearby {
     this._onEndpointFound = onEndpointFound;
     this._onEndpointLost = onEndpointLost;
 
-    return await _channel.invokeMethod('startDiscovery', <String, dynamic>{
-          'userNickName': userNickName,
-          'strategy': strategy.index,
-          'serviceId': serviceId,
-        }) ??
-        false;
+    return await _api.startDiscovery(IdentifierMessage(userNickname: userNickName, strategy: strategy.index, serviceId: serviceId));
   }
 
   /// Stop Discovery
@@ -285,7 +224,7 @@ class Nearby {
   /// as discovery uses heavy radio operations
   /// which may affect connection speed and integrity
   Future<void> stopDiscovery() async {
-    await _channel.invokeMethod('stopDiscovery');
+    await _api.stopDiscovery();
   }
 
   /// Stop All Endpoints
@@ -294,7 +233,7 @@ class Nearby {
   /// this will call the onDisconnected method on callbacks of
   /// all connected endPoints
   Future<void> stopAllEndpoints() async {
-    await _channel.invokeMethod('stopAllEndpoints');
+    await _api.stopAllEndpoints();
   }
 
   /// Disconnect from Endpoints
@@ -303,8 +242,7 @@ class Nearby {
   /// this will call the onDisconnected method on callbacks of
   /// connected endPoint
   Future<void> disconnectFromEndpoint(String endpointId) async {
-    await _channel.invokeMethod(
-        'disconnectFromEndpoint', <String, dynamic>{'endpointId': endpointId});
+    await _api.disconnectFromEndpoint(endpointId);
   }
 
   /// Request Connection
@@ -325,14 +263,7 @@ class Nearby {
     this._discoverConnectionResult = onConnectionResult;
     this._discoverDisconnected = onDisconnected;
 
-    return await _channel.invokeMethod(
-          'requestConnection',
-          <String, dynamic>{
-            'userNickName': userNickName,
-            'endpointId': endpointId,
-          },
-        ) ??
-        false;
+    return await _api.requestConnection(userNickName, endpointId);
   }
 
   /// Needs be called by both discoverer and advertiser
@@ -351,13 +282,7 @@ class Nearby {
     this._onPayloadReceived = onPayLoadRecieved;
     this._onPayloadTransferUpdate = onPayloadTransferUpdate;
 
-    return await _channel.invokeMethod(
-          'acceptConnection',
-          <String, dynamic>{
-            'endpointId': endpointId,
-          },
-        ) ??
-        false;
+    return await _api.acceptConnection(endpointId);
   }
 
   /// Reject Connection
@@ -370,13 +295,7 @@ class Nearby {
   /// [OnConnectionResult] is called on both
   /// even if one of them rejects the connection
   Future<bool> rejectConnection(String endpointId) async {
-    return await _channel.invokeMethod(
-          'rejectConnection',
-          <String, dynamic>{
-            'endpointId': endpointId,
-          },
-        ) ??
-        false;
+    return await _api.rejectConnection(endpointId);
   }
 
   /// Send bytes [Uint8List] payload to endpoint
@@ -394,13 +313,7 @@ class Nearby {
   /// ```
   ///
   Future<void> sendBytesPayload(String endpointId, Uint8List bytes) async {
-    return await _channel.invokeMethod(
-      'sendPayload',
-      <String, dynamic>{
-        'endpointId': endpointId,
-        'bytes': bytes,
-      },
-    );
+    return await _api.sendBytesPayload(endpointId, bytes);
   }
 
   /// Returns the payloadID as soon as file transfer has begun
@@ -411,22 +324,11 @@ class Nearby {
   /// so that receiver can rename the file accordingly
   /// Send the payloadID and filename to receiver as bytes payload
   Future<int> sendFilePayload(String endpointId, String filePath) async {
-    return await _channel.invokeMethod(
-      'sendFilePayload',
-      <String, dynamic>{
-        'endpointId': endpointId,
-        'filePath': filePath,
-      },
-    );
+    return await _api.sendFilePayload(endpointId, filePath);
   }
 
   /// Use it to cancel/stop a payload transfer
   Future<void> cancelPayload(int payloadId) async {
-    return await _channel.invokeMethod(
-      'cancelPayload',
-      <String, dynamic>{
-        'payloadId': payloadId.toString(),
-      },
-    );
+    return await _api.cancelPayload(payloadId);
   }
 }

@@ -1,4 +1,3 @@
-import 'package:nearby_connections/nearby_connections.dart';
 import 'package:pigeon/pigeon.dart';
 
 @ConfigurePigeon(PigeonOptions(
@@ -30,10 +29,10 @@ class PayloadMessage {
 
   String endpointId;
   int type;
-  Uint8List bytes;
+  Uint8List? bytes;
   int payloadId;
-  String filePath;
-  String uri;
+  String? filePath;
+  String? uri;
 }
 
 class PayloadTransferUpdateMessage {
@@ -82,7 +81,7 @@ abstract class NearbyApi {
   void stopAllEndpoints();
 
   @async
-  void disconnectFromEndpoint();
+  void disconnectFromEndpoint(String endpointId);
 
   @async
   bool requestConnection(String userNickName, String endpointId);
@@ -104,9 +103,27 @@ abstract class NearbyApi {
 }
 
 @FlutterApi()
-abstract class ConnectionLifecycleApi {
+abstract class DiscoveryConnectionLifecycleApi {
   void onConnectionInitiated(ConnectionInfoMessage connectionInfoMessage);
   void onConnectionResult();
   void onDisconnected(String endpointId);
 }
 
+@FlutterApi()
+abstract class AdvertisingConnectionLifecycleApi {
+  void onConnectionInitiated(ConnectionInfoMessage connectionInfoMessage);
+  void onConnectionResult();
+  void onDisconnected(String endpointId);
+}
+
+@FlutterApi()
+abstract class PayloadApi {
+  void onPayloadReceived(String endpointId, PayloadMessage payloadMessage);
+  void onPayloadTransferUpdate(String endpointId, PayloadTransferUpdateMessage payloadTransferUpdateMessage);
+}
+
+@FlutterApi()
+abstract class EndpointDiscoveryApi {
+  void onEndpointFound(String endpointId, String endpointName, String serviceId);
+  void onEndpointLost(String endpointId);
+}
