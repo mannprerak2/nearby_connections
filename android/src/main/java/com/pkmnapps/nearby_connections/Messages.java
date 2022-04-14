@@ -464,7 +464,7 @@ public class Messages {
     void startDiscovery(@NonNull IdentifierMessage identifierMessage, Result<Boolean> result);
     void stopDiscovery(Result<Void> result);
     void stopAllEndpoints(Result<Void> result);
-    void disconnectFromEndpoint(Result<Void> result);
+    void disconnectFromEndpoint(@NonNull String endpointId, Result<Void> result);
     void requestConnection(@NonNull String userNickName, @NonNull String endpointId, Result<Boolean> result);
     void acceptConnection(@NonNull String endpointId, Result<Boolean> result);
     void rejectConnection(@NonNull String endpointId, Result<Boolean> result);
@@ -910,6 +910,11 @@ public class Messages {
           channel.setMessageHandler((message, reply) -> {
             Map<String, Object> wrapped = new HashMap<>();
             try {
+              ArrayList<Object> args = (ArrayList<Object>)message;
+              String endpointIdArg = (String)args.get(0);
+              if (endpointIdArg == null) {
+                throw new NullPointerException("endpointIdArg unexpectedly null.");
+              }
               Result<Void> resultCallback = new Result<Void>() {
                 public void success(Void result) {
                   wrapped.put("result", null);
@@ -921,7 +926,7 @@ public class Messages {
                 }
               };
 
-              api.disconnectFromEndpoint(resultCallback);
+              api.disconnectFromEndpoint(endpointIdArg, resultCallback);
             }
             catch (Error | RuntimeException exception) {
               wrapped.put("error", wrapError(exception));
@@ -1196,10 +1201,10 @@ public class Messages {
         callback.reply(null);
       });
     }
-    public void onConnectionResult(Reply<Void> callback) {
+    public void onConnectionResult(@NonNull String endpointIdArg, @NonNull Long statusCodeArg, Reply<Void> callback) {
       BasicMessageChannel<Object> channel =
           new BasicMessageChannel<>(binaryMessenger, "dev.flutter.pigeon.DiscoveryConnectionLifecycleApi.onConnectionResult", getCodec());
-      channel.send(null, channelReply -> {
+      channel.send(new ArrayList<Object>(Arrays.asList(endpointIdArg, statusCodeArg)), channelReply -> {
         callback.reply(null);
       });
     }
@@ -1257,10 +1262,10 @@ public class Messages {
         callback.reply(null);
       });
     }
-    public void onConnectionResult(Reply<Void> callback) {
+    public void onConnectionResult(@NonNull String endpointIdArg, @NonNull Long statusCodeArg, Reply<Void> callback) {
       BasicMessageChannel<Object> channel =
           new BasicMessageChannel<>(binaryMessenger, "dev.flutter.pigeon.AdvertisingConnectionLifecycleApi.onConnectionResult", getCodec());
-      channel.send(null, channelReply -> {
+      channel.send(new ArrayList<Object>(Arrays.asList(endpointIdArg, statusCodeArg)), channelReply -> {
         callback.reply(null);
       });
     }

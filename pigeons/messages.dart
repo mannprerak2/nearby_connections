@@ -105,14 +105,14 @@ abstract class NearbyApi {
 @FlutterApi()
 abstract class DiscoveryConnectionLifecycleApi {
   void onConnectionInitiated(ConnectionInfoMessage connectionInfoMessage);
-  void onConnectionResult();
+  void onConnectionResult(String endpointId, int statusCode);
   void onDisconnected(String endpointId);
 }
 
 @FlutterApi()
 abstract class AdvertisingConnectionLifecycleApi {
   void onConnectionInitiated(ConnectionInfoMessage connectionInfoMessage);
-  void onConnectionResult();
+  void onConnectionResult(String endpointId, int statusCode);
   void onDisconnected(String endpointId);
 }
 

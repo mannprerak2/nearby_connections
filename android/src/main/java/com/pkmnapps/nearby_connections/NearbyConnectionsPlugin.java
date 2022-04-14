@@ -41,6 +41,7 @@ import java.util.Map;
 import io.flutter.embedding.engine.plugins.FlutterPlugin;
 import io.flutter.embedding.engine.plugins.activity.ActivityAware;
 import io.flutter.embedding.engine.plugins.activity.ActivityPluginBinding;
+import io.flutter.plugin.common.BinaryMessenger;
 import io.flutter.plugin.common.MethodCall;
 import io.flutter.plugin.common.MethodChannel;
 import io.flutter.plugin.common.MethodChannel.MethodCallHandler;
@@ -51,13 +52,18 @@ import io.flutter.plugin.common.PluginRegistry.Registrar;
 /**
  * NearbyConnectionsPlugin
  */
-public class NearbyConnectionsPlugin implements MethodCallHandler, FlutterPlugin, ActivityAware {
+public class NearbyConnectionsPlugin implements Messages.NearbyApi, FlutterPlugin, ActivityAware {
     private Activity activity;
     private static final String SERVICE_ID = "com.pkmnapps.nearby_connections";
     private static MethodChannel channel;
     private static LocationHelper locationHelper;
     private static ActivityPluginBinding activityPluginBinding;
     private static PluginRegistry.Registrar pluginRegistrar;
+
+    private static Messages.DiscoveryConnectionLifecycleApi discoveryConnectionLifecycleApi;
+    private static Messages.AdvertisingConnectionLifecycleApi advertisingConnectionLifecycleApi;
+    private static Messages.EndpointDiscoveryApi endpointDiscoveryApi;
+    private static Messages.PayloadApi payloadApi;
 
     private NearbyConnectionsPlugin(Activity activity) {
         this.activity = activity;
@@ -73,12 +79,17 @@ public class NearbyConnectionsPlugin implements MethodCallHandler, FlutterPlugin
         locationHelper = new LocationHelper(registrar.activity());
         locationHelper.setActivity(registrar.activity());
         initiate();
-        channel = new MethodChannel(registrar.messenger(), "nearby_connections");
-        channel.setMethodCallHandler(new NearbyConnectionsPlugin(registrar.activity()));
+
+        BinaryMessenger messenger = registrar.messenger();
+
+        discoveryConnectionLifecycleApi = new Messages.DiscoveryConnectionLifecycleApi(messenger);
+        advertisingConnectionLifecycleApi = new Messages.AdvertisingConnectionLifecycleApi(messenger);
+        endpointDiscoveryApi = new Messages.EndpointDiscoveryApi(messenger);
+        payloadApi = new Messages.PayloadApi(messenger);
     }
 
     @Override
-    public void onMethodCall(MethodCall call, final Result result) {
+    public void onMethod2Call(MethodCall call, final Result result) {
 
         switch (call.method) {
             case "checkLocationPermission":
@@ -366,19 +377,18 @@ public class NearbyConnectionsPlugin implements MethodCallHandler, FlutterPlugin
         @Override
         public void onConnectionInitiated(@NonNull String endpointId, @NonNull ConnectionInfo connectionInfo) {
             Log.d("nearby_connections", "ad.onConnectionInitiated");
-            Map<String, Object> args = new HashMap<>();
-            args.put("endpointId", endpointId);
-            args.put("endpointName", connectionInfo.getEndpointName());
-            args.put("authenticationToken", connectionInfo.getAuthenticationToken());
-            args.put("isIncomingConnection", connectionInfo.isIncomingConnection());
-            channel.invokeMethod("ad.onConnectionInitiated", args);
+            advertisingConnectionLifecycleApi.onConnectionInitiated(
+                    new Messages.ConnectionInfoMessage.Builder()
+                            .setEndpointId(endpointId)
+                            .setEndpointName(connectionInfo.getEndpointName())
+                            .setAuthenticationToken(connectionInfo.getAuthenticationToken())
+                            .setIsIncomingConnection(connectionInfo.isIncomingConnection())
+                            .build(), null);
         }
 
         @Override
         public void onConnectionResult(@NonNull String endpointId, @NonNull ConnectionResolution connectionResolution) {
             Log.d("nearby_connections", "ad.onConnectionResult");
-            Map<String, Object> args = new HashMap<>();
-            args.put("endpointId", endpointId);
             int statusCode = -1;
             switch (connectionResolution.getStatus().getStatusCode()) {
                 case ConnectionsStatusCodes.STATUS_OK:
@@ -396,16 +406,13 @@ public class NearbyConnectionsPlugin implements MethodCallHandler, FlutterPlugin
                 default:
                     // Unknown status code
             }
-            args.put("statusCode", statusCode);
-            channel.invokeMethod("ad.onConnectionResult", args);
+            advertisingConnectionLifecycleApi.onConnectionResult(endpointId, (long) statusCode, null);
         }
 
         @Override
         public void onDisconnected(@NonNull String endpointId) {
             Log.d("nearby_connections", "ad.onDisconnected");
-            Map<String, Object> args = new HashMap<>();
-            args.put("endpointId", endpointId);
-            channel.invokeMethod("ad.onDisconnected", args);
+            advertisingConnectionLifecycleApi.onDisconnected(endpointId, null);
         }
     };
 
@@ -413,19 +420,18 @@ public class NearbyConnectionsPlugin implements MethodCallHandler, FlutterPlugin
         @Override
         public void onConnectionInitiated(@NonNull String endpointId, @NonNull ConnectionInfo connectionInfo) {
             Log.d("nearby_connections", "dis.onConnectionInitiated");
-            Map<String, Object> args = new HashMap<>();
-            args.put("endpointId", endpointId);
-            args.put("endpointName", connectionInfo.getEndpointName());
-            args.put("authenticationToken", connectionInfo.getAuthenticationToken());
-            args.put("isIncomingConnection", connectionInfo.isIncomingConnection());
-            channel.invokeMethod("dis.onConnectionInitiated", args);
+            discoveryConnectionLifecycleApi.onConnectionInitiated(
+                    new Messages.ConnectionInfoMessage.Builder()
+                            .setEndpointId(endpointId)
+                            .setEndpointName(connectionInfo.getEndpointName())
+                            .setAuthenticationToken(connectionInfo.getAuthenticationToken())
+                            .setIsIncomingConnection(connectionInfo.isIncomingConnection())
+                            .build(), null);
         }
 
         @Override
         public void onConnectionResult(@NonNull String endpointId, @NonNull ConnectionResolution connectionResolution) {
             Log.d("nearby_connections", "dis.onConnectionResult");
-            Map<String, Object> args = new HashMap<>();
-            args.put("endpointId", endpointId);
             int statusCode = -1;
             switch (connectionResolution.getStatus().getStatusCode()) {
                 case ConnectionsStatusCodes.STATUS_OK:
@@ -443,16 +449,13 @@ public class NearbyConnectionsPlugin implements MethodCallHandler, FlutterPlugin
                 default:
                     // Unknown status code
             }
-            args.put("statusCode", statusCode);
-            channel.invokeMethod("dis.onConnectionResult", args);
+            discoveryConnectionLifecycleApi.onConnectionResult(endpointId, (long) statusCode, null);
         }
 
         @Override
         public void onDisconnected(@NonNull String endpointId) {
             Log.d("nearby_connections", "dis.onDisconnected");
-            Map<String, Object> args = new HashMap<>();
-            args.put("endpointId", endpointId);
-            channel.invokeMethod("dis.onDisconnected", args);
+            discoveryConnectionLifecycleApi.onDisconnected(endpointId, null);
         }
     };
 
@@ -460,24 +463,30 @@ public class NearbyConnectionsPlugin implements MethodCallHandler, FlutterPlugin
         @Override
         public void onPayloadReceived(@NonNull String endpointId, @NonNull Payload payload) {
             Log.d("nearby_connections", "onPayloadReceived");
-            Map<String, Object> args = new HashMap<>();
-            args.put("endpointId", endpointId);
-            args.put("payloadId", payload.getId());
-            args.put("type", payload.getType());
+
+            byte[] bytes = null;
+            String uri = null;
+            String filePath = null;
 
             if (payload.getType() == Payload.Type.BYTES) {
-                byte[] bytes = payload.asBytes();
+                bytes = payload.asBytes();
                 assert bytes != null;
-                args.put("bytes", bytes);
             } else if (payload.getType() == Payload.Type.FILE) {
-                args.put("uri", payload.asFile().asUri().toString());
+                uri = payload.asFile().asUri().toString();
                 if (VERSION.SDK_INT < VERSION_CODES.Q) {
                     // This is deprecated and only available on Android 10 and below.
-                    args.put("filePath", payload.asFile().asJavaFile().getAbsolutePath());
+                    filePath = payload.asFile().asJavaFile().getAbsolutePath();
                 }
             }
 
-            channel.invokeMethod("onPayloadReceived", args);
+            payloadApi.onPayloadReceived(endpointId, new Messages.PayloadMessage.Builder()
+                            .setPayloadId(payload.getId())
+                            .setType((long) payload.getType())
+                            .setBytes(bytes)
+                            .setUri(uri)
+                            .setFilePath(filePath)
+                            .build(),
+                    null);
         }
 
         @Override
@@ -486,14 +495,13 @@ public class NearbyConnectionsPlugin implements MethodCallHandler, FlutterPlugin
             // required for files and streams
 
             Log.d("nearby_connections", "onPayloadTransferUpdate");
-            Map<String, Object> args = new HashMap<>();
-            args.put("endpointId", endpointId);
-            args.put("payloadId", payloadTransferUpdate.getPayloadId());
-            args.put("status", payloadTransferUpdate.getStatus());
-            args.put("bytesTransferred", payloadTransferUpdate.getBytesTransferred());
-            args.put("totalBytes", payloadTransferUpdate.getTotalBytes());
-
-            channel.invokeMethod("onPayloadTransferUpdate", args);
+            payloadApi.onPayloadTransferUpdate(endpointId, new Messages.PayloadTransferUpdateMessage.Builder()
+                    .setPayloadId(payloadTransferUpdate.getPayloadId())
+                    .setStatus((long) payloadTransferUpdate.getStatus())
+                    .setBytesTransferred(payloadTransferUpdate.getBytesTransferred())
+                    .setTotalBytes(payloadTransferUpdate.getTotalBytes())
+                    .build(),
+                    null);
         }
     };
 
@@ -502,19 +510,13 @@ public class NearbyConnectionsPlugin implements MethodCallHandler, FlutterPlugin
         public void onEndpointFound(@NonNull String endpointId,
                                     @NonNull DiscoveredEndpointInfo discoveredEndpointInfo) {
             Log.d("nearby_connections", "onEndpointFound");
-            Map<String, Object> args = new HashMap<>();
-            args.put("endpointId", endpointId);
-            args.put("endpointName", discoveredEndpointInfo.getEndpointName());
-            args.put("serviceId", discoveredEndpointInfo.getServiceId());
-            channel.invokeMethod("dis.onEndpointFound", args);
+            endpointDiscoveryApi.onEndpointFound(endpointId, discoveredEndpointInfo.getEndpointName(), discoveredEndpointInfo.getServiceId(), null);
         }
 
         @Override
         public void onEndpointLost(@NonNull String endpointId) {
             Log.d("nearby_connections", "onEndpointLost");
-            Map<String, Object> args = new HashMap<>();
-            args.put("endpointId", endpointId);
-            channel.invokeMethod("dis.onEndpointLost", args);
+            endpointDiscoveryApi.onEndpointLost(endpointId, null);
         }
     };
 
@@ -534,8 +536,13 @@ public class NearbyConnectionsPlugin implements MethodCallHandler, FlutterPlugin
     @Override
     public void onAttachedToEngine(@NonNull FlutterPluginBinding binding) {
         locationHelper = new LocationHelper();
-        channel = new MethodChannel(binding.getBinaryMessenger(), "nearby_connections");
-        channel.setMethodCallHandler(this);
+
+        BinaryMessenger messenger = binding.getBinaryMessenger();
+
+        discoveryConnectionLifecycleApi = new Messages.DiscoveryConnectionLifecycleApi(messenger);
+        advertisingConnectionLifecycleApi = new Messages.AdvertisingConnectionLifecycleApi(messenger);
+        endpointDiscoveryApi = new Messages.EndpointDiscoveryApi(messenger);
+        payloadApi = new Messages.PayloadApi(messenger);
     }
 
     @Override
@@ -602,5 +609,115 @@ public class NearbyConnectionsPlugin implements MethodCallHandler, FlutterPlugin
             in.close();
             out.close();
         }
+    }
+
+    @Override
+    public void checkLocationPermission(Messages.Result<Boolean> result) {
+
+    }
+
+    @Override
+    public void askLocationPermission(Messages.Result<Boolean> result) {
+
+    }
+
+    @Override
+    public void checkExternalStoragePermission(Messages.Result<Boolean> result) {
+
+    }
+
+    @Override
+    public void checkBluetoothPermission(Messages.Result<Boolean> result) {
+
+    }
+
+    @Override
+    public void checkLocationEnabled(Messages.Result<Boolean> result) {
+
+    }
+
+    @Override
+    public void enableLocationServices(Messages.Result<Boolean> result) {
+
+    }
+
+    @Override
+    public void askExternalStoragePermission() {
+
+    }
+
+    @Override
+    public void askBluetoothPermission() {
+
+    }
+
+    @Override
+    public void askLocationAndExternalStoragePermission() {
+
+    }
+
+    @Override
+    public void copyFileAndDeleteOriginal(@NonNull String sourceUri, @NonNull String destinationFilepath, Messages.Result<Boolean> result) {
+
+    }
+
+    @Override
+    public void startAdvertising(@NonNull Messages.IdentifierMessage identifierMessage, Messages.Result<Boolean> result) {
+
+    }
+
+    @Override
+    public void stopAdvertising(Messages.Result<Void> result) {
+
+    }
+
+    @Override
+    public void startDiscovery(@NonNull Messages.IdentifierMessage identifierMessage, Messages.Result<Boolean> result) {
+
+    }
+
+    @Override
+    public void stopDiscovery(Messages.Result<Void> result) {
+
+    }
+
+    @Override
+    public void stopAllEndpoints(Messages.Result<Void> result) {
+
+    }
+
+    @Override
+    public void disconnectFromEndpoint(@NonNull String endpointId, Messages.Result<Void> result) {
+
+    }
+
+    @Override
+    public void requestConnection(@NonNull String userNickName, @NonNull String endpointId, Messages.Result<Boolean> result) {
+
+    }
+
+    @Override
+    public void acceptConnection(@NonNull String endpointId, Messages.Result<Boolean> result) {
+
+    }
+
+    @Override
+    public void rejectConnection(@NonNull String endpointId, Messages.Result<Boolean> result) {
+
+    }
+
+    @Override
+    public void sendBytesPayload(@NonNull String endpointId, @NonNull byte[] bytes, Messages.Result<Void> result) {
+
+    }
+
+    @Override
+    public void sendFilePayload(@NonNull String endpointId, @NonNull String filePath, Messages.Result<Long> result) {
+
+    }
+
+    @Override
+    public void cancelPayload(@NonNull Long payloadId, Messages.Result<Void> result) {
+
     }
 }

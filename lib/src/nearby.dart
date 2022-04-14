@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'dart:typed_data';
 
-import 'package:flutter/services.dart';
 import 'package:nearby_connections/src/classes.dart';
 import 'package:nearby_connections/src/defs.dart';
 
@@ -16,6 +15,14 @@ import 'messages.g.dart'; // import pigeon generated file for ease of method cha
 class Nearby {
   final NearbyApi _api = NearbyApi();
 
+  final _EndpointDiscoveryApiCallback _endpointDiscoveryApiCallback =
+      _EndpointDiscoveryApiCallback();
+  final _PayloadApiCallback _payloadApiCallback = _PayloadApiCallback();
+  final _AdvertisingConnectionLifecycleApiCallback _advertisingConnectionLifecycleApiCallback =
+      _AdvertisingConnectionLifecycleApiCallback();
+  final _DiscoveryConnectionLifecycleApiCallback _discoveryConnectionLifecycleApiCallback =
+      _DiscoveryConnectionLifecycleApiCallback();
+
   //Singleton pattern for maintaining only 1 instance of this class
   static Nearby? _instance;
 
@@ -27,82 +34,11 @@ class Nearby {
   }
 
   Nearby._() {
-    _channel.setMethodCallHandler((MethodCall handler) {
-      Map<dynamic, dynamic> args = handler.arguments!;
-      switch (handler.method) {
-        case "ad.onConnectionInitiated":
-          String endpointId = args['endpointId'] ?? '-1';
-          String endpointName = args['endpointName'] ?? '-1';
-          String authenticationToken = args['authenticationToken'] ?? '-1';
-          bool isIncomingConnection = args['isIncomingConnection'] ?? false;
-
-          _advertConnectionInitiated?.call(
-              endpointId,
-              ConnectionInfo(
-                  endpointName, authenticationToken, isIncomingConnection));
-          break;
-        case "ad.onConnectionResult":
-          String endpointId = args['endpointId'] ?? '-1';
-          Status statusCode =
-              Status.values[args['statusCode'] ?? Status.ERROR.index];
-
-          _advertConnectionResult?.call(endpointId, statusCode);
-
-          break;
-        case "ad.onDisconnected":
-          String endpointId = args['endpointId'] ?? '-1';
-
-          _advertDisconnected?.call(endpointId);
-
-          break;
-
-        case "dis.onConnectionInitiated":
-          String endpointId = args['endpointId'] ?? '-1';
-          String endpointName = args['endpointName'] ?? '-1';
-          String authenticationToken = args['authenticationToken'] ?? '-1';
-          bool isIncomingConnection = args['isIncomingConnection'] ?? false;
-
-          _discoverConnectionInitiated?.call(
-              endpointId,
-              ConnectionInfo(
-                  endpointName, authenticationToken, isIncomingConnection));
-
-          break;
-        case "dis.onConnectionResult":
-          String endpointId = args['endpointId'] ?? '-1';
-          Status statusCode =
-              Status.values[args['statusCode'] ?? Status.ERROR.index];
-
-          _discoverConnectionResult?.call(endpointId, statusCode);
-
-          break;
-        case "dis.onDisconnected":
-          String endpointId = args['endpointId'] ?? '-1';
-
-          _discoverDisconnected?.call(endpointId);
-
-          break;
-      }
-      return Future.value();
-    });
+    EndpointDiscoveryApi.setup(_endpointDiscoveryApiCallback);
+    PayloadApi.setup(_payloadApiCallback);
+    AdvertisingConnectionLifecycleApi.setup(_advertisingConnectionLifecycleApiCallback);
+    DiscoveryConnectionLifecycleApi.setup(_discoveryConnectionLifecycleApiCallback);
   }
-
-  //for advertisers
-  OnConnectionInitiated? _advertConnectionInitiated,
-      _discoverConnectionInitiated;
-  OnConnectionResult? _advertConnectionResult, _discoverConnectionResult;
-  OnDisconnected? _advertDisconnected, _discoverDisconnected;
-
-  //for discoverers
-  OnEndpointFound? _onEndpointFound;
-  OnEndpointLost? _onEndpointLost;
-
-  //for receiving payload
-  OnPayloadReceived? _onPayloadReceived;
-  OnPayloadTransferUpdate? _onPayloadTransferUpdate;
-
-  static const MethodChannel _channel =
-      const MethodChannel('nearby_connections');
 
   /// convenience method
   ///
@@ -181,9 +117,9 @@ class Nearby {
     required OnDisconnected onDisconnected,
     String serviceId = "com.pkmnapps.nearby_connections",
   }) async {
-    this._advertConnectionInitiated = onConnectionInitiated;
-    this._advertConnectionResult = onConnectionResult;
-    this._advertDisconnected = onDisconnected;
+    _advertisingConnectionLifecycleApiCallback._advertConnectionInitiated = onConnectionInitiated;
+    _advertisingConnectionLifecycleApiCallback._advertConnectionResult = onConnectionResult;
+    _advertisingConnectionLifecycleApiCallback._advertDisconnected = onDisconnected;
 
     return await _api.startAdvertising(IdentifierMessage(userNickname: userNickName, strategy: strategy.index, serviceId: serviceId));
   }
@@ -209,8 +145,8 @@ class Nearby {
     required OnEndpointLost onEndpointLost,
     String serviceId = "com.pkmnapps.nearby_connections",
   }) async {
-    this._onEndpointFound = onEndpointFound;
-    this._onEndpointLost = onEndpointLost;
+    _endpointDiscoveryApiCallback._onEndpointFound = onEndpointFound;
+    _endpointDiscoveryApiCallback._onEndpointLost = onEndpointLost;
 
     return await _api.startDiscovery(IdentifierMessage(userNickname: userNickName, strategy: strategy.index, serviceId: serviceId));
   }
@@ -259,9 +195,9 @@ class Nearby {
     required OnConnectionResult onConnectionResult,
     required OnDisconnected onDisconnected,
   }) async {
-    this._discoverConnectionInitiated = onConnectionInitiated;
-    this._discoverConnectionResult = onConnectionResult;
-    this._discoverDisconnected = onDisconnected;
+    _discoveryConnectionLifecycleApiCallback._discoverConnectionInitiated = onConnectionInitiated;
+    _discoveryConnectionLifecycleApiCallback._discoverConnectionResult = onConnectionResult;
+    _discoveryConnectionLifecycleApiCallback._discoverDisconnected = onDisconnected;
 
     return await _api.requestConnection(userNickName, endpointId);
   }
@@ -279,8 +215,8 @@ class Nearby {
     required OnPayloadReceived onPayLoadRecieved,
     OnPayloadTransferUpdate? onPayloadTransferUpdate,
   }) async {
-    this._onPayloadReceived = onPayLoadRecieved;
-    this._onPayloadTransferUpdate = onPayloadTransferUpdate;
+    _payloadApiCallback._onPayloadReceived = onPayLoadRecieved;
+    _payloadApiCallback._onPayloadTransferUpdate = onPayloadTransferUpdate;
 
     return await _api.acceptConnection(endpointId);
   }
@@ -330,5 +266,103 @@ class Nearby {
   /// Use it to cancel/stop a payload transfer
   Future<void> cancelPayload(int payloadId) async {
     return await _api.cancelPayload(payloadId);
+  }
+}
+
+class _EndpointDiscoveryApiCallback implements EndpointDiscoveryApi {
+  OnEndpointFound? _onEndpointFound;
+  OnEndpointLost? _onEndpointLost;
+
+  @override
+  void onEndpointFound(String endpointId, String endpointName, String serviceId) {
+    // TODO: implement onEndpointFound
+    _onEndpointFound?.call(endpointId, endpointName, serviceId);
+  }
+
+  @override
+  void onEndpointLost(String endpointId) {
+    // TODO: implement onEndpointLost
+    _onEndpointLost?.call(endpointId);
+  }
+}
+
+class _PayloadApiCallback implements PayloadApi {
+  //for receiving payload
+  OnPayloadReceived? _onPayloadReceived;
+  OnPayloadTransferUpdate? _onPayloadTransferUpdate;
+
+  @override
+  void onPayloadReceived(String endpointId, PayloadMessage payloadMessage) {
+    Payload payload = Payload(
+      type: PayloadType.values[payloadMessage.type],
+      bytes: payloadMessage.bytes,
+      id: payloadMessage.payloadId,
+      filePath: payloadMessage.filePath,
+      uri: payloadMessage.uri,
+    );
+
+    _onPayloadReceived?.call(endpointId, payload);
+  }
+
+  @override
+  void onPayloadTransferUpdate(String endpointId, PayloadTransferUpdateMessage payloadTransferUpdateMessage) {
+    PayloadTransferUpdate payloadTransferUpdate = PayloadTransferUpdate(
+      id: payloadTransferUpdateMessage.payloadId,
+      status: PayloadStatus.values[payloadTransferUpdateMessage.status],
+      bytesTransferred: payloadTransferUpdateMessage.bytesTransferred,
+      totalBytes: payloadTransferUpdateMessage.totalBytes,
+    );
+
+    _onPayloadTransferUpdate?.call(endpointId, payloadTransferUpdate);
+  }
+}
+
+class _AdvertisingConnectionLifecycleApiCallback implements AdvertisingConnectionLifecycleApi {
+  //for advertisers
+  OnConnectionInitiated? _advertConnectionInitiated;
+  OnConnectionResult? _advertConnectionResult;
+  OnDisconnected? _advertDisconnected;
+
+  @override
+  void onConnectionInitiated(ConnectionInfoMessage connectionInfoMessage) {
+    _advertConnectionInitiated?.call(
+        connectionInfoMessage.endpointId,
+        ConnectionInfo(
+            connectionInfoMessage.endpointName, connectionInfoMessage.authenticationToken, connectionInfoMessage.isIncomingConnection));
+  }
+
+  @override
+  void onConnectionResult(String endpointId, int statusCode) {
+    _advertConnectionResult?.call(endpointId, Status.values[statusCode]);
+  }
+
+  @override
+  void onDisconnected(String endpointId) {
+    _advertDisconnected?.call(endpointId);
+  }
+}
+
+class _DiscoveryConnectionLifecycleApiCallback implements DiscoveryConnectionLifecycleApi {
+  //for advertisers
+  OnConnectionInitiated? _discoverConnectionInitiated;
+  OnConnectionResult? _discoverConnectionResult;
+  OnDisconnected? _discoverDisconnected;
+
+  @override
+  void onConnectionInitiated(ConnectionInfoMessage connectionInfoMessage) {
+    _discoverConnectionInitiated?.call(
+        connectionInfoMessage.endpointId,
+        ConnectionInfo(
+            connectionInfoMessage.endpointName, connectionInfoMessage.authenticationToken, connectionInfoMessage.isIncomingConnection));
+  }
+
+  @override
+  void onConnectionResult(String endpointId, int statusCode) {
+    _discoverConnectionResult?.call(endpointId, Status.values[statusCode]);
+  }
+
+  @override
+  void onDisconnected(String endpointId) {
+    _discoverDisconnected?.call(endpointId);
   }
 }

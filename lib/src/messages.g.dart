@@ -558,11 +558,11 @@ class NearbyApi {
     }
   }
 
-  Future<void> disconnectFromEndpoint() async {
+  Future<void> disconnectFromEndpoint(String arg_endpointId) async {
     final BasicMessageChannel<Object?> channel = BasicMessageChannel<Object?>(
         'dev.flutter.pigeon.NearbyApi.disconnectFromEndpoint', codec, binaryMessenger: _binaryMessenger);
     final Map<Object?, Object?>? replyMap =
-        await channel.send(null) as Map<Object?, Object?>?;
+        await channel.send(<Object?>[arg_endpointId]) as Map<Object?, Object?>?;
     if (replyMap == null) {
       throw PlatformException(
         code: 'channel-error',
@@ -761,7 +761,7 @@ abstract class DiscoveryConnectionLifecycleApi {
   static const MessageCodec<Object?> codec = _DiscoveryConnectionLifecycleApiCodec();
 
   void onConnectionInitiated(ConnectionInfoMessage connectionInfoMessage);
-  void onConnectionResult();
+  void onConnectionResult(String endpointId, int statusCode);
   void onDisconnected(String endpointId);
   static void setup(DiscoveryConnectionLifecycleApi? api, {BinaryMessenger? binaryMessenger}) {
     {
@@ -787,8 +787,13 @@ abstract class DiscoveryConnectionLifecycleApi {
         channel.setMessageHandler(null);
       } else {
         channel.setMessageHandler((Object? message) async {
-          // ignore message
-          api.onConnectionResult();
+          assert(message != null, 'Argument for dev.flutter.pigeon.DiscoveryConnectionLifecycleApi.onConnectionResult was null.');
+          final List<Object?> args = (message as List<Object?>?)!;
+          final String? arg_endpointId = (args[0] as String?);
+          assert(arg_endpointId != null, 'Argument for dev.flutter.pigeon.DiscoveryConnectionLifecycleApi.onConnectionResult was null, expected non-null String.');
+          final int? arg_statusCode = (args[1] as int?);
+          assert(arg_statusCode != null, 'Argument for dev.flutter.pigeon.DiscoveryConnectionLifecycleApi.onConnectionResult was null, expected non-null int.');
+          api.onConnectionResult(arg_endpointId!, arg_statusCode!);
           return;
         });
       }
@@ -840,7 +845,7 @@ abstract class AdvertisingConnectionLifecycleApi {
   static const MessageCodec<Object?> codec = _AdvertisingConnectionLifecycleApiCodec();
 
   void onConnectionInitiated(ConnectionInfoMessage connectionInfoMessage);
-  void onConnectionResult();
+  void onConnectionResult(String endpointId, int statusCode);
   void onDisconnected(String endpointId);
   static void setup(AdvertisingConnectionLifecycleApi? api, {BinaryMessenger? binaryMessenger}) {
     {
@@ -866,8 +871,13 @@ abstract class AdvertisingConnectionLifecycleApi {
         channel.setMessageHandler(null);
       } else {
         channel.setMessageHandler((Object? message) async {
-          // ignore message
-          api.onConnectionResult();
+          assert(message != null, 'Argument for dev.flutter.pigeon.AdvertisingConnectionLifecycleApi.onConnectionResult was null.');
+          final List<Object?> args = (message as List<Object?>?)!;
+          final String? arg_endpointId = (args[0] as String?);
+          assert(arg_endpointId != null, 'Argument for dev.flutter.pigeon.AdvertisingConnectionLifecycleApi.onConnectionResult was null, expected non-null String.');
+          final int? arg_statusCode = (args[1] as int?);
+          assert(arg_statusCode != null, 'Argument for dev.flutter.pigeon.AdvertisingConnectionLifecycleApi.onConnectionResult was null, expected non-null int.');
+          api.onConnectionResult(arg_endpointId!, arg_statusCode!);
           return;
         });
       }
