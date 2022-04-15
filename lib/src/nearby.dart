@@ -275,13 +275,11 @@ class _EndpointDiscoveryApiCallback implements EndpointDiscoveryApi {
 
   @override
   void onEndpointFound(String endpointId, String endpointName, String serviceId) {
-    // TODO: implement onEndpointFound
     _onEndpointFound?.call(endpointId, endpointName, serviceId);
   }
 
   @override
   void onEndpointLost(String endpointId) {
-    // TODO: implement onEndpointLost
     _onEndpointLost?.call(endpointId);
   }
 }

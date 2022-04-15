@@ -32,7 +32,7 @@ class LocationHelper implements PluginRegistry.ActivityResultListener, PluginReg
     private static final int REQUEST_LOCATION_PERMISSION = 7777;
 
     private LocationSettingsRequest mLocationSettingsRequest;
-    private Result pendingResult;
+    private Messages.Result pendingResult;
 
     public LocationHelper(@Nullable Activity activity) {
         this.activity = activity;
@@ -92,7 +92,7 @@ class LocationHelper implements PluginRegistry.ActivityResultListener, PluginReg
         mLocationSettingsRequest = builder.build();
     }
 
-    void requestLocationEnable(final Result result) {
+    void requestLocationEnable(final Messages.Result result) {
         this.pendingResult = result;
         Task<LocationSettingsResponse> task = LocationServices.getSettingsClient(activity)
                 .checkLocationSettings(mLocationSettingsRequest);
@@ -126,7 +126,7 @@ class LocationHelper implements PluginRegistry.ActivityResultListener, PluginReg
         });
     }
 
-    void requestLocationPermission(Result result) {
+    void requestLocationPermission(Messages.Result result) {
         this.pendingResult = result;
         ActivityCompat.requestPermissions(activity, new String[]{Manifest.permission.ACCESS_FINE_LOCATION,
                 Manifest.permission.ACCESS_COARSE_LOCATION}, REQUEST_LOCATION_PERMISSION);

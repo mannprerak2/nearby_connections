@@ -661,9 +661,9 @@ class NearbyApi {
     }
   }
 
-  Future<void> sendBytesPayload(String arg_endpointId, Uint8List arg_bytes) async {
+  Future<void> sendPayload(String arg_endpointId, Uint8List arg_bytes) async {
     final BasicMessageChannel<Object?> channel = BasicMessageChannel<Object?>(
-        'dev.flutter.pigeon.NearbyApi.sendBytesPayload', codec, binaryMessenger: _binaryMessenger);
+        'dev.flutter.pigeon.NearbyApi.sendPayload', codec, binaryMessenger: _binaryMessenger);
     final Map<Object?, Object?>? replyMap =
         await channel.send(<Object?>[arg_endpointId, arg_bytes]) as Map<Object?, Object?>?;
     if (replyMap == null) {

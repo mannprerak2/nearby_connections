@@ -93,7 +93,7 @@ abstract class NearbyApi {
   bool rejectConnection(String endpointId);
 
   @async
-  void sendBytesPayload(String endpointId, Uint8List bytes);
+  void sendPayload(String endpointId, Uint8List bytes);
 
   @async
   int sendFilePayload(String endpointId, String filePath);

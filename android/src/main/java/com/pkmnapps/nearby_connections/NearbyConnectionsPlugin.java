@@ -35,17 +35,11 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.FileOutputStream;
-import java.util.HashMap;
-import java.util.Map;
 
 import io.flutter.embedding.engine.plugins.FlutterPlugin;
 import io.flutter.embedding.engine.plugins.activity.ActivityAware;
 import io.flutter.embedding.engine.plugins.activity.ActivityPluginBinding;
 import io.flutter.plugin.common.BinaryMessenger;
-import io.flutter.plugin.common.MethodCall;
-import io.flutter.plugin.common.MethodChannel;
-import io.flutter.plugin.common.MethodChannel.MethodCallHandler;
-import io.flutter.plugin.common.MethodChannel.Result;
 import io.flutter.plugin.common.PluginRegistry;
 import io.flutter.plugin.common.PluginRegistry.Registrar;
 
@@ -55,7 +49,6 @@ import io.flutter.plugin.common.PluginRegistry.Registrar;
 public class NearbyConnectionsPlugin implements Messages.NearbyApi, FlutterPlugin, ActivityAware {
     private Activity activity;
     private static final String SERVICE_ID = "com.pkmnapps.nearby_connections";
-    private static MethodChannel channel;
     private static LocationHelper locationHelper;
     private static ActivityPluginBinding activityPluginBinding;
     private static PluginRegistry.Registrar pluginRegistrar;
@@ -82,295 +75,12 @@ public class NearbyConnectionsPlugin implements Messages.NearbyApi, FlutterPlugi
 
         BinaryMessenger messenger = registrar.messenger();
 
+        Messages.NearbyApi.setup(messenger, new NearbyConnectionsPlugin());
+
         discoveryConnectionLifecycleApi = new Messages.DiscoveryConnectionLifecycleApi(messenger);
         advertisingConnectionLifecycleApi = new Messages.AdvertisingConnectionLifecycleApi(messenger);
         endpointDiscoveryApi = new Messages.EndpointDiscoveryApi(messenger);
         payloadApi = new Messages.PayloadApi(messenger);
-    }
-
-    @Override
-    public void onMethod2Call(MethodCall call, final Result result) {
-
-        switch (call.method) {
-            case "checkLocationPermission":
-                if (ContextCompat.checkSelfPermission(activity,
-                        Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED
-                        && ContextCompat.checkSelfPermission(activity,
-                        Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
-                    result.success(true);
-                } else {
-                    result.success(false);
-                }
-                break;
-            case "askLocationPermission":
-                locationHelper.requestLocationPermission(result);
-                break;
-            case "checkLocationEnabled":
-                LocationManager lm = (LocationManager) activity.getSystemService(activity.LOCATION_SERVICE);
-                boolean gps_enabled = false;
-                boolean network_enabled = false;
-                try {
-                    gps_enabled = lm.isProviderEnabled(LocationManager.GPS_PROVIDER);
-                } catch (Exception ex) {
-                }
-                try {
-                    network_enabled = lm.isProviderEnabled(LocationManager.NETWORK_PROVIDER);
-                } catch (Exception ex) {
-                }
-                result.success(gps_enabled || network_enabled);
-                break;
-            case "enableLocationServices":
-                locationHelper.requestLocationEnable(result);
-                break;
-            case "checkExternalStoragePermission":
-                if (ContextCompat.checkSelfPermission(activity,
-                        Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED
-                        && ContextCompat.checkSelfPermission(activity,
-                        Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
-                    result.success(true);
-                } else {
-                    result.success(false);
-                }
-                break;
-            case "askExternalStoragePermission":
-                ActivityCompat.requestPermissions(activity, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE,
-                        Manifest.permission.WRITE_EXTERNAL_STORAGE}, 1);
-                Log.d("nearby_connections", "askExternalStoragePermission");
-                result.success(null);
-                break;
-            case "checkBluetoothPermission": // required for apps running on Android 12 and higher
-                if (VERSION.SDK_INT >= VERSION_CODES.S) {
-                    if (
-                        ContextCompat.checkSelfPermission(activity, Manifest.permission.BLUETOOTH_ADVERTISE) == PackageManager.PERMISSION_GRANTED && 
-                        ContextCompat.checkSelfPermission(activity, Manifest.permission.BLUETOOTH_CONNECT) == PackageManager.PERMISSION_GRANTED &&
-                        ContextCompat.checkSelfPermission(activity, Manifest.permission.BLUETOOTH_SCAN) == PackageManager.PERMISSION_GRANTED 
-                    ) {
-                        result.success(true);
-                    } else {
-                        result.success(false);
-                    }
-                } else{
-                    result.success(true);
-                }
-                break;
-            case "askBluetoothPermission":
-                if (VERSION.SDK_INT >= VERSION_CODES.S) {
-                    ActivityCompat.requestPermissions(activity,
-                        new String[]{Manifest.permission.BLUETOOTH_ADVERTISE, Manifest.permission.BLUETOOTH_CONNECT, Manifest.permission.BLUETOOTH_SCAN},
-                    1);
-                    Log.d("nearby_connections", "askBluetoothPermission");
-                    result.success(null);
-                } else{
-                    result.success(null);
-                }
-                break;
-            case "askLocationAndExternalStoragePermission":
-                ActivityCompat.requestPermissions(activity,
-                        new String[]{Manifest.permission.ACCESS_FINE_LOCATION,
-                                Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.READ_EXTERNAL_STORAGE,
-                                Manifest.permission.WRITE_EXTERNAL_STORAGE},
-                        1);
-                Log.d("nearby_connections", "askExternalStoragePermission");
-                result.success(null);
-                break;
-            case "copyFileAndDeleteOriginal":
-                Log.d("nearby_connections", "copyFileAndDeleteOriginal");
-                String sourceUri = (String) call.argument("sourceUri");
-                String destinationFilepath = (String) call.argument("destinationFilepath");
-
-                try {
-                    // Copy the file to a new location.
-                    Uri uri = Uri.parse(sourceUri);
-                    InputStream in = activity.getContentResolver().openInputStream(uri);
-                    copyStream(in, new FileOutputStream(new File(destinationFilepath)));
-                    // Delete the original file.
-                    activity.getContentResolver().delete(uri, null, null);
-                    result.success(true);
-                } catch (IOException e) {
-                    // Log the error.
-                    Log.e("nearby_connections", e.getMessage());
-                    result.success(false);
-                }
-                break;
-            case "stopAdvertising":
-                Log.d("nearby_connections", "stopAdvertising");
-                Nearby.getConnectionsClient(activity).stopAdvertising();
-                result.success(null);
-                break;
-            case "stopDiscovery":
-                Log.d("nearby_connections", "stopDiscovery");
-                Nearby.getConnectionsClient(activity).stopDiscovery();
-                result.success(null);
-                break;
-            case "startAdvertising": {
-                String userNickName = (String) call.argument("userNickName");
-                int strategy = (int) call.argument("strategy");
-                String serviceId = (String) call.argument("serviceId");
-
-                assert userNickName != null;
-                if (serviceId == null || serviceId == "")
-                    serviceId = SERVICE_ID;
-
-                AdvertisingOptions advertisingOptions = new AdvertisingOptions.Builder()
-                        .setStrategy(getStrategy(strategy)).build();
-
-                Nearby.getConnectionsClient(activity).startAdvertising(userNickName, serviceId,
-                        advertConnectionLifecycleCallback, advertisingOptions)
-                        .addOnSuccessListener(new OnSuccessListener<Void>() {
-                            @Override
-                            public void onSuccess(Void aVoid) {
-                                Log.d("nearby_connections", "startAdvertising");
-                                result.success(true);
-                            }
-                        }).addOnFailureListener(new OnFailureListener() {
-                    @Override
-                    public void onFailure(@NonNull Exception e) {
-                        result.error("Failure", e.getMessage(), null);
-                    }
-                });
-                break;
-            }
-            case "startDiscovery": {
-                String userNickName = (String) call.argument("userNickName");
-                int strategy = (int) call.argument("strategy");
-                String serviceId = (String) call.argument("serviceId");
-
-                assert userNickName != null;
-                if (serviceId == null || serviceId == "")
-                    serviceId = SERVICE_ID;
-
-                DiscoveryOptions discoveryOptions = new DiscoveryOptions.Builder().setStrategy(getStrategy(strategy))
-                        .build();
-                Nearby.getConnectionsClient(activity)
-                        .startDiscovery(serviceId, endpointDiscoveryCallback, discoveryOptions)
-                        .addOnSuccessListener(new OnSuccessListener<Void>() {
-                            @Override
-                            public void onSuccess(Void aVoid) {
-                                Log.d("nearby_connections", "startDiscovery");
-                                result.success(true);
-                            }
-                        }).addOnFailureListener(new OnFailureListener() {
-                    @Override
-                    public void onFailure(@NonNull Exception e) {
-                        result.error("Failure", e.getMessage(), null);
-                    }
-                });
-                break;
-            }
-            case "stopAllEndpoints":
-                Log.d("nearby_connections", "stopAllEndpoints");
-                Nearby.getConnectionsClient(activity).stopAllEndpoints();
-                result.success(null);
-                break;
-            case "disconnectFromEndpoint": {
-                Log.d("nearby_connections", "disconnectFromEndpoint");
-                String endpointId = call.argument("endpointId");
-                assert endpointId != null;
-                Nearby.getConnectionsClient(activity).disconnectFromEndpoint(endpointId);
-                result.success(null);
-                break;
-            }
-            case "requestConnection": {
-                Log.d("nearby_connections", "requestConnection");
-                String userNickName = (String) call.argument("userNickName");
-                String endpointId = (String) call.argument("endpointId");
-
-                assert userNickName != null;
-                assert endpointId != null;
-                Nearby.getConnectionsClient(activity)
-                        .requestConnection(userNickName, endpointId, discoverConnectionLifecycleCallback)
-                        .addOnSuccessListener(new OnSuccessListener<Void>() {
-                            @Override
-                            public void onSuccess(Void aVoid) {
-                                result.success(true);
-                            }
-                        }).addOnFailureListener(new OnFailureListener() {
-                    @Override
-                    public void onFailure(@NonNull Exception e) {
-                        result.error("Failure", e.getMessage(), null);
-                    }
-                });
-                break;
-            }
-            case "acceptConnection": {
-                String endpointId = (String) call.argument("endpointId");
-
-                assert endpointId != null;
-                Nearby.getConnectionsClient(activity).acceptConnection(endpointId, payloadCallback)
-                        .addOnSuccessListener(new OnSuccessListener<Void>() {
-                            @Override
-                            public void onSuccess(Void aVoid) {
-                                result.success(true);
-                            }
-                        }).addOnFailureListener(new OnFailureListener() {
-                    @Override
-                    public void onFailure(@NonNull Exception e) {
-                        result.error("Failure", e.getMessage(), null);
-                    }
-                });
-                break;
-            }
-            case "rejectConnection": {
-                String endpointId = (String) call.argument("endpointId");
-
-                assert endpointId != null;
-                Nearby.getConnectionsClient(activity).rejectConnection(endpointId)
-                        .addOnSuccessListener(new OnSuccessListener<Void>() {
-                            @Override
-                            public void onSuccess(Void aVoid) {
-                                result.success(true);
-                            }
-                        }).addOnFailureListener(new OnFailureListener() {
-                    @Override
-                    public void onFailure(@NonNull Exception e) {
-                        result.error("Failure", e.getMessage(), null);
-                    }
-                });
-                break;
-            }
-            case "sendPayload": {
-                String endpointId = (String) call.argument("endpointId");
-                byte[] bytes = call.argument("bytes");
-
-                assert endpointId != null;
-                assert bytes != null;
-                Nearby.getConnectionsClient(activity).sendPayload(endpointId, Payload.fromBytes(bytes));
-                Log.d("nearby_connections", "sentPayload");
-                result.success(true);
-                break;
-            }
-            case "sendFilePayload": {
-                String endpointId = (String) call.argument("endpointId");
-                String filePath = (String) call.argument("filePath");
-
-                assert endpointId != null;
-                assert filePath != null;
-
-                try {
-                    File file = new File(filePath);
-
-                    Payload filePayload = Payload.fromFile(file);
-                    Nearby.getConnectionsClient(activity).sendPayload(endpointId, filePayload);
-                    Log.d("nearby_connections", "sentFilePayload");
-                    result.success(filePayload.getId()); // return payload id to dart
-                } catch (FileNotFoundException e) {
-                    Log.e("nearby_connections", "File not found", e);
-                    result.error("Failure", e.getMessage(), null);
-                    return;
-                }
-                break;
-            }
-            case "cancelPayload": {
-                String payloadId = (String) call.argument("payloadId");
-
-                assert payloadId != null;
-                Nearby.getConnectionsClient(activity).cancelPayload(Long.parseLong(payloadId));
-                result.success(null);
-                break;
-            }
-            default:
-                result.notImplemented();
-        }
     }
 
     private final ConnectionLifecycleCallback advertConnectionLifecycleCallback = new ConnectionLifecycleCallback() {
@@ -539,6 +249,8 @@ public class NearbyConnectionsPlugin implements Messages.NearbyApi, FlutterPlugi
 
         BinaryMessenger messenger = binding.getBinaryMessenger();
 
+        Messages.NearbyApi.setup(messenger, this);
+
         discoveryConnectionLifecycleApi = new Messages.DiscoveryConnectionLifecycleApi(messenger);
         advertisingConnectionLifecycleApi = new Messages.AdvertisingConnectionLifecycleApi(messenger);
         endpointDiscoveryApi = new Messages.EndpointDiscoveryApi(messenger);
@@ -611,113 +323,267 @@ public class NearbyConnectionsPlugin implements Messages.NearbyApi, FlutterPlugi
         }
     }
 
+    /** BEGIN: Interfacing methods with Android nearby library. Result parameter is due to the @async annotations in pigeon. */
+
     @Override
     public void checkLocationPermission(Messages.Result<Boolean> result) {
-
+        if (ContextCompat.checkSelfPermission(activity,
+                Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED
+                && ContextCompat.checkSelfPermission(activity,
+                Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+            result.success(true);
+        } else {
+            result.success(false);
+        }
     }
 
     @Override
     public void askLocationPermission(Messages.Result<Boolean> result) {
-
+        locationHelper.requestLocationPermission(result);
     }
 
     @Override
     public void checkExternalStoragePermission(Messages.Result<Boolean> result) {
-
+        if (ContextCompat.checkSelfPermission(activity,
+                Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED
+                && ContextCompat.checkSelfPermission(activity,
+                Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
+            result.success(true);
+        } else {
+            result.success(false);
+        }
     }
 
     @Override
     public void checkBluetoothPermission(Messages.Result<Boolean> result) {
-
+        if (VERSION.SDK_INT >= VERSION_CODES.S) {
+            if (
+                    ContextCompat.checkSelfPermission(activity, Manifest.permission.BLUETOOTH_ADVERTISE) == PackageManager.PERMISSION_GRANTED &&
+                            ContextCompat.checkSelfPermission(activity, Manifest.permission.BLUETOOTH_CONNECT) == PackageManager.PERMISSION_GRANTED &&
+                            ContextCompat.checkSelfPermission(activity, Manifest.permission.BLUETOOTH_SCAN) == PackageManager.PERMISSION_GRANTED
+            ) {
+                result.success(true);
+            } else {
+                result.success(false);
+            }
+        } else {
+            result.success(true);
+        }
     }
 
     @Override
     public void checkLocationEnabled(Messages.Result<Boolean> result) {
-
+        LocationManager lm = (LocationManager) activity.getSystemService(activity.LOCATION_SERVICE);
+        boolean gps_enabled = false;
+        boolean network_enabled = false;
+        try {
+            gps_enabled = lm.isProviderEnabled(LocationManager.GPS_PROVIDER);
+        } catch (Exception ex) {
+        }
+        try {
+            network_enabled = lm.isProviderEnabled(LocationManager.NETWORK_PROVIDER);
+        } catch (Exception ex) {
+        }
+        result.success(gps_enabled || network_enabled);
     }
 
     @Override
     public void enableLocationServices(Messages.Result<Boolean> result) {
-
+        locationHelper.requestLocationEnable(result);
     }
 
     @Override
     public void askExternalStoragePermission() {
-
+        ActivityCompat.requestPermissions(activity, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE,
+                Manifest.permission.WRITE_EXTERNAL_STORAGE}, 1);
+        Log.d("nearby_connections", "askExternalStoragePermission");
     }
 
     @Override
     public void askBluetoothPermission() {
-
+        if (VERSION.SDK_INT >= VERSION_CODES.S) {
+            ActivityCompat.requestPermissions(activity,
+                    new String[]{Manifest.permission.BLUETOOTH_ADVERTISE, Manifest.permission.BLUETOOTH_CONNECT, Manifest.permission.BLUETOOTH_SCAN},
+                    1);
+            Log.d("nearby_connections", "askBluetoothPermission");
+        }
     }
 
     @Override
     public void askLocationAndExternalStoragePermission() {
-
+        ActivityCompat.requestPermissions(activity,
+                new String[]{Manifest.permission.ACCESS_FINE_LOCATION,
+                        Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.READ_EXTERNAL_STORAGE,
+                        Manifest.permission.WRITE_EXTERNAL_STORAGE},
+                1);
+        Log.d("nearby_connections", "askExternalStoragePermission");
     }
 
     @Override
     public void copyFileAndDeleteOriginal(@NonNull String sourceUri, @NonNull String destinationFilepath, Messages.Result<Boolean> result) {
-
+        Log.d("nearby_connections", "copyFileAndDeleteOriginal");
+        try {
+            // Copy the file to a new location.
+            Uri uri = Uri.parse(sourceUri);
+            InputStream in = activity.getContentResolver().openInputStream(uri);
+            copyStream(in, new FileOutputStream(new File(destinationFilepath)));
+            // Delete the original file.
+            activity.getContentResolver().delete(uri, null, null);
+            result.success(true);
+        } catch (IOException e) {
+            // Log the error.
+            Log.e("nearby_connections", e.getMessage());
+            result.success(false);
+        }
     }
 
     @Override
-    public void startAdvertising(@NonNull Messages.IdentifierMessage identifierMessage, Messages.Result<Boolean> result) {
+    public void startAdvertising(@NonNull Messages.IdentifierMessage identifierMessage, final Messages.Result<Boolean> result) {
+        AdvertisingOptions advertisingOptions = new AdvertisingOptions.Builder()
+                .setStrategy(getStrategy(identifierMessage.getStrategy().intValue())).build();
 
+        final String serviceId = (identifierMessage.getServiceId() == null || identifierMessage.getServiceId().isEmpty()) ? SERVICE_ID : identifierMessage.getServiceId();
+        Nearby.getConnectionsClient(activity).startAdvertising(identifierMessage.getUserNickname(), serviceId,
+                advertConnectionLifecycleCallback, advertisingOptions)
+                .addOnSuccessListener(new OnSuccessListener<Void>() {
+                    @Override
+                    public void onSuccess(Void aVoid) {
+                        Log.d("nearby_connections", "startAdvertising");
+                        result.success(true);
+                    }
+                }).addOnFailureListener(new OnFailureListener() {
+            @Override
+            public void onFailure(@NonNull Exception e) {
+                result.error(e);
+            }
+        });
     }
 
     @Override
     public void stopAdvertising(Messages.Result<Void> result) {
-
+        Log.d("nearby_connections", "stopAdvertising");
+        Nearby.getConnectionsClient(activity).stopAdvertising();
+        result.success(null);
     }
 
     @Override
-    public void startDiscovery(@NonNull Messages.IdentifierMessage identifierMessage, Messages.Result<Boolean> result) {
+    public void startDiscovery(@NonNull Messages.IdentifierMessage identifierMessage, final Messages.Result<Boolean> result) {
+        DiscoveryOptions discoveryOptions = new DiscoveryOptions.Builder()
+                .setStrategy(getStrategy(identifierMessage.getStrategy().intValue())).build();
 
+        final String serviceId = (identifierMessage.getServiceId() == null || identifierMessage.getServiceId().isEmpty()) ? SERVICE_ID : identifierMessage.getServiceId();
+        Nearby.getConnectionsClient(activity).startDiscovery(serviceId, endpointDiscoveryCallback, discoveryOptions)
+                .addOnSuccessListener(new OnSuccessListener<Void>() {
+                    @Override
+                    public void onSuccess(Void aVoid) {
+                        Log.d("nearby_connections", "startAdvertising");
+                        result.success(true);
+                    }
+                }).addOnFailureListener(new OnFailureListener() {
+            @Override
+            public void onFailure(@NonNull Exception e) {
+                result.error(e);
+            }
+        });
     }
 
     @Override
     public void stopDiscovery(Messages.Result<Void> result) {
-
+        Log.d("nearby_connections", "stopDiscovery");
+        Nearby.getConnectionsClient(activity).stopDiscovery();
+        result.success(null);
     }
 
     @Override
     public void stopAllEndpoints(Messages.Result<Void> result) {
-
+        Log.d("nearby_connections", "stopAllEndpoints");
+        Nearby.getConnectionsClient(activity).stopAllEndpoints();
+        result.success(null);
     }
 
     @Override
     public void disconnectFromEndpoint(@NonNull String endpointId, Messages.Result<Void> result) {
-
+        Log.d("nearby_connections", "disconnectFromEndpoint");
+        Nearby.getConnectionsClient(activity).disconnectFromEndpoint(endpointId);
+        result.success(null);
     }
 
     @Override
-    public void requestConnection(@NonNull String userNickName, @NonNull String endpointId, Messages.Result<Boolean> result) {
-
+    public void requestConnection(@NonNull String userNickName, @NonNull String endpointId, final Messages.Result<Boolean> result) {
+        Log.d("nearby_connections", "requestConnection");
+        Nearby.getConnectionsClient(activity)
+                .requestConnection(userNickName, endpointId, discoverConnectionLifecycleCallback)
+                .addOnSuccessListener(new OnSuccessListener<Void>() {
+                    @Override
+                    public void onSuccess(Void aVoid) {
+                        result.success(true);
+                    }
+                }).addOnFailureListener(new OnFailureListener() {
+            @Override
+            public void onFailure(@NonNull Exception e) {
+                result.error(e);
+            }
+        });
     }
 
     @Override
-    public void acceptConnection(@NonNull String endpointId, Messages.Result<Boolean> result) {
-
+    public void acceptConnection(@NonNull String endpointId, final Messages.Result<Boolean> result) {
+        Nearby.getConnectionsClient(activity).acceptConnection(endpointId, payloadCallback)
+                .addOnSuccessListener(new OnSuccessListener<Void>() {
+                    @Override
+                    public void onSuccess(Void aVoid) {
+                        result.success(true);
+                    }
+                }).addOnFailureListener(new OnFailureListener() {
+            @Override
+            public void onFailure(@NonNull Exception e) {
+                result.error(e);
+            }
+        });
     }
 
     @Override
-    public void rejectConnection(@NonNull String endpointId, Messages.Result<Boolean> result) {
-
+    public void rejectConnection(@NonNull String endpointId, final Messages.Result<Boolean> result) {
+        Nearby.getConnectionsClient(activity).rejectConnection(endpointId)
+                .addOnSuccessListener(new OnSuccessListener<Void>() {
+                    @Override
+                    public void onSuccess(Void aVoid) {
+                        result.success(true);
+                    }
+                }).addOnFailureListener(new OnFailureListener() {
+            @Override
+            public void onFailure(@NonNull Exception e) {
+                result.error(e);
+            }
+        });
     }
 
     @Override
-    public void sendBytesPayload(@NonNull String endpointId, @NonNull byte[] bytes, Messages.Result<Void> result) {
-
+    public void sendPayload(@NonNull String endpointId, @NonNull byte[] bytes, Messages.Result<Void> result) {
+        Nearby.getConnectionsClient(activity).sendPayload(endpointId, Payload.fromBytes(bytes));
+        Log.d("nearby_connections", "sentPayload");
+        result.success(null);
     }
 
     @Override
     public void sendFilePayload(@NonNull String endpointId, @NonNull String filePath, Messages.Result<Long> result) {
+        try {
+            File file = new File(filePath);
 
+            Payload filePayload = Payload.fromFile(file);
+            Nearby.getConnectionsClient(activity).sendPayload(endpointId, filePayload);
+            Log.d("nearby_connections", "sentFilePayload");
+            result.success(filePayload.getId()); // return payload id to dart
+        } catch (FileNotFoundException e) {
+            Log.e("nearby_connections", "File not found", e);
+            result.error(e);
+            return;
+        }
     }
 
     @Override
     public void cancelPayload(@NonNull Long payloadId, Messages.Result<Void> result) {
-
+        Nearby.getConnectionsClient(activity).cancelPayload(payloadId);
+        result.success(null);
     }
 }

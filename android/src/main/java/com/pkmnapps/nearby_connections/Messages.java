@@ -468,7 +468,7 @@ public class Messages {
     void requestConnection(@NonNull String userNickName, @NonNull String endpointId, Result<Boolean> result);
     void acceptConnection(@NonNull String endpointId, Result<Boolean> result);
     void rejectConnection(@NonNull String endpointId, Result<Boolean> result);
-    void sendBytesPayload(@NonNull String endpointId, @NonNull byte[] bytes, Result<Void> result);
+    void sendPayload(@NonNull String endpointId, @NonNull byte[] bytes, Result<Void> result);
     void sendFilePayload(@NonNull String endpointId, @NonNull String filePath, Result<Long> result);
     void cancelPayload(@NonNull Long payloadId, Result<Void> result);
 
@@ -1045,7 +1045,7 @@ public class Messages {
       }
       {
         BasicMessageChannel<Object> channel =
-            new BasicMessageChannel<>(binaryMessenger, "dev.flutter.pigeon.NearbyApi.sendBytesPayload", getCodec());
+            new BasicMessageChannel<>(binaryMessenger, "dev.flutter.pigeon.NearbyApi.sendPayload", getCodec());
         if (api != null) {
           channel.setMessageHandler((message, reply) -> {
             Map<String, Object> wrapped = new HashMap<>();
@@ -1070,7 +1070,7 @@ public class Messages {
                 }
               };
 
-              api.sendBytesPayload(endpointIdArg, bytesArg, resultCallback);
+              api.sendPayload(endpointIdArg, bytesArg, resultCallback);
             }
             catch (Error | RuntimeException exception) {
               wrapped.put("error", wrapError(exception));
