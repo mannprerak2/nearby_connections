@@ -1,4 +1,4 @@
-## 3.2.0
+## 3.3.0
 - Update dependencies (nearby and play services) in build.gradle.
 
 ## 3.2.0
