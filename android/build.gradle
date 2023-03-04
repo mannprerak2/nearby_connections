@@ -22,7 +22,7 @@ rootProject.allprojects {
 apply plugin: 'com.android.library'
 
 android {
-    compileSdkVersion 32
+    compileSdkVersion 33
 
     defaultConfig {
         minSdkVersion 16
@@ -32,10 +32,10 @@ android {
         disable 'InvalidPackage'
     }
     dependencies{
-        api 'com.google.android.gms:play-services-nearby:18.0.0'
+        api 'com.google.android.gms:play-services-nearby:18.4.0'
     }
 }
 
 dependencies {
-    implementation 'com.google.android.gms:play-services-location:17.1.0'
+    implementation 'com.google.android.gms:play-services-location:21.0.1'
 }
