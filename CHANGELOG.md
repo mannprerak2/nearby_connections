@@ -1,4 +1,7 @@
 ## 3.2.0
+- Update dependencies (nearby and play services) in build.gradle.
+
+## 3.2.0
 - Update for Android 12 support. Apps may need to set `compileSdkVersion 32` in build.gradle.
 - Added convinience methods `checkBluetoothPermission` and `askBluetoothPermission`
 required for Android 12+ devices.
