@@ -15,9 +15,7 @@ class Nearby {
   static Nearby? _instance;
 
   factory Nearby() {
-    if (_instance == null) {
-      _instance = Nearby._();
-    }
+    _instance ??= Nearby._();
     return _instance!;
   }
 
@@ -146,7 +144,7 @@ class Nearby {
   OnPayloadTransferUpdate? _onPayloadTransferUpdate;
 
   static const MethodChannel _channel =
-      const MethodChannel('nearby_connections');
+      MethodChannel('nearby_connections');
 
   /// convenience method
   ///
@@ -231,9 +229,9 @@ class Nearby {
     required OnDisconnected onDisconnected,
     String serviceId = "com.pkmnapps.nearby_connections",
   }) async {
-    this._advertConnectionInitiated = onConnectionInitiated;
-    this._advertConnectionResult = onConnectionResult;
-    this._advertDisconnected = onDisconnected;
+    _advertConnectionInitiated = onConnectionInitiated;
+    _advertConnectionResult = onConnectionResult;
+    _advertDisconnected = onDisconnected;
 
     return await _channel.invokeMethod('startAdvertising', <String, dynamic>{
           'userNickName': userNickName,
@@ -264,8 +262,8 @@ class Nearby {
     required OnEndpointLost onEndpointLost,
     String serviceId = "com.pkmnapps.nearby_connections",
   }) async {
-    this._onEndpointFound = onEndpointFound;
-    this._onEndpointLost = onEndpointLost;
+    _onEndpointFound = onEndpointFound;
+    _onEndpointLost = onEndpointLost;
 
     return await _channel.invokeMethod('startDiscovery', <String, dynamic>{
           'userNickName': userNickName,
@@ -320,9 +318,9 @@ class Nearby {
     required OnConnectionResult onConnectionResult,
     required OnDisconnected onDisconnected,
   }) async {
-    this._discoverConnectionInitiated = onConnectionInitiated;
-    this._discoverConnectionResult = onConnectionResult;
-    this._discoverDisconnected = onDisconnected;
+    _discoverConnectionInitiated = onConnectionInitiated;
+    _discoverConnectionResult = onConnectionResult;
+    _discoverDisconnected = onDisconnected;
 
     return await _channel.invokeMethod(
           'requestConnection',
@@ -347,8 +345,8 @@ class Nearby {
     required OnPayloadReceived onPayLoadRecieved,
     OnPayloadTransferUpdate? onPayloadTransferUpdate,
   }) async {
-    this._onPayloadReceived = onPayLoadRecieved;
-    this._onPayloadTransferUpdate = onPayloadTransferUpdate;
+    _onPayloadReceived = onPayLoadRecieved;
+    _onPayloadTransferUpdate = onPayloadTransferUpdate;
 
     return await _channel.invokeMethod(
           'acceptConnection',
