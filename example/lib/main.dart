@@ -5,6 +5,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:nearby_connections/nearby_connections.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 void main() => runApp(const MyApp());
 
@@ -57,9 +58,9 @@ class _MyBodyState extends State<Body> {
             Wrap(
               children: <Widget>[
                 ElevatedButton(
-                  child: const Text("checkLocationPermission"),
+                  child: const Text("checkLocationPermission (<= Android 12)"),
                   onPressed: () async {
-                    if (await Nearby().checkLocationPermission()) {
+                    if (await Permission.location.isGranted) {
                       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
                           content: Text("Location permissions granted :)")));
                     } else {
@@ -72,7 +73,7 @@ class _MyBodyState extends State<Body> {
                 ElevatedButton(
                   child: const Text("askLocationPermission"),
                   onPressed: () async {
-                    if (await Nearby().askLocationPermission()) {
+                    if (await Permission.location.request().isGranted) {
                       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
                           content: Text("Location Permission granted :)")));
                     } else {
@@ -85,7 +86,7 @@ class _MyBodyState extends State<Body> {
                 ElevatedButton(
                   child: const Text("checkExternalStoragePermission"),
                   onPressed: () async {
-                    if (await Nearby().checkExternalStoragePermission()) {
+                    if (await Permission.storage.isGranted) {
                       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
                           content:
                               Text("External Storage permissions granted :)")));
@@ -99,13 +100,18 @@ class _MyBodyState extends State<Body> {
                 ElevatedButton(
                   child: const Text("askExternalStoragePermission"),
                   onPressed: () {
-                    Nearby().askExternalStoragePermission();
+                    Permission.storage.request();
                   },
                 ),
                 ElevatedButton(
-                  child: const Text("checkBluetoothPermission (Android 12+)"),
+                  child: const Text("checkBluetoothPermission (>= Android 12)"),
                   onPressed: () async {
-                    if (await Nearby().checkBluetoothPermission()) {
+                    if (!(await Future.wait([
+                      Permission.bluetoothAdvertise.isGranted,
+                      Permission.bluetoothConnect.isGranted,
+                      Permission.bluetoothScan.isGranted,
+                    ]))
+                        .any((element) => false)) {
                       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
                           content: Text("Bluethooth permissions granted :)")));
                     } else {
@@ -118,7 +124,33 @@ class _MyBodyState extends State<Body> {
                 ElevatedButton(
                   child: const Text("askBluetoothPermission (Android 12+)"),
                   onPressed: () {
-                    Nearby().askBluetoothPermission();
+                    [
+                      Permission.bluetoothAdvertise,
+                      Permission.bluetoothConnect,
+                      Permission.bluetoothScan
+                    ].request();
+                  },
+                ),
+                ElevatedButton(
+                  child: const Text(
+                      "checkNearbyWifiDevicesPermission (>= Android 12)"),
+                  onPressed: () async {
+                    if (await Permission.nearbyWifiDevices.isGranted) {
+                      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+                          content: Text(
+                              "NearbyWifiDevices permissions granted :)")));
+                    } else {
+                      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+                          content: Text(
+                              "NearbyWifiDevices permissions not granted :(")));
+                    }
+                  },
+                ),
+                ElevatedButton(
+                  child: const Text(
+                      "askNearbyWifiDevicesPermission (Android 12+)"),
+                  onPressed: () {
+                    Permission.nearbyWifiDevices.request();
                   },
                 ),
               ],
