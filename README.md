@@ -55,27 +55,6 @@ Since ACCESS_FINE_LOCATION and READ_EXTERNAL_STORAGE is considered to be dangero
 
 #### You can use the [permission_handler](https://pub.dev/packages/permission_handler) package to handle all these permissions.
 
-#### Otherwise, as a **convenience** this library provides methods to check and request location and external read/write permissions
-```dart
-// returns true/false asynchronously.
-bool a = await Nearby().checkLocationPermissions();
-// asks for permission only if its not given
-// returns true/false if the location permission is granted on/off resp.
-bool b = await Nearby().askLocationPermission();
-
-// OPTIONAL: if you need to transfer files and rename it on device
-bool c = await  Nearby().checkExternalStoragePermission();
-// asks for READ + WRTIE EXTERNAL STORAGE permission only if its not given
-Nearby().askExternalStoragePermission();
-
-Nearby().askLocationAndExternalStoragePermission(); // for all permissions in one go..
-
-// For bluetooth permissions on Android 12+.
-bool d = await Nearby().checkBluetoothPermission();
-// asks for BLUETOOTH_ADVERTISE, BLUETOOTH_CONNECT, BLUETOOTH_SCAN permissions.
-Nearby().askBluetoothPermission();
-```
-
 ## Work Flow
 
 The work flow is similar to the [Android Nearby Connections library](https://developers.google.com/nearby/connections/overview)

@@ -1,3 +1,7 @@
+## 3.3.1
+- Deprecate all permission check/request convenience methods & update example to use
+package [permission_handler](https://pub.dev/packages/permission_handler) instead.
+
 ## 3.3.0
 - Update dependencies (nearby and play services) in build.gradle.
 
