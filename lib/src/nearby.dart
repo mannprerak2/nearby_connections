@@ -194,14 +194,14 @@ class Nearby {
   ///
   /// If Location isn't enabled, devices may disconnect often.
   /// Some devices may immediately disconnect
-  @Deprecated("Consider using package:permission_handler") // TODO
+  @Deprecated(
+      "Consider using package:permission_handler - await Permission.location.serviceStatus.isEnabled")
   Future<bool> checkLocationEnabled() async =>
       await _channel.invokeMethod('checkLocationEnabled') ?? false;
 
   /// convenience method
   ///
   /// directs user to Location Settings, so they can turn on their Location/GPS
-  @Deprecated("Consider using package:permission_handler") // TODO
   Future<bool> enableLocationServices() async =>
       await _channel.invokeMethod('enableLocationServices') ?? false;
 
