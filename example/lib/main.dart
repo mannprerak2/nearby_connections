@@ -5,10 +5,13 @@ import 'package:path_provider/path_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:nearby_connections/nearby_connections.dart';
+import 'package:permission_handler/permission_handler.dart';
 
-void main() => runApp(MyApp());
+void main() => runApp(const MyApp());
 
 class MyApp extends StatefulWidget {
+  const MyApp({Key? key}) : super(key: key);
+
   @override
   _MyAppState createState() => _MyAppState();
 }
@@ -21,13 +24,15 @@ class _MyAppState extends State<MyApp> {
         appBar: AppBar(
           title: const Text('Nearby Connections example app'),
         ),
-        body: Body(),
+        body: const Body(),
       ),
     );
   }
 }
 
 class Body extends StatefulWidget {
+  const Body({Key? key}) : super(key: key);
+
   @override
   _MyBodyState createState() => _MyBodyState();
 }
@@ -35,11 +40,10 @@ class Body extends StatefulWidget {
 class _MyBodyState extends State<Body> {
   final String userName = Random().nextInt(10000).toString();
   final Strategy strategy = Strategy.P2P_STAR;
-  Map<String, ConnectionInfo> endpointMap = Map();
+  Map<String, ConnectionInfo> endpointMap = {};
 
   String? tempFileUri; //reference to the file currently being transferred
-  Map<int, String> map =
-      Map(); //store filename mapped to corresponding payloadId
+  Map<int, String> map = {}; //store filename mapped to corresponding payloadId
 
   @override
   Widget build(BuildContext context) {
@@ -48,102 +52,135 @@ class _MyBodyState extends State<Body> {
         padding: const EdgeInsets.all(8.0),
         child: ListView(
           children: <Widget>[
-            Text(
+            const Text(
               "Permissions",
             ),
             Wrap(
               children: <Widget>[
                 ElevatedButton(
-                  child: Text("checkLocationPermission"),
+                  child: const Text("checkLocationPermission (<= Android 12)"),
                   onPressed: () async {
-                    if (await Nearby().checkLocationPermission()) {
-                      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                    if (await Permission.location.isGranted) {
+                      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
                           content: Text("Location permissions granted :)")));
                     } else {
-                      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
                           content:
                               Text("Location permissions not granted :(")));
                     }
                   },
                 ),
                 ElevatedButton(
-                  child: Text("askLocationPermission"),
+                  child: const Text("askLocationPermission"),
                   onPressed: () async {
-                    if (await Nearby().askLocationPermission()) {
-                      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                    if (await Permission.location.request().isGranted) {
+                      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
                           content: Text("Location Permission granted :)")));
                     } else {
-                      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
                           content:
                               Text("Location permissions not granted :(")));
                     }
                   },
                 ),
                 ElevatedButton(
-                  child: Text("checkExternalStoragePermission"),
+                  child: const Text("checkExternalStoragePermission"),
                   onPressed: () async {
-                    if (await Nearby().checkExternalStoragePermission()) {
-                      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                    if (await Permission.storage.isGranted) {
+                      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
                           content:
                               Text("External Storage permissions granted :)")));
                     } else {
-                      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
                           content: Text(
                               "External Storage permissions not granted :(")));
                     }
                   },
                 ),
                 ElevatedButton(
-                  child: Text("askExternalStoragePermission"),
+                  child: const Text("askExternalStoragePermission"),
                   onPressed: () {
-                    Nearby().askExternalStoragePermission();
+                    Permission.storage.request();
                   },
                 ),
                 ElevatedButton(
-                  child: Text("checkBluetoothPermission (Android 12+)"),
+                  child: const Text("checkBluetoothPermission (>= Android 12)"),
                   onPressed: () async {
-                    if (await Nearby().checkBluetoothPermission()) {
-                      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                    if (!(await Future.wait([
+                      Permission.bluetooth.isGranted,
+                      Permission.bluetoothAdvertise.isGranted,
+                      Permission.bluetoothConnect.isGranted,
+                      Permission.bluetoothScan.isGranted,
+                    ]))
+                        .any((element) => false)) {
+                      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
                           content: Text("Bluethooth permissions granted :)")));
                     } else {
-                      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
                           content:
                               Text("Bluetooth permissions not granted :(")));
                     }
                   },
                 ),
                 ElevatedButton(
-                  child: Text("askBluetoothPermission (Android 12+)"),
+                  child: const Text("askBluetoothPermission (Android 12+)"),
                   onPressed: () {
-                    Nearby().askBluetoothPermission();
+                    [
+                      Permission.bluetooth,
+                      Permission.bluetoothAdvertise,
+                      Permission.bluetoothConnect,
+                      Permission.bluetoothScan
+                    ].request();
                   },
                 ),
-              ],
-            ),
-            Divider(),
-            Text("Location Enabled"),
-            Wrap(
-              children: <Widget>[
                 ElevatedButton(
-                  child: Text("checkLocationEnabled"),
+                  child: const Text(
+                      "checkNearbyWifiDevicesPermission (>= Android 12)"),
                   onPressed: () async {
-                    if (await Nearby().checkLocationEnabled()) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(content: Text("Location is ON :)")));
+                    if (await Permission.nearbyWifiDevices.isGranted) {
+                      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+                          content: Text(
+                              "NearbyWifiDevices permissions granted :)")));
                     } else {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(content: Text("Location is OFF :(")));
+                      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+                          content: Text(
+                              "NearbyWifiDevices permissions not granted :(")));
                     }
                   },
                 ),
                 ElevatedButton(
-                  child: Text("enableLocationServices"),
+                  child: const Text(
+                      "askNearbyWifiDevicesPermission (Android 12+)"),
+                  onPressed: () {
+                    Permission.nearbyWifiDevices.request();
+                  },
+                ),
+              ],
+            ),
+            const Divider(),
+            const Text("Location Enabled"),
+            Wrap(
+              children: <Widget>[
+                ElevatedButton(
+                  child: const Text("checkLocationEnabled"),
+                  onPressed: () async {
+                    if (await Permission.location.serviceStatus.isEnabled) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text("Location is ON :)")));
+                    } else {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text("Location is OFF :(")));
+                    }
+                  },
+                ),
+                ElevatedButton(
+                  child: const Text("enableLocationServices"),
                   onPressed: () async {
                     if (await Nearby().enableLocationServices()) {
-                      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
                           content: Text("Location Service Enabled :)")));
                     } else {
-                      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
                           content:
                               Text("Enabling Location Service Failed :(")));
                     }
@@ -151,12 +188,12 @@ class _MyBodyState extends State<Body> {
                 ),
               ],
             ),
-            Divider(),
-            Text("User Name: " + userName),
+            const Divider(),
+            Text("User Name: $userName"),
             Wrap(
               children: <Widget>[
                 ElevatedButton(
-                  child: Text("Start Advertising"),
+                  child: const Text("Start Advertising"),
                   onPressed: () async {
                     try {
                       bool a = await Nearby().startAdvertising(
@@ -174,14 +211,14 @@ class _MyBodyState extends State<Body> {
                           });
                         },
                       );
-                      showSnackbar("ADVERTISING: " + a.toString());
+                      showSnackbar("ADVERTISING: $a");
                     } catch (exception) {
                       showSnackbar(exception);
                     }
                   },
                 ),
                 ElevatedButton(
-                  child: Text("Stop Advertising"),
+                  child: const Text("Stop Advertising"),
                   onPressed: () async {
                     await Nearby().stopAdvertising();
                   },
@@ -191,7 +228,7 @@ class _MyBodyState extends State<Body> {
             Wrap(
               children: <Widget>[
                 ElevatedButton(
-                  child: Text("Start Discovery"),
+                  child: const Text("Start Discovery"),
                   onPressed: () async {
                     try {
                       bool a = await Nearby().startDiscovery(
@@ -205,11 +242,11 @@ class _MyBodyState extends State<Body> {
                               return Center(
                                 child: Column(
                                   children: <Widget>[
-                                    Text("id: " + id),
-                                    Text("Name: " + name),
-                                    Text("ServiceId: " + serviceId),
+                                    Text("id: $id"),
+                                    Text("Name: $name"),
+                                    Text("ServiceId: $serviceId"),
                                     ElevatedButton(
-                                      child: Text("Request Connection"),
+                                      child: const Text("Request Connection"),
                                       onPressed: () {
                                         Navigator.pop(context);
                                         Nearby().requestConnection(
@@ -242,14 +279,14 @@ class _MyBodyState extends State<Body> {
                               "Lost discovered Endpoint: ${endpointMap[id]!.endpointName}, id $id");
                         },
                       );
-                      showSnackbar("DISCOVERING: " + a.toString());
+                      showSnackbar("DISCOVERING: $a");
                     } catch (e) {
                       showSnackbar(e);
                     }
                   },
                 ),
                 ElevatedButton(
-                  child: Text("Stop Discovery"),
+                  child: const Text("Stop Discovery"),
                   onPressed: () async {
                     await Nearby().stopDiscovery();
                   },
@@ -258,7 +295,7 @@ class _MyBodyState extends State<Body> {
             ),
             Text("Number of connected devices: ${endpointMap.length}"),
             ElevatedButton(
-              child: Text("Stop All Endpoints"),
+              child: const Text("Stop All Endpoints"),
               onPressed: () async {
                 await Nearby().stopAllEndpoints();
                 setState(() {
@@ -266,12 +303,12 @@ class _MyBodyState extends State<Body> {
                 });
               },
             ),
-            Divider(),
-            Text(
+            const Divider(),
+            const Text(
               "Sending Data",
             ),
             ElevatedButton(
-              child: Text("Send Random Bytes Payload"),
+              child: const Text("Send Random Bytes Payload"),
               onPressed: () async {
                 endpointMap.forEach((key, value) {
                   String a = Random().nextInt(100).toString();
@@ -283,7 +320,7 @@ class _MyBodyState extends State<Body> {
               },
             ),
             ElevatedButton(
-              child: Text("Send File Payload"),
+              child: const Text("Send File Payload"),
               onPressed: () async {
                 PickedFile? file =
                     await ImagePicker().getImage(source: ImageSource.gallery);
@@ -303,7 +340,7 @@ class _MyBodyState extends State<Body> {
               },
             ),
             ElevatedButton(
-              child: Text("Print file names."),
+              child: const Text("Print file names."),
               onPressed: () async {
                 final dir = (await getExternalStorageDirectory())!;
                 final files = (await dir.list(recursive: true).toList())
@@ -330,7 +367,7 @@ class _MyBodyState extends State<Body> {
     final b =
         await Nearby().copyFileAndDeleteOriginal(uri, '$parentDir/$fileName');
 
-    showSnackbar("Moved file:" + b.toString());
+    showSnackbar("Moved file:$b");
     return b;
   }
 
@@ -343,12 +380,12 @@ class _MyBodyState extends State<Body> {
         return Center(
           child: Column(
             children: <Widget>[
-              Text("id: " + id),
-              Text("Token: " + info.authenticationToken),
-              Text("Name" + info.endpointName),
-              Text("Incoming: " + info.isIncomingConnection.toString()),
+              Text("id: $id"),
+              Text("Token: ${info.authenticationToken}"),
+              Text("Name${info.endpointName}"),
+              Text("Incoming: ${info.isIncomingConnection}"),
               ElevatedButton(
-                child: Text("Accept Connection"),
+                child: const Text("Accept Connection"),
                 onPressed: () {
                   Navigator.pop(context);
                   setState(() {
@@ -359,7 +396,7 @@ class _MyBodyState extends State<Body> {
                     onPayLoadRecieved: (endid, payload) async {
                       if (payload.type == PayloadType.BYTES) {
                         String str = String.fromCharCodes(payload.bytes!);
-                        showSnackbar(endid + ": " + str);
+                        showSnackbar("$endid: $str");
 
                         if (str.contains(':')) {
                           // used for file payload as file payload is mapped as
@@ -379,7 +416,7 @@ class _MyBodyState extends State<Body> {
                           }
                         }
                       } else if (payload.type == PayloadType.FILE) {
-                        showSnackbar(endid + ": File transfer started");
+                        showSnackbar("$endid: File transfer started");
                         tempFileUri = payload.uri;
                       }
                     },
@@ -390,7 +427,7 @@ class _MyBodyState extends State<Body> {
                       } else if (payloadTransferUpdate.status ==
                           PayloadStatus.FAILURE) {
                         print("failed");
-                        showSnackbar(endid + ": FAILED to transfer file");
+                        showSnackbar("$endid: FAILED to transfer file");
                       } else if (payloadTransferUpdate.status ==
                           PayloadStatus.SUCCESS) {
                         showSnackbar(
@@ -410,7 +447,7 @@ class _MyBodyState extends State<Body> {
                 },
               ),
               ElevatedButton(
-                child: Text("Reject Connection"),
+                child: const Text("Reject Connection"),
                 onPressed: () async {
                   Navigator.pop(context);
                   try {

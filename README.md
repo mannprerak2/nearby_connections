@@ -37,16 +37,16 @@ Add these to AndroidManifest.xml
 <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
 <uses-permission android:name="android.permission.CHANGE_WIFI_STATE" />
 <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
-<uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+<uses-permission android:minSdkVersion="29" android:name="android.permission.ACCESS_FINE_LOCATION" />
+
+<!-- For Android 12+ support-->
+<uses-permission android:minSdkVersion="31" android:name="android.permission.BLUETOOTH_ADVERTISE" />
+<uses-permission android:minSdkVersion="31" android:name="android.permission.BLUETOOTH_CONNECT" />
+<uses-permission android:minSdkVersion="31" android:name="android.permission.BLUETOOTH_SCAN" />
 
 <!-- Optional: only required for FILE payloads-->
 <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
 <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
-
-<!-- For Android 12+ support-->
-<uses-permission android:name="android.permission.BLUETOOTH_ADVERTISE" />
-<uses-permission android:name="android.permission.BLUETOOTH_SCAN" />
-<uses-permission android:name="android.permission.BLUETOOTH_CONNECT" />
 ```
 
 > Note: Android 12+ has introduced some new [bluetooh permissions](https://developer.android.com/about/versions/12/features#bluetooth-permissions) - `BLUETOOTH_ADVERTISE`, `BLUETOOTH_CONNECT`, `BLUETOOTH_SCAN`, which need to be handled as well. You may also need to set `compileSdkVersion 32` in your build.gradle file.
@@ -54,27 +54,6 @@ Add these to AndroidManifest.xml
 Since ACCESS_FINE_LOCATION and READ_EXTERNAL_STORAGE is considered to be dangerous system permissions, in addition to adding them to your manifest, you must request these permissions at runtime.
 
 #### You can use the [permission_handler](https://pub.dev/packages/permission_handler) package to handle all these permissions.
-
-#### Otherwise, as a **convenience** this library provides methods to check and request location and external read/write permissions
-```dart
-// returns true/false asynchronously.
-bool a = await Nearby().checkLocationPermissions();
-// asks for permission only if its not given
-// returns true/false if the location permission is granted on/off resp.
-bool b = await Nearby().askLocationPermission();
-
-// OPTIONAL: if you need to transfer files and rename it on device
-bool c = await  Nearby().checkExternalStoragePermission();
-// asks for READ + WRTIE EXTERNAL STORAGE permission only if its not given
-Nearby().askExternalStoragePermission();
-
-Nearby().askLocationAndExternalStoragePermission(); // for all permissions in one go..
-
-// For bluetooth permissions on Android 12+.
-bool d = await Nearby().checkBluetoothPermission();
-// asks for BLUETOOTH_ADVERTISE, BLUETOOTH_CONNECT, BLUETOOTH_SCAN permissions.
-Nearby().askBluetoothPermission();
-```
 
 ## Work Flow
 

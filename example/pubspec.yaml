@@ -20,6 +20,7 @@ dependencies:
     # the parent directory to use the current plugin's version.
     path: ../
   path_provider: ^2.0.2
+  permission_handler: ^10.3.0
 
 
 dev_dependencies:

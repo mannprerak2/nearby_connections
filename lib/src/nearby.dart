@@ -152,6 +152,8 @@ class Nearby {
   ///
   /// returns true/false based on location permissions.
   /// Discovery cannot be started with insufficient permission
+  @Deprecated(
+      "Consider using package:permission_handler - await Permission.location.isGranted")
   Future<bool> checkLocationPermission() async =>
       await _channel.invokeMethod(
         'checkLocationPermission',
@@ -161,18 +163,28 @@ class Nearby {
   /// convenience method
   ///
   /// Asks location permission
+  @Deprecated(
+      "Consider using package:permission_handler - await Permission.location.request().isGranted")
   Future<bool> askLocationPermission() async =>
       await _channel.invokeMethod('askLocationPermission') ?? false;
 
   /// convenience method
   ///
   /// returns true/false based on external storage permissions.
+  @Deprecated(
+      "Consider using package:permission_handler - await Permission.storage.isGranted")
   Future<bool> checkExternalStoragePermission() async =>
       await _channel.invokeMethod('checkExternalStoragePermission') ?? false;
 
   /// convenience method
   ///
   /// returns true/false based on bluetooth permissions.
+  @Deprecated("""Consider using package:permission_handler -
+!(await Future.wait([
+  Permission.bluetoothAdvertise.isGranted,
+  Permission.bluetoothConnect.isGranted,
+  Permission.bluetoothScan.isGranted,
+])""")
   Future<bool> checkBluetoothPermission() async =>
       await _channel.invokeMethod('checkBluetoothPermission') ?? false;
 
@@ -182,6 +194,8 @@ class Nearby {
   ///
   /// If Location isn't enabled, devices may disconnect often.
   /// Some devices may immediately disconnect
+  @Deprecated(
+      "Consider using package:permission_handler - await Permission.location.serviceStatus.isEnabled")
   Future<bool> checkLocationEnabled() async =>
       await _channel.invokeMethod('checkLocationEnabled') ?? false;
 
@@ -194,18 +208,30 @@ class Nearby {
   /// convenience method
   ///
   /// Asks external storage permission, required for file
+  @Deprecated(
+      "Consider using package:permission_handler - Permission.storage.request()")
   void askExternalStoragePermission() =>
       _channel.invokeMethod('askExternalStoragePermission');
 
   /// convenience method
   ///
   /// Asks bluetooth permissions, required for apps running on Android 12 and higher
+  @Deprecated("""Consider using package:permission_handler -
+[Permission.bluetoothAdvertise,
+Permission.bluetoothConnect,
+Permission.bluetoothScan
+].request()""")
   void askBluetoothPermission() =>
       _channel.invokeMethod('askBluetoothPermission');
 
   /// convenience method
   ///
   /// Use this instead of calling both [askLocationPermission()] and [askExternalStoragePermission()]
+  @Deprecated("""Consider using package:permission_handler -
+[Permission.location,
+Permission.storage
+].request()
+""")
   void askLocationAndExternalStoragePermission() =>
       _channel.invokeMethod('askLocationAndExternalStoragePermission');
 
