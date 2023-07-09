@@ -49,7 +49,7 @@ Add these to AndroidManifest.xml
 <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
 ```
 
-> Note: Android 12+ has introduced some new [bluetooh permissions](https://developer.android.com/about/versions/12/features#bluetooth-permissions) - `BLUETOOTH_ADVERTISE`, `BLUETOOTH_CONNECT`, `BLUETOOTH_SCAN`, which need to be handled as well. You may also need to set `compileSdkVersion 32` in your build.gradle file.
+> Note: Android 12+ has introduced some new [bluetooth permissions](https://developer.android.com/about/versions/12/features#bluetooth-permissions) - `BLUETOOTH_ADVERTISE`, `BLUETOOTH_CONNECT`, `BLUETOOTH_SCAN`, which need to be handled as well. You may also need to set `compileSdkVersion 32` in your build.gradle file.
 
 Since ACCESS_FINE_LOCATION and READ_EXTERNAL_STORAGE is considered to be dangerous system permissions, in addition to adding them to your manifest, you must request these permissions at runtime.
 
@@ -202,9 +202,9 @@ Nearby().sendBytesPayload(endpointId,fileNameEncodedWithPayloadId);
 Every payload has an **ID** which is same for sender and receiver.
 
 You can get the `uri` of the file from Payload in *onPayloadReceived* function.
-We have a convinience method to copy the file to a location you want-
+We have a convenience method to copy the file to a location you want-
 ```dart
-// Convinience method to copy file using it's `uri`.
+// Convenience method to copy file using it's `uri`.
 final newPath = '${await getExternalStorageDirectory}/$fileName';
 await Nearby().copyFileAndDeleteOriginal(uri, newPath);
 ```

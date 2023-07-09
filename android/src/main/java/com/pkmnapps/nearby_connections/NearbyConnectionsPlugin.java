@@ -198,6 +198,7 @@ public class NearbyConnectionsPlugin implements MethodCallHandler, FlutterPlugin
                         .addOnSuccessListener(new OnSuccessListener<Void>() {
                             @Override
                             public void onSuccess(Void aVoid) {
+                                Log.d("nearby_connections", "acceptConnection");
                                 result.success(true);
                             }
                         }).addOnFailureListener(new OnFailureListener() {
@@ -216,6 +217,7 @@ public class NearbyConnectionsPlugin implements MethodCallHandler, FlutterPlugin
                         .addOnSuccessListener(new OnSuccessListener<Void>() {
                             @Override
                             public void onSuccess(Void aVoid) {
+                                Log.d("nearby_connections", "rejectConnection");
                                 result.success(true);
                             }
                         }).addOnFailureListener(new OnFailureListener() {
@@ -260,9 +262,9 @@ public class NearbyConnectionsPlugin implements MethodCallHandler, FlutterPlugin
             }
             case "cancelPayload": {
                 String payloadId = (String) call.argument("payloadId");
-
                 assert payloadId != null;
                 Nearby.getConnectionsClient(activity).cancelPayload(Long.parseLong(payloadId));
+                Log.d("nearby_connections", "cancelPayload");
                 result.success(null);
                 break;
             }
