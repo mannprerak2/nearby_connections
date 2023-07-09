@@ -1,17 +1,12 @@
 package com.pkmnapps.nearby_connections;
 
-import android.Manifest;
 import android.app.Activity;
-import android.content.pm.PackageManager;
-import android.location.LocationManager;
 import android.util.Log;
 import android.os.Build.VERSION;
 import android.os.Build.VERSION_CODES;
 import android.net.Uri;
 
 import androidx.annotation.NonNull;
-import androidx.core.app.ActivityCompat;
-import androidx.core.content.ContextCompat;
 
 import com.google.android.gms.nearby.Nearby;
 import com.google.android.gms.nearby.connection.AdvertisingOptions;
@@ -55,8 +50,6 @@ public class NearbyConnectionsPlugin implements MethodCallHandler, FlutterPlugin
     private Activity activity;
     private static final String SERVICE_ID = "com.pkmnapps.nearby_connections";
     private static MethodChannel channel;
-    private static LocationHelper locationHelper;
-    private static ActivityPluginBinding activityPluginBinding;
     private static PluginRegistry.Registrar pluginRegistrar;
 
     private NearbyConnectionsPlugin(Activity activity) {
@@ -70,9 +63,6 @@ public class NearbyConnectionsPlugin implements MethodCallHandler, FlutterPlugin
 
     public static void registerWith(Registrar registrar) {
         pluginRegistrar = registrar;
-        locationHelper = new LocationHelper(registrar.activity());
-        locationHelper.setActivity(registrar.activity());
-        initiate();
         channel = new MethodChannel(registrar.messenger(), "nearby_connections");
         channel.setMethodCallHandler(new NearbyConnectionsPlugin(registrar.activity()));
     }
@@ -81,87 +71,6 @@ public class NearbyConnectionsPlugin implements MethodCallHandler, FlutterPlugin
     public void onMethodCall(MethodCall call, final Result result) {
 
         switch (call.method) {
-            case "checkLocationPermission":
-                if (ContextCompat.checkSelfPermission(activity,
-                        Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED
-                        && ContextCompat.checkSelfPermission(activity,
-                        Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
-                    result.success(true);
-                } else {
-                    result.success(false);
-                }
-                break;
-            case "askLocationPermission":
-                locationHelper.requestLocationPermission(result);
-                break;
-            case "checkLocationEnabled":
-                LocationManager lm = (LocationManager) activity.getSystemService(activity.LOCATION_SERVICE);
-                boolean gps_enabled = false;
-                boolean network_enabled = false;
-                try {
-                    gps_enabled = lm.isProviderEnabled(LocationManager.GPS_PROVIDER);
-                } catch (Exception ex) {
-                }
-                try {
-                    network_enabled = lm.isProviderEnabled(LocationManager.NETWORK_PROVIDER);
-                } catch (Exception ex) {
-                }
-                result.success(gps_enabled || network_enabled);
-                break;
-            case "enableLocationServices":
-                locationHelper.requestLocationEnable(result);
-                break;
-            case "checkExternalStoragePermission":
-                if (ContextCompat.checkSelfPermission(activity,
-                        Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED
-                        && ContextCompat.checkSelfPermission(activity,
-                        Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
-                    result.success(true);
-                } else {
-                    result.success(false);
-                }
-                break;
-            case "askExternalStoragePermission":
-                ActivityCompat.requestPermissions(activity, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE,
-                        Manifest.permission.WRITE_EXTERNAL_STORAGE}, 1);
-                Log.d("nearby_connections", "askExternalStoragePermission");
-                result.success(null);
-                break;
-            case "checkBluetoothPermission": // required for apps running on Android 12 and higher
-                if (VERSION.SDK_INT >= VERSION_CODES.S) {
-                    if (
-                        ContextCompat.checkSelfPermission(activity, Manifest.permission.BLUETOOTH_ADVERTISE) == PackageManager.PERMISSION_GRANTED && 
-                        ContextCompat.checkSelfPermission(activity, Manifest.permission.BLUETOOTH_CONNECT) == PackageManager.PERMISSION_GRANTED &&
-                        ContextCompat.checkSelfPermission(activity, Manifest.permission.BLUETOOTH_SCAN) == PackageManager.PERMISSION_GRANTED 
-                    ) {
-                        result.success(true);
-                    } else {
-                        result.success(false);
-                    }
-                } else{
-                    result.success(true);
-                }
-                break;
-            case "askBluetoothPermission":
-                if (VERSION.SDK_INT >= VERSION_CODES.S) {
-                    ActivityCompat.requestPermissions(activity,
-                        new String[]{Manifest.permission.BLUETOOTH_ADVERTISE, Manifest.permission.BLUETOOTH_CONNECT, Manifest.permission.BLUETOOTH_SCAN},
-                    1);
-                    Log.d("nearby_connections", "askBluetoothPermission");
-                    result.success(null);
-                } else{
-                    result.success(null);
-                }
-                break;
-            case "askLocationAndExternalStoragePermission":
-                ActivityCompat.requestPermissions(activity,
-                        new String[]{Manifest.permission.ACCESS_FINE_LOCATION,
-                                Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.READ_EXTERNAL_STORAGE,
-                                Manifest.permission.WRITE_EXTERNAL_STORAGE},
-                        1);
-                Log.d("nearby_connections", "askExternalStoragePermission");
-                result.success(null);
-                break;
             case "copyFileAndDeleteOriginal":
                 Log.d("nearby_connections", "copyFileAndDeleteOriginal");
                 String sourceUri = (String) call.argument("sourceUri");
@@ -533,61 +442,29 @@ public class NearbyConnectionsPlugin implements MethodCallHandler, FlutterPlugin
 
     @Override
     public void onAttachedToEngine(@NonNull FlutterPluginBinding binding) {
-        locationHelper = new LocationHelper();
         channel = new MethodChannel(binding.getBinaryMessenger(), "nearby_connections");
         channel.setMethodCallHandler(this);
     }
 
     @Override
     public void onDetachedFromEngine(@NonNull FlutterPluginBinding binding) {
-        locationHelper = null;
     }
-
-    private static void attachToActivity(ActivityPluginBinding binding) {
-        activityPluginBinding = binding;
-        try {
-            locationHelper.setActivity(binding.getActivity());
-            initiate();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-    private void detachActivity() {
-        activityPluginBinding.removeRequestPermissionsResultListener(locationHelper);
-        activityPluginBinding.removeActivityResultListener(locationHelper);
-        activityPluginBinding = null;
-    }
-
     @Override
     public void onAttachedToActivity(@NonNull ActivityPluginBinding binding) {
         this.activity = binding.getActivity();
-        attachToActivity(binding);
     }
 
     @Override
     public void onDetachedFromActivity() {
-        this.detachActivity();
     }
 
     @Override
     public void onDetachedFromActivityForConfigChanges() {
-        this.detachActivity();
     }
 
     @Override
     public void onReattachedToActivityForConfigChanges(@NonNull ActivityPluginBinding binding) {
-        attachToActivity(binding);
-    }
-
-    private static void initiate() {
-        if (pluginRegistrar != null) {
-            pluginRegistrar.addActivityResultListener(locationHelper);
-            pluginRegistrar.addRequestPermissionsResultListener(locationHelper);
-        } else {
-            activityPluginBinding.addActivityResultListener(locationHelper);
-            activityPluginBinding.addRequestPermissionsResultListener(locationHelper);
-        }
+        this.activity = binding.getActivity();
     }
     /** Copies a stream from one location to another. */
     private static void copyStream(InputStream in, OutputStream out) throws IOException {

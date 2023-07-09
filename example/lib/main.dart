@@ -1,6 +1,7 @@
 import 'dart:math';
 import 'dart:typed_data';
 
+import 'package:location/location.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
@@ -164,7 +165,7 @@ class _MyBodyState extends State<Body> {
                 ElevatedButton(
                   child: const Text("checkLocationEnabled"),
                   onPressed: () async {
-                    if (await Permission.location.serviceStatus.isEnabled) {
+                    if (await Location.instance.serviceEnabled()) {
                       ScaffoldMessenger.of(context).showSnackBar(
                           const SnackBar(content: Text("Location is ON :)")));
                     } else {
@@ -176,7 +177,7 @@ class _MyBodyState extends State<Body> {
                 ElevatedButton(
                   child: const Text("enableLocationServices"),
                   onPressed: () async {
-                    if (await Nearby().enableLocationServices()) {
+                    if (await Location.instance.requestService()) {
                       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
                           content: Text("Location Service Enabled :)")));
                     } else {
