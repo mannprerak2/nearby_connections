@@ -51,6 +51,8 @@ Add these to AndroidManifest.xml
 
 > Note: Android 12+ has introduced some new [bluetooth permissions](https://developer.android.com/about/versions/12/features#bluetooth-permissions) - `BLUETOOTH_ADVERTISE`, `BLUETOOTH_CONNECT`, `BLUETOOTH_SCAN`, which need to be handled as well. You may also need to set `compileSdkVersion 32` in your build.gradle file.
 
+### Request Permissions
+
 Since ACCESS_FINE_LOCATION and READ_EXTERNAL_STORAGE is considered to be dangerous system permissions, in addition to adding them to your manifest, you must request these permissions at runtime.
 
 > You can use the [permission_handler](https://pub.dev/packages/permission_handler) package to handle all these permissions and the [location](https://pub.dev/packages/location) package to request enabling location
