@@ -49,29 +49,52 @@ Add these to AndroidManifest.xml
 <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
 ```
 
-> Note: Android 12+ has introduced some new [bluetooh permissions](https://developer.android.com/about/versions/12/features#bluetooth-permissions) - `BLUETOOTH_ADVERTISE`, `BLUETOOTH_CONNECT`, `BLUETOOTH_SCAN`, which need to be handled as well. You may also need to set `compileSdkVersion 32` in your build.gradle file.
+> Note: Android 12+ has introduced some new [bluetooth permissions](https://developer.android.com/about/versions/12/features#bluetooth-permissions) - `BLUETOOTH_ADVERTISE`, `BLUETOOTH_CONNECT`, `BLUETOOTH_SCAN`, which need to be handled as well. You may also need to set `compileSdkVersion 32` in your build.gradle file.
+
+### Request Permissions
 
 Since ACCESS_FINE_LOCATION and READ_EXTERNAL_STORAGE is considered to be dangerous system permissions, in addition to adding them to your manifest, you must request these permissions at runtime.
 
-#### You can use the [permission_handler](https://pub.dev/packages/permission_handler) package to handle all these permissions.
+> You can use the [permission_handler](https://pub.dev/packages/permission_handler) package to handle all these permissions and the [location](https://pub.dev/packages/location) package to request enabling location
 
-## Work Flow
+```dart
+// location permission
+await Permission.location.isGranted         // Check
+await Permission.location.request()         // Ask
 
-The work flow is similar to the [Android Nearby Connections library](https://developers.google.com/nearby/connections/overview)
+// location enable dialog
+await Location.instance.requestService()
+
+// external storage permission
+await Permission.storage.isGranted          // Check
+await Permission.storage.request()          // Ask
+
+// Bluetooth permissions
+bool granted = !(await Future.wait([        // Check
+    Permission.bluetooth.isGranted,
+    Permission.bluetoothAdvertise.isGranted,
+    Permission.bluetoothConnect.isGranted,
+    Permission.bluetoothScan.isGranted,
+])).any((element) => false);
+[                                           // Ask
+    Permission.bluetooth,
+    Permission.bluetoothAdvertise,
+    Permission.bluetoothConnect,
+    Permission.bluetoothScan
+].request();
+```
+Checkout the [**Example**](https://github.com/mannprerak2/nearby_connections/tree/master/example) in Repository for more details.
 
 ## NOTE
 
 **Location/GPS service must be turned on** or devices may disconnect
 more often, some devices may disconnect immediately.
 
-For convenience this library provides methods to check and enable location
-```dart
-bool b = await Nearby().checkLocationEnabled();
 
-// opens dialogue to enable location service
-// returns true/false if the location service is turned on/off resp.
-bool b = await Nearby().enableLocationServices();
-``` 
+## Work Flow
+
+The work flow is similar to the [Android Nearby Connections library](https://developers.google.com/nearby/connections/overview)
+
 ### Advertise for connection
 ```dart
 try {
@@ -181,9 +204,9 @@ Nearby().sendBytesPayload(endpointId,fileNameEncodedWithPayloadId);
 Every payload has an **ID** which is same for sender and receiver.
 
 You can get the `uri` of the file from Payload in *onPayloadReceived* function.
-We have a convinience method to copy the file to a location you want-
+We have a convenience method to copy the file to a location you want-
 ```dart
-// Convinience method to copy file using it's `uri`.
+// Convenience method to copy file using it's `uri`.
 final newPath = '${await getExternalStorageDirectory}/$fileName';
 await Nearby().copyFileAndDeleteOriginal(uri, newPath);
 ```
