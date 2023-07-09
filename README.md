@@ -53,25 +53,46 @@ Add these to AndroidManifest.xml
 
 Since ACCESS_FINE_LOCATION and READ_EXTERNAL_STORAGE is considered to be dangerous system permissions, in addition to adding them to your manifest, you must request these permissions at runtime.
 
-#### You can use the [permission_handler](https://pub.dev/packages/permission_handler) package to handle all these permissions.
+> You can use the [permission_handler](https://pub.dev/packages/permission_handler) package to handle all these permissions and the [location](https://pub.dev/packages/location) package to request enabling location
 
-## Work Flow
+```dart
+// location permission
+await Permission.location.isGranted         // Check
+await Permission.location.request()         // Ask
 
-The work flow is similar to the [Android Nearby Connections library](https://developers.google.com/nearby/connections/overview)
+// location enable dialog
+await Location.instance.requestService()
+
+// external storage permission
+await Permission.storage.isGranted          // Check
+await Permission.storage.request()          // Ask
+
+// Bluetooth permissions
+bool granted = !(await Future.wait([        // Check
+    Permission.bluetooth.isGranted,
+    Permission.bluetoothAdvertise.isGranted,
+    Permission.bluetoothConnect.isGranted,
+    Permission.bluetoothScan.isGranted,
+])).any((element) => false);
+[                                           // Ask
+    Permission.bluetooth,
+    Permission.bluetoothAdvertise,
+    Permission.bluetoothConnect,
+    Permission.bluetoothScan
+].request();
+```
+Checkout the [**Example**](https://github.com/mannprerak2/nearby_connections/tree/master/example) in Repository for more details.
 
 ## NOTE
 
 **Location/GPS service must be turned on** or devices may disconnect
 more often, some devices may disconnect immediately.
 
-For convenience this library provides methods to check and enable location
-```dart
-bool b = await Nearby().checkLocationEnabled();
 
-// opens dialogue to enable location service
-// returns true/false if the location service is turned on/off resp.
-bool b = await Nearby().enableLocationServices();
-``` 
+## Work Flow
+
+The work flow is similar to the [Android Nearby Connections library](https://developers.google.com/nearby/connections/overview)
+
 ### Advertise for connection
 ```dart
 try {

@@ -1,3 +1,9 @@
+## 4.0.0
+- Breaking change: removes all permission/location convenience methods.
+- Please use [permission_handler](https://pub.dev/packages/permission_handler) and
+[location](https://pub.dev/packages/location) packages instead, checkout example/main.dart
+for details.
+
 ## 3.3.1
 - Deprecate all permission check/request convenience methods & update example to use
 package [permission_handler](https://pub.dev/packages/permission_handler) instead.
