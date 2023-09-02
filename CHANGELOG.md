@@ -1,3 +1,6 @@
+## 4.0.1
+- Updated nearby connections (`play-services-nearby:18.4.0` -> `play-services-nearby:18.7.0`)
+
 ## 4.0.0
 - Breaking change: removes all permission/location convenience methods.
 - Please use [permission_handler](https://pub.dev/packages/permission_handler) and

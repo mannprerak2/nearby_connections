@@ -277,7 +277,7 @@ class _MyBodyState extends State<Body> {
                         },
                         onEndpointLost: (id) {
                           showSnackbar(
-                              "Lost discovered Endpoint: ${endpointMap[id]!.endpointName}, id $id");
+                              "Lost discovered Endpoint: ${endpointMap[id]?.endpointName}, id $id");
                         },
                       );
                       showSnackbar("DISCOVERING: $a");
