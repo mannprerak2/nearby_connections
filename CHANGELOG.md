@@ -1,3 +1,6 @@
+## 4.0.2
+- Added streaming support via sendStreamPayload function.
+
 ## 4.0.1
 - Updated nearby connections (`play-services-nearby:18.4.0` -> `play-services-nearby:18.7.0`)
 
