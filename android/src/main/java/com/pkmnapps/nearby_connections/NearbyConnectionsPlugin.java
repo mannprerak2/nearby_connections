@@ -400,10 +400,6 @@ public class NearbyConnectionsPlugin implements MethodCallHandler, FlutterPlugin
                     args.put("filePath", payload.asFile().asJavaFile().getAbsolutePath());
                 }
             } else if (payload.getType() == Payload.Type.STREAM) {
-                InputStream stream = payload.asStream().asInputStream();
-                assert stream != null;
-                args.put("stream", stream);
-            } else if (payload.getType() == Payload.Type.STREAM) {
                 try {
                     InputStream inputStream = payload.asStream().asInputStream(); 
                     byte[] bytes = new byte[inputStream.available()];
