@@ -32,6 +32,7 @@ import java.io.OutputStream;
 import java.io.FileOutputStream;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.stream.Stream;
 
 import io.flutter.embedding.engine.plugins.FlutterPlugin;
 import io.flutter.embedding.engine.plugins.activity.ActivityAware;
@@ -260,6 +261,18 @@ public class NearbyConnectionsPlugin implements MethodCallHandler, FlutterPlugin
                 }
                 break;
             }
+            case "sendStreamPayload": {
+                String endpointId = (String) call.argument("endpointId");
+                byte[] bytes = call.argument("bytes");
+                InputStream inputStream = new DataInputStream(new ByteArrayInputStream(bytes));
+
+                assert endpointId != null;
+                assert bytes != null;
+                Nearby.getConnectionsClient(activity).sendPayload(endpointId, Payload.fromStream(inputStream));
+                Log.d("nearby_connections", "sentStreamPayload");
+                result.success(true);
+                break;
+            }
             case "cancelPayload": {
                 String payloadId = (String) call.argument("payloadId");
                 assert payloadId != null;
@@ -385,6 +398,19 @@ public class NearbyConnectionsPlugin implements MethodCallHandler, FlutterPlugin
                 if (VERSION.SDK_INT < VERSION_CODES.Q) {
                     // This is deprecated and only available on Android 10 and below.
                     args.put("filePath", payload.asFile().asJavaFile().getAbsolutePath());
+                }
+            } else if (payload.getType() == Payload.Type.STREAM) {
+                InputStream stream = payload.asStream().asInputStream();
+                assert stream != null;
+                args.put("stream", stream);
+            } else if (payload.getType() == Payload.Type.STREAM) {
+                try {
+                    InputStream inputStream = payload.asStream().asInputStream(); 
+                    byte[] bytes = new byte[inputStream.available()];
+                    inputStream.read(bytes);
+                    args.put("bytes", bytes);
+                } catch (Exception e) {
+
                 }
             }
 

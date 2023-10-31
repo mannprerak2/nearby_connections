@@ -184,6 +184,16 @@ Nearby().sendBytesPayload(endpointId, bytes_array);
 
 // payloads are recieved by callback given to acceptConnection method.
 ```
+
+### Sending Stream Payload
+
+```dart
+Nearby().sendStreamPayload(endpointId, bytes_array);
+
+// payloads are recieved by callback given to acceptConnection method.
+// Payload is received as bytes, and is available in payload.bytes attribute
+```
+
 ### Sending File Payload
 You need to send the File Payload and File Name seperately.
 

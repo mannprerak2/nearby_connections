@@ -358,6 +358,19 @@ class Nearby {
     );
   }
 
+  /// Send bytes [Uint8List] payload to endpoint via Streams
+  /// This supports transfer of large payloads in bytes
+  ///
+  Future<void> sendStreamPayload(String endpointId, Uint8List bytes) async {
+    return await _channel.invokeMethod(
+      'sendStreamPayload',
+      <String, dynamic>{
+        'endpointId': endpointId,
+        'bytes': bytes,
+      },
+    );
+  }
+
   /// Use it to cancel/stop a payload transfer
   Future<void> cancelPayload(int payloadId) async {
     return await _channel.invokeMethod(
