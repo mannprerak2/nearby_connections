@@ -1,6 +1,7 @@
 package com.pkmnapps.nearby_connections;
 
 import android.app.Activity;
+import android.content.BroadcastReceiver;
 import android.util.Log;
 import android.os.Build.VERSION;
 import android.os.Build.VERSION_CODES;
@@ -30,6 +31,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.FileOutputStream;
+import java.io.PipedInputStream;
+import java.io.PipedOutputStream;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -38,6 +41,7 @@ import io.flutter.embedding.engine.plugins.activity.ActivityAware;
 import io.flutter.embedding.engine.plugins.activity.ActivityPluginBinding;
 import io.flutter.plugin.common.MethodCall;
 import io.flutter.plugin.common.MethodChannel;
+import io.flutter.plugin.common.EventChannel;
 import io.flutter.plugin.common.MethodChannel.MethodCallHandler;
 import io.flutter.plugin.common.MethodChannel.Result;
 import io.flutter.plugin.common.PluginRegistry;
@@ -50,12 +54,31 @@ public class NearbyConnectionsPlugin implements MethodCallHandler, FlutterPlugin
     private Activity activity;
     private static final String SERVICE_ID = "com.pkmnapps.nearby_connections";
     private static MethodChannel channel;
+    private static EventChannel eventChannel;
+    private static PipedInputStream pipedInputSenderStream = null;
+    private static PipedOutputStream pipedOutputSenderStream = null;
     private static PluginRegistry.Registrar pluginRegistrar;
+    private static Thread outputSenderStreamThread;
+    private static Thread inputSenderStreamThread;
 
     private NearbyConnectionsPlugin(Activity activity) {
         this.activity = activity;
     }
-    public NearbyConnectionsPlugin(){}
+    public NearbyConnectionsPlugin(){
+    }
+
+    static class NearbyConnectionsStreamHandler implements EventChannel.StreamHandler {
+        @Override
+        public void onListen(Object arguments, EventChannel.EventSink events) {
+
+        }
+
+        @Override
+        public void onCancel(Object arguments) {
+
+        }
+    }
+
 
     /**
      * Legacy Plugin registration.
@@ -64,6 +87,8 @@ public class NearbyConnectionsPlugin implements MethodCallHandler, FlutterPlugin
     public static void registerWith(Registrar registrar) {
         pluginRegistrar = registrar;
         channel = new MethodChannel(registrar.messenger(), "nearby_connections");
+        eventChannel = new EventChannel(registrar.messenger(), "nearby_connections/stream");
+        eventChannel.setStreamHandler(new NearbyConnectionsStreamHandler());
         channel.setMethodCallHandler(new NearbyConnectionsPlugin(registrar.activity()));
     }
 
@@ -260,6 +285,65 @@ public class NearbyConnectionsPlugin implements MethodCallHandler, FlutterPlugin
                 }
                 break;
             }
+            case "initializeSenderStream": {
+                Log.d("nearby_connections", "Initializing Stream");
+                if (pipedOutputSenderStream != null) {
+                    try {
+                        pipedOutputSenderStream.flush();
+                    } catch (IOException e) {
+                        Log.d("nearby_connections", e.getMessage());
+                    }
+                }
+                pipedInputSenderStream = new PipedInputStream();
+                pipedOutputSenderStream = new PipedOutputStream();
+                try {
+                    pipedInputSenderStream.connect(pipedOutputSenderStream);
+                } catch (IOException e) {
+                    Log.d("nearby_connections", e.getMessage());
+                }
+                Log.d("nearby_connections", "Completed Initialization of Stream");
+                inputSenderStreamThread = null;
+                outputSenderStreamThread = null;
+                result.success(true);
+                break;
+            }
+            case "addToSenderStream": {
+                final String endpointId = (String) call.argument("endpointId");
+                final byte[] bytes = call.argument("bytes");
+                Log.d("nearby_connections", "ENDPOINTID: " + endpointId);
+                assert endpointId != null;
+                assert bytes != null;
+
+                outputSenderStreamThread = new Thread() {
+                    public void run() {
+                        try {
+                            Log.d("nearby_connections", "Adding data to output stream");
+                            pipedOutputSenderStream.write(bytes);
+                            Log.d("nearby_connections", "Completed OutputStream thread");
+                        } catch (IOException e) {
+                            Log.d("nearby_connections", e.getMessage());
+                        }
+                    }
+                };
+                outputSenderStreamThread.start();
+                if (inputSenderStreamThread == null) {
+                    inputSenderStreamThread = (new Thread() {
+                        public void run() {
+                            try {
+                                Thread.sleep(500);
+                            } catch (InterruptedException e) {
+                                e.printStackTrace();
+                            }
+                            Log.d("nearby_connections", "Reading data from stream");
+                            Nearby.getConnectionsClient(activity).sendPayload(endpointId, Payload.fromStream(pipedInputSenderStream));
+                            Log.d("nearby_connections", "Completed InputStream thread");
+                        }
+                    });
+                    inputSenderStreamThread.start();
+                }
+//                result.success(true);
+                break;
+            }
             case "cancelPayload": {
                 String payloadId = (String) call.argument("payloadId");
                 assert payloadId != null;
@@ -386,6 +470,8 @@ public class NearbyConnectionsPlugin implements MethodCallHandler, FlutterPlugin
                     // This is deprecated and only available on Android 10 and below.
                     args.put("filePath", payload.asFile().asJavaFile().getAbsolutePath());
                 }
+            } else if (payload.getType() == Payload.Type.STREAM) {
+                InputStream inputStream = payload.asStream().asInputStream();
             }
 
             channel.invokeMethod("onPayloadReceived", args);

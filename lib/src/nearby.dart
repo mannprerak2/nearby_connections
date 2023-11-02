@@ -147,6 +147,8 @@ class Nearby {
 
   static const MethodChannel _channel =
       const MethodChannel('nearby_connections');
+  static const EventChannel _eventChannel =
+      const EventChannel('nearby_connections/stream');
 
   /// convenience method
   ///
@@ -356,6 +358,20 @@ class Nearby {
         'filePath': filePath,
       },
     );
+  }
+
+  Future<void> sendStreamPayload(
+      String endpointId, Stream<Uint8List> stream) async {
+    bool ans = await _channel
+        .invokeMethod('initializeSenderStream', <String, dynamic>{});
+    if (ans) {
+      stream.listen((data) async {
+        await _channel.invokeListMethod('addToSenderStream', <String, dynamic>{
+          'endpointId': endpointId,
+          'bytes': data,
+        });
+      });
+    }
   }
 
   /// Use it to cancel/stop a payload transfer
