@@ -39,7 +39,7 @@ class Nearby {
         case "ad.onConnectionResult":
           String endpointId = args['endpointId'] ?? '-1';
           Status statusCode =
-              Status.values[args['statusCode'] ?? Status.ERROR.index];
+          Status.values[args['statusCode'] ?? Status.ERROR.index];
 
           _advertConnectionResult?.call(endpointId, statusCode);
 
@@ -66,7 +66,7 @@ class Nearby {
         case "dis.onConnectionResult":
           String endpointId = args['endpointId'] ?? '-1';
           Status statusCode =
-              Status.values[args['statusCode'] ?? Status.ERROR.index];
+          Status.values[args['statusCode'] ?? Status.ERROR.index];
 
           _discoverConnectionResult?.call(endpointId, statusCode);
 
@@ -146,15 +146,15 @@ class Nearby {
   OnPayloadTransferUpdate? _onPayloadTransferUpdate;
 
   static const MethodChannel _channel =
-      const MethodChannel('nearby_connections');
+  const MethodChannel('nearby_connections');
   static const EventChannel _eventChannel =
-      const EventChannel('nearby_connections/stream');
+  const EventChannel('nearby_connections/stream');
 
   /// convenience method
   ///
   /// Copy file from [sourceUri] to [destinationFilepath] and delete original.
   Future<bool> copyFileAndDeleteOriginal(
-          String sourceUri, String destinationFilepath) async =>
+      String sourceUri, String destinationFilepath) async =>
       await _channel.invokeMethod('copyFileAndDeleteOriginal', {
         'sourceUri': sourceUri,
         'destinationFilepath': destinationFilepath,
@@ -165,22 +165,22 @@ class Nearby {
   /// [serviceId] is a unique identifier for your app, its recommended to use your app package name only, it cannot be null
   /// [userNickName] and [strategy] should not be null
   Future<bool> startAdvertising(
-    String userNickName,
-    Strategy strategy, {
-    required OnConnectionInitiated onConnectionInitiated,
-    required OnConnectionResult onConnectionResult,
-    required OnDisconnected onDisconnected,
-    String serviceId = "com.pkmnapps.nearby_connections",
-  }) async {
+      String userNickName,
+      Strategy strategy, {
+        required OnConnectionInitiated onConnectionInitiated,
+        required OnConnectionResult onConnectionResult,
+        required OnDisconnected onDisconnected,
+        String serviceId = "com.pkmnapps.nearby_connections",
+      }) async {
     this._advertConnectionInitiated = onConnectionInitiated;
     this._advertConnectionResult = onConnectionResult;
     this._advertDisconnected = onDisconnected;
 
     return await _channel.invokeMethod('startAdvertising', <String, dynamic>{
-          'userNickName': userNickName,
-          'strategy': strategy.index,
-          'serviceId': serviceId,
-        }) ??
+      'userNickName': userNickName,
+      'strategy': strategy.index,
+      'serviceId': serviceId,
+    }) ??
         false;
   }
 
@@ -199,20 +199,20 @@ class Nearby {
   /// [serviceId] is a unique identifier for your app, its recommended to use your app package name only, it cannot be null
   /// [userNickName] and [strategy] should not be null
   Future<bool> startDiscovery(
-    String userNickName,
-    Strategy strategy, {
-    required OnEndpointFound onEndpointFound,
-    required OnEndpointLost onEndpointLost,
-    String serviceId = "com.pkmnapps.nearby_connections",
-  }) async {
+      String userNickName,
+      Strategy strategy, {
+        required OnEndpointFound onEndpointFound,
+        required OnEndpointLost onEndpointLost,
+        String serviceId = "com.pkmnapps.nearby_connections",
+      }) async {
     this._onEndpointFound = onEndpointFound;
     this._onEndpointLost = onEndpointLost;
 
     return await _channel.invokeMethod('startDiscovery', <String, dynamic>{
-          'userNickName': userNickName,
-          'strategy': strategy.index,
-          'serviceId': serviceId,
-        }) ??
+      'userNickName': userNickName,
+      'strategy': strategy.index,
+      'serviceId': serviceId,
+    }) ??
         false;
   }
 
@@ -255,23 +255,23 @@ class Nearby {
   /// This will call the [OnConnectionInitiated] method on
   /// both the endPoint and this
   Future<bool> requestConnection(
-    String userNickName,
-    String endpointId, {
-    required OnConnectionInitiated onConnectionInitiated,
-    required OnConnectionResult onConnectionResult,
-    required OnDisconnected onDisconnected,
-  }) async {
+      String userNickName,
+      String endpointId, {
+        required OnConnectionInitiated onConnectionInitiated,
+        required OnConnectionResult onConnectionResult,
+        required OnDisconnected onDisconnected,
+      }) async {
     this._discoverConnectionInitiated = onConnectionInitiated;
     this._discoverConnectionResult = onConnectionResult;
     this._discoverDisconnected = onDisconnected;
 
     return await _channel.invokeMethod(
-          'requestConnection',
-          <String, dynamic>{
-            'userNickName': userNickName,
-            'endpointId': endpointId,
-          },
-        ) ??
+      'requestConnection',
+      <String, dynamic>{
+        'userNickName': userNickName,
+        'endpointId': endpointId,
+      },
+    ) ??
         false;
   }
 
@@ -284,19 +284,19 @@ class Nearby {
   /// [OnConnectionResult] is called on both
   /// only if both of them accept the connection
   Future<bool> acceptConnection(
-    String endpointId, {
-    required OnPayloadReceived onPayLoadRecieved,
-    OnPayloadTransferUpdate? onPayloadTransferUpdate,
-  }) async {
+      String endpointId, {
+        required OnPayloadReceived onPayLoadRecieved,
+        OnPayloadTransferUpdate? onPayloadTransferUpdate,
+      }) async {
     this._onPayloadReceived = onPayLoadRecieved;
     this._onPayloadTransferUpdate = onPayloadTransferUpdate;
 
     return await _channel.invokeMethod(
-          'acceptConnection',
-          <String, dynamic>{
-            'endpointId': endpointId,
-          },
-        ) ??
+      'acceptConnection',
+      <String, dynamic>{
+        'endpointId': endpointId,
+      },
+    ) ??
         false;
   }
 
@@ -311,11 +311,11 @@ class Nearby {
   /// even if one of them rejects the connection
   Future<bool> rejectConnection(String endpointId) async {
     return await _channel.invokeMethod(
-          'rejectConnection',
-          <String, dynamic>{
-            'endpointId': endpointId,
-          },
-        ) ??
+      'rejectConnection',
+      <String, dynamic>{
+        'endpointId': endpointId,
+      },
+    ) ??
         false;
   }
 
@@ -362,16 +362,17 @@ class Nearby {
 
   Future<void> sendStreamPayload(
       String endpointId, Stream<Uint8List> stream) async {
-    bool ans = await _channel
-        .invokeMethod('initializeSenderStream', <String, dynamic>{});
-    if (ans) {
-      stream.listen((data) async {
-        await _channel.invokeListMethod('addToSenderStream', <String, dynamic>{
-          'endpointId': endpointId,
-          'bytes': data,
-        });
+    await _channel.invokeMethod('initializeSenderStream', <String, dynamic>{});
+    stream.listen((data) async {
+      await _channel.invokeListMethod('addToSenderStream', <String, dynamic>{
+        'endpointId': endpointId,
+        'bytes': data,
       });
-    }
+    });
+  }
+
+  Stream<dynamic> getReceiverStream() {
+    return _eventChannel.receiveBroadcastStream();
   }
 
   /// Use it to cancel/stop a payload transfer

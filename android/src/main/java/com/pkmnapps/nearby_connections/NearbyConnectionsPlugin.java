@@ -2,6 +2,8 @@ package com.pkmnapps.nearby_connections;
 
 import android.app.Activity;
 import android.content.BroadcastReceiver;
+import android.os.Parcel;
+import android.os.ParcelFileDescriptor;
 import android.util.Log;
 import android.os.Build.VERSION;
 import android.os.Build.VERSION_CODES;
@@ -60,6 +62,7 @@ public class NearbyConnectionsPlugin implements MethodCallHandler, FlutterPlugin
     private static PluginRegistry.Registrar pluginRegistrar;
     private static Thread outputSenderStreamThread;
     private static Thread inputSenderStreamThread;
+    private static NearbyConnectionsStreamHandler nearbyConnectionsStreamHandler;
 
     private NearbyConnectionsPlugin(Activity activity) {
         this.activity = activity;
@@ -68,14 +71,35 @@ public class NearbyConnectionsPlugin implements MethodCallHandler, FlutterPlugin
     }
 
     static class NearbyConnectionsStreamHandler implements EventChannel.StreamHandler {
+
+        public InputStream inputReceiverStream;
+        private EventChannel.EventSink eventSink;
         @Override
         public void onListen(Object arguments, EventChannel.EventSink events) {
-
+            if (events == null) return;
+            eventSink = events;
         }
 
         @Override
         public void onCancel(Object arguments) {
+        }
 
+        public void initializeInputReceiverStream(InputStream inputStream) {
+            inputReceiverStream = inputStream;
+            byte[] bytes;
+            while (true) {
+                try {
+                    Log.d("nearby_connections", new Integer(inputReceiverStream.available()).toString());
+                    if (inputReceiverStream.available() <= 0) break;
+                    bytes = new byte[inputReceiverStream.read()];
+                    inputReceiverStream.read(bytes);
+                    if(eventSink != null) {
+                        eventSink.success(bytes);
+                    }
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
         }
     }
 
@@ -87,9 +111,10 @@ public class NearbyConnectionsPlugin implements MethodCallHandler, FlutterPlugin
     public static void registerWith(Registrar registrar) {
         pluginRegistrar = registrar;
         channel = new MethodChannel(registrar.messenger(), "nearby_connections");
-        eventChannel = new EventChannel(registrar.messenger(), "nearby_connections/stream");
-        eventChannel.setStreamHandler(new NearbyConnectionsStreamHandler());
         channel.setMethodCallHandler(new NearbyConnectionsPlugin(registrar.activity()));
+        eventChannel = new EventChannel(registrar.messenger(), "nearby_connections/stream");
+        nearbyConnectionsStreamHandler = new NearbyConnectionsStreamHandler();
+        eventChannel.setStreamHandler(nearbyConnectionsStreamHandler);
     }
 
     @Override
@@ -138,7 +163,7 @@ public class NearbyConnectionsPlugin implements MethodCallHandler, FlutterPlugin
                         .setStrategy(getStrategy(strategy)).build();
 
                 Nearby.getConnectionsClient(activity).startAdvertising(userNickName, serviceId,
-                        advertConnectionLifecycleCallback, advertisingOptions)
+                                advertConnectionLifecycleCallback, advertisingOptions)
                         .addOnSuccessListener(new OnSuccessListener<Void>() {
                             @Override
                             public void onSuccess(Void aVoid) {
@@ -146,11 +171,11 @@ public class NearbyConnectionsPlugin implements MethodCallHandler, FlutterPlugin
                                 result.success(true);
                             }
                         }).addOnFailureListener(new OnFailureListener() {
-                    @Override
-                    public void onFailure(@NonNull Exception e) {
-                        result.error("Failure", e.getMessage(), null);
-                    }
-                });
+                            @Override
+                            public void onFailure(@NonNull Exception e) {
+                                result.error("Failure", e.getMessage(), null);
+                            }
+                        });
                 break;
             }
             case "startDiscovery": {
@@ -173,11 +198,11 @@ public class NearbyConnectionsPlugin implements MethodCallHandler, FlutterPlugin
                                 result.success(true);
                             }
                         }).addOnFailureListener(new OnFailureListener() {
-                    @Override
-                    public void onFailure(@NonNull Exception e) {
-                        result.error("Failure", e.getMessage(), null);
-                    }
-                });
+                            @Override
+                            public void onFailure(@NonNull Exception e) {
+                                result.error("Failure", e.getMessage(), null);
+                            }
+                        });
                 break;
             }
             case "stopAllEndpoints":
@@ -208,11 +233,11 @@ public class NearbyConnectionsPlugin implements MethodCallHandler, FlutterPlugin
                                 result.success(true);
                             }
                         }).addOnFailureListener(new OnFailureListener() {
-                    @Override
-                    public void onFailure(@NonNull Exception e) {
-                        result.error("Failure", e.getMessage(), null);
-                    }
-                });
+                            @Override
+                            public void onFailure(@NonNull Exception e) {
+                                result.error("Failure", e.getMessage(), null);
+                            }
+                        });
                 break;
             }
             case "acceptConnection": {
@@ -227,11 +252,11 @@ public class NearbyConnectionsPlugin implements MethodCallHandler, FlutterPlugin
                                 result.success(true);
                             }
                         }).addOnFailureListener(new OnFailureListener() {
-                    @Override
-                    public void onFailure(@NonNull Exception e) {
-                        result.error("Failure", e.getMessage(), null);
-                    }
-                });
+                            @Override
+                            public void onFailure(@NonNull Exception e) {
+                                result.error("Failure", e.getMessage(), null);
+                            }
+                        });
                 break;
             }
             case "rejectConnection": {
@@ -246,11 +271,11 @@ public class NearbyConnectionsPlugin implements MethodCallHandler, FlutterPlugin
                                 result.success(true);
                             }
                         }).addOnFailureListener(new OnFailureListener() {
-                    @Override
-                    public void onFailure(@NonNull Exception e) {
-                        result.error("Failure", e.getMessage(), null);
-                    }
-                });
+                            @Override
+                            public void onFailure(@NonNull Exception e) {
+                                result.error("Failure", e.getMessage(), null);
+                            }
+                        });
                 break;
             }
             case "sendPayload": {
@@ -294,14 +319,22 @@ public class NearbyConnectionsPlugin implements MethodCallHandler, FlutterPlugin
                         Log.d("nearby_connections", e.getMessage());
                     }
                 }
-                pipedInputSenderStream = new PipedInputStream();
-                pipedOutputSenderStream = new PipedOutputStream();
-                try {
-                    pipedInputSenderStream.connect(pipedOutputSenderStream);
-                } catch (IOException e) {
-                    Log.d("nearby_connections", e.getMessage());
+                if (pipedOutputSenderStream == null) {
+                    pipedInputSenderStream = new PipedInputStream();
+                    pipedOutputSenderStream = new PipedOutputStream();
+                    try {
+                        pipedInputSenderStream.connect(pipedOutputSenderStream);
+                    } catch (IOException e) {
+                        Log.d("nearby_connections", e.getMessage());
+                    }
+                    Log.d("nearby_connections", "Completed Initialization of Stream");
                 }
-                Log.d("nearby_connections", "Completed Initialization of Stream");
+//                if (inputSenderStreamThread != null) {
+//                    inputSenderStreamThread.interrupt();
+//                }
+//                if (outputSenderStreamThread != null) {
+//                    outputSenderStreamThread.interrupt();
+//                }
                 inputSenderStreamThread = null;
                 outputSenderStreamThread = null;
                 result.success(true);
@@ -310,17 +343,19 @@ public class NearbyConnectionsPlugin implements MethodCallHandler, FlutterPlugin
             case "addToSenderStream": {
                 final String endpointId = (String) call.argument("endpointId");
                 final byte[] bytes = call.argument("bytes");
-                Log.d("nearby_connections", "ENDPOINTID: " + endpointId);
                 assert endpointId != null;
                 assert bytes != null;
-
                 outputSenderStreamThread = new Thread() {
                     public void run() {
                         try {
-                            Log.d("nearby_connections", "Adding data to output stream");
                             pipedOutputSenderStream.write(bytes);
-                            Log.d("nearby_connections", "Completed OutputStream thread");
                         } catch (IOException e) {
+                            String errorMessage="";
+                            for (StackTraceElement item: e.getStackTrace()) {
+                                errorMessage += item.toString();
+                                errorMessage += "\n";
+                            }
+                            Log.d("nearby_connections", errorMessage);
                             Log.d("nearby_connections", e.getMessage());
                         }
                     }
@@ -335,13 +370,24 @@ public class NearbyConnectionsPlugin implements MethodCallHandler, FlutterPlugin
                                 e.printStackTrace();
                             }
                             Log.d("nearby_connections", "Reading data from stream");
-                            Nearby.getConnectionsClient(activity).sendPayload(endpointId, Payload.fromStream(pipedInputSenderStream));
-                            Log.d("nearby_connections", "Completed InputStream thread");
+                            Nearby.getConnectionsClient(activity).sendPayload(endpointId, Payload.fromStream(pipedInputSenderStream)).addOnSuccessListener(new OnSuccessListener<Void>() {
+                                @Override
+                                public void onSuccess(Void aVoid) {
+                                    Log.d("nearby_connections", "Completed Sending Stream");
+                                    inputSenderStreamThread = null;
+                                }
+                            }).addOnFailureListener(new OnFailureListener() {
+                                @Override
+                                public void onFailure(@NonNull Exception e) {
+                                    Log.d("nearby_connections", e.getMessage());
+                                    result.error("Failure", e.getMessage(), null);
+                                }
+                            });
                         }
                     });
                     inputSenderStreamThread.start();
                 }
-//                result.success(true);
+                result.success(true);
                 break;
             }
             case "cancelPayload": {
@@ -472,6 +518,8 @@ public class NearbyConnectionsPlugin implements MethodCallHandler, FlutterPlugin
                 }
             } else if (payload.getType() == Payload.Type.STREAM) {
                 InputStream inputStream = payload.asStream().asInputStream();
+                Log.d("nearby_connections", "Input Stream Received");
+                nearbyConnectionsStreamHandler.initializeInputReceiverStream(inputStream);
             }
 
             channel.invokeMethod("onPayloadReceived", args);
@@ -532,6 +580,9 @@ public class NearbyConnectionsPlugin implements MethodCallHandler, FlutterPlugin
     public void onAttachedToEngine(@NonNull FlutterPluginBinding binding) {
         channel = new MethodChannel(binding.getBinaryMessenger(), "nearby_connections");
         channel.setMethodCallHandler(this);
+        eventChannel = new EventChannel(binding.getBinaryMessenger(), "nearby_connections/stream");
+        nearbyConnectionsStreamHandler = new NearbyConnectionsStreamHandler();
+        eventChannel.setStreamHandler(nearbyConnectionsStreamHandler);
     }
 
     @Override
@@ -559,10 +610,10 @@ public class NearbyConnectionsPlugin implements MethodCallHandler, FlutterPlugin
         try {
             byte[] buffer = new byte[1024];
             int read;
-        while ((read = in.read(buffer)) != -1) {
-            out.write(buffer, 0, read);
-        }
-        out.flush();
+            while ((read = in.read(buffer)) != -1) {
+                out.write(buffer, 0, read);
+            }
+            out.flush();
         } finally {
             in.close();
             out.close();
