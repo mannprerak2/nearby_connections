@@ -362,12 +362,19 @@ class Nearby {
 
   Future<void> sendStreamPayload(
       String endpointId, Stream<Uint8List> stream) async {
-    await _channel.invokeMethod('initializeSenderStream', <String, dynamic>{});
+    await _channel.invokeMethod('initializeSenderStream', <String, dynamic>{
+      "endpointId": endpointId
+    });
     stream.listen((data) async {
       await _channel.invokeListMethod('addToSenderStream', <String, dynamic>{
         'endpointId': endpointId,
         'bytes': data,
       });
+    });
+  }
+
+  Future<void> stopStreaming() async {
+    await _channel.invokeMethod('stopStreaming', <String, dynamic>{
     });
   }
 
