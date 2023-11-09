@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/services.dart';
 import 'package:nearby_connections/src/classes.dart';
 import 'package:nearby_connections/src/defs.dart';
+import 'package:collection/collection.dart';
 
 /// The NearbyConnection class
 ///
@@ -360,13 +361,13 @@ class Nearby {
     );
   }
 
-  Future<void> sendStreamPayload(
-      String endpointId, Stream<Uint8List> stream) async {
-    await _channel.invokeMethod('initializeSenderStream', <String, dynamic>{
-      "endpointId": endpointId
-    });
-    stream.listen((data) async {
-      await _channel.invokeListMethod('addToSenderStream', <String, dynamic>{
+  final STREAM_CHUNK_SIZE = 100000;
+
+  /// Send stream payload
+  ///
+  void sendStreamPayload(String endpointId, Stream<Uint8List> stream) async {
+    stream.listen((data)  {
+       _channel.invokeListMethod('addToSenderStream', <String, dynamic>{
         'endpointId': endpointId,
         'bytes': data,
       });
@@ -374,8 +375,7 @@ class Nearby {
   }
 
   Future<void> stopStreaming() async {
-    await _channel.invokeMethod('stopStreaming', <String, dynamic>{
-    });
+    await _channel.invokeMethod('stopStreaming', <String, dynamic>{});
   }
 
   Stream<dynamic> getReceiverStream() {

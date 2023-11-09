@@ -62,6 +62,7 @@ public class NearbyConnectionsPlugin implements MethodCallHandler, FlutterPlugin
     private static OutputStream senderOutputStream = null;
     private static Thread senderOutputStreamThread = null;
     private volatile byte[] bytes = null;
+    private volatile boolean isPipeOpen = false;
     private NearbyConnectionsPlugin(Activity activity) {
         this.activity = activity;
     }
@@ -307,49 +308,60 @@ public class NearbyConnectionsPlugin implements MethodCallHandler, FlutterPlugin
                 }
                 break;
             }
-            case "initializeSenderStream": {
-                final String endpointId = (String) call.argument("endpointId");
-                assert endpointId != null;
-                Log.d("nearby_connections", "Initializing Stream");
-                try {
-                    senderPayloadPipe = ParcelFileDescriptor.createPipe();
-                    // 0 is for reading
-                    // 1 is for writing
-                    Nearby.getConnectionsClient(activity).sendPayload(endpointId, Payload.fromStream(senderPayloadPipe[0])).addOnSuccessListener(new OnSuccessListener<Void>() {
-                        @Override
-                        public void onSuccess(Void aVoid) {
-                        }
-                    }).addOnFailureListener(new OnFailureListener() {
-                        @Override
-                        public void onFailure(@NonNull Exception e) {
-                            Log.d("nearby_connections", "Stream Failed");
-                            Log.d("nearby_connections", e.getMessage());
-                        }
-                    }).addOnCompleteListener(new OnCompleteListener<Void>() {
-                        @Override
-                        public void onComplete(@NonNull Task<Void> task) {
-                            Log.d("nearby_connections", "Completed Stream");
-                        }
-                    });
-                    senderOutputStream = new ParcelFileDescriptor.AutoCloseOutputStream(senderPayloadPipe[1]);
-                } catch (IOException e) {
-                    Log.d("nearby_connections", "Error while creating pipe");
-                    Log.d("nearby_connections", e.getMessage());
-                }
-                result.success(true);
-                break;
-            }
             case "addToSenderStream": {
                 final String endpointId = (String) call.argument("endpointId");
                 bytes = (byte[]) call.argument("bytes");
                 assert endpointId != null;
                 assert bytes != null;
-                try {
-                    Log.d("nearby_connections", "Adding to stream");
-                    senderOutputStream.write(bytes);
-                    senderOutputStream.flush();
-                } catch (IOException e) {
-                    Log.d("nearby_connections", e.getMessage());
+                if (!isPipeOpen && senderPayloadPipe == null) {
+                    try {
+                        senderPayloadPipe = ParcelFileDescriptor.createPipe();
+                        // 0 is for reading
+                        // 1 is for writing
+                        Log.d("nearby_connections", "Initializing new send stream");
+                        Nearby.getConnectionsClient(activity).sendPayload(endpointId, Payload.fromStream(senderPayloadPipe[0])).addOnSuccessListener(new OnSuccessListener<Void>() {
+                            @Override
+                            public void onSuccess(Void aVoid) {
+
+                            }
+                        }).addOnFailureListener(new OnFailureListener() {
+                            @Override
+                            public void onFailure(@NonNull Exception e) {
+                                Log.d("nearby_connections", "Stream Failed");
+                                Log.d("nearby_connections", e.getMessage());
+                                senderPayloadPipe = null;
+                            }
+                        }).addOnCompleteListener(new OnCompleteListener<Void>() {
+                            @Override
+                            public void onComplete(@NonNull Task<Void> task) {
+                                isPipeOpen = false;
+                                try {
+                                    senderPayloadPipe[0].close();
+                                    senderPayloadPipe[1].close();
+                                    senderPayloadPipe = null;
+                                } catch (IOException e) {
+                                    e.printStackTrace();
+                                }
+                                Log.d("nearby_connections", "Success Stream");
+                            }
+                        });
+                        senderOutputStream = new ParcelFileDescriptor.AutoCloseOutputStream(senderPayloadPipe[1]);
+                        isPipeOpen = true;
+                    } catch (IOException e) {
+                        Log.d("nearby_connections", "Error while creating pipe");
+                        Log.d("nearby_connections", e.getMessage());
+                        senderPayloadPipe = null;
+                    }
+                }
+                if (senderOutputStream != null && isPipeOpen) {
+                    try {
+                        Log.d("nearby_connections", "Adding to stream in line 2");
+                        senderOutputStream.write(bytes);
+                        senderOutputStream.flush();
+                    } catch (IOException e) {
+                        Log.d("nearby_connections", e.getMessage());
+                        senderPayloadPipe = null;
+                    }
                 }
                 result.success(true);
                 break;
