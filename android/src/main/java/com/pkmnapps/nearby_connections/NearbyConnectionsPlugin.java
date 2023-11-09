@@ -1,6 +1,7 @@
 package com.pkmnapps.nearby_connections;
 
 import android.app.Activity;
+import android.os.ParcelFileDescriptor;
 import android.util.Log;
 import android.os.Build.VERSION;
 import android.os.Build.VERSION_CODES;
@@ -21,6 +22,7 @@ import com.google.android.gms.nearby.connection.Payload;
 import com.google.android.gms.nearby.connection.PayloadCallback;
 import com.google.android.gms.nearby.connection.PayloadTransferUpdate;
 import com.google.android.gms.nearby.connection.Strategy;
+import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 
@@ -39,6 +41,7 @@ import io.flutter.embedding.engine.plugins.activity.ActivityAware;
 import io.flutter.embedding.engine.plugins.activity.ActivityPluginBinding;
 import io.flutter.plugin.common.MethodCall;
 import io.flutter.plugin.common.MethodChannel;
+import io.flutter.plugin.common.EventChannel;
 import io.flutter.plugin.common.MethodChannel.MethodCallHandler;
 import io.flutter.plugin.common.MethodChannel.Result;
 import io.flutter.plugin.common.PluginRegistry;
@@ -51,12 +54,53 @@ public class NearbyConnectionsPlugin implements MethodCallHandler, FlutterPlugin
     private Activity activity;
     private static final String SERVICE_ID = "com.pkmnapps.nearby_connections";
     private static MethodChannel channel;
+    private static EventChannel eventChannel;
     private static PluginRegistry.Registrar pluginRegistrar;
-
+    private static NearbyConnectionsStreamHandler nearbyConnectionsStreamHandler;
+    private static ParcelFileDescriptor[] senderPayloadPipe = null;
+    private static OutputStream senderOutputStream = null;
+    private static Thread senderOutputStreamThread = null;
+    private volatile byte[] bytes = null;
+    private volatile boolean isPipeOpen = false;
     private NearbyConnectionsPlugin(Activity activity) {
         this.activity = activity;
     }
-    public NearbyConnectionsPlugin(){}
+    public NearbyConnectionsPlugin(){
+    }
+
+    static class NearbyConnectionsStreamHandler implements EventChannel.StreamHandler {
+
+        public InputStream inputReceiverStream;
+        private EventChannel.EventSink eventSink;
+        @Override
+        public void onListen(Object arguments, EventChannel.EventSink events) {
+            if (events == null) return;
+            eventSink = events;
+        }
+
+        @Override
+        public void onCancel(Object arguments) {
+        }
+
+        public void initializeInputReceiverStream(InputStream inputStream) {
+            inputReceiverStream = inputStream;
+            byte[] bytes;
+            while (true) {
+                try {
+                    Log.d("nearby_connections", new Integer(inputReceiverStream.available()).toString());
+                    if (inputReceiverStream.available() <= 0) break;
+                    bytes = new byte[inputReceiverStream.read()];
+                    inputReceiverStream.read(bytes);
+                    if(eventSink != null) {
+                        eventSink.success(bytes);
+                    }
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+    }
+
 
     /**
      * Legacy Plugin registration.
@@ -66,6 +110,9 @@ public class NearbyConnectionsPlugin implements MethodCallHandler, FlutterPlugin
         pluginRegistrar = registrar;
         channel = new MethodChannel(registrar.messenger(), "nearby_connections");
         channel.setMethodCallHandler(new NearbyConnectionsPlugin(registrar.activity()));
+        eventChannel = new EventChannel(registrar.messenger(), "nearby_connections/stream");
+        nearbyConnectionsStreamHandler = new NearbyConnectionsStreamHandler();
+        eventChannel.setStreamHandler(nearbyConnectionsStreamHandler);
     }
 
     @Override
@@ -261,16 +308,71 @@ public class NearbyConnectionsPlugin implements MethodCallHandler, FlutterPlugin
                 }
                 break;
             }
-            case "sendStreamPayload": {
-                String endpointId = (String) call.argument("endpointId");
-                byte[] bytes = call.argument("bytes");
-                InputStream inputStream = new DataInputStream(new ByteArrayInputStream(bytes));
-
+            case "addToSenderStream": {
+                final String endpointId = (String) call.argument("endpointId");
+                bytes = (byte[]) call.argument("bytes");
                 assert endpointId != null;
                 assert bytes != null;
-                Nearby.getConnectionsClient(activity).sendPayload(endpointId, Payload.fromStream(inputStream));
-                Log.d("nearby_connections", "sentStreamPayload");
+                if (!isPipeOpen && senderPayloadPipe == null) {
+                    try {
+                        senderPayloadPipe = ParcelFileDescriptor.createPipe();
+                        // 0 is for reading
+                        // 1 is for writing
+                        Log.d("nearby_connections", "Initializing new send stream");
+                        Nearby.getConnectionsClient(activity).sendPayload(endpointId, Payload.fromStream(senderPayloadPipe[0])).addOnSuccessListener(new OnSuccessListener<Void>() {
+                            @Override
+                            public void onSuccess(Void aVoid) {
+
+                            }
+                        }).addOnFailureListener(new OnFailureListener() {
+                            @Override
+                            public void onFailure(@NonNull Exception e) {
+                                Log.d("nearby_connections", "Stream Failed");
+                                Log.d("nearby_connections", e.getMessage());
+                                senderPayloadPipe = null;
+                            }
+                        }).addOnCompleteListener(new OnCompleteListener<Void>() {
+                            @Override
+                            public void onComplete(@NonNull Task<Void> task) {
+                                isPipeOpen = false;
+                                try {
+                                    senderPayloadPipe[0].close();
+                                    senderPayloadPipe[1].close();
+                                    senderPayloadPipe = null;
+                                } catch (IOException e) {
+                                    e.printStackTrace();
+                                }
+                                Log.d("nearby_connections", "Success Stream");
+                            }
+                        });
+                        senderOutputStream = new ParcelFileDescriptor.AutoCloseOutputStream(senderPayloadPipe[1]);
+                        isPipeOpen = true;
+                    } catch (IOException e) {
+                        Log.d("nearby_connections", "Error while creating pipe");
+                        Log.d("nearby_connections", e.getMessage());
+                        senderPayloadPipe = null;
+                    }
+                }
+                if (senderOutputStream != null && isPipeOpen) {
+                    try {
+                        Log.d("nearby_connections", "Adding to stream in line 2");
+                        senderOutputStream.write(bytes);
+                        senderOutputStream.flush();
+                    } catch (IOException e) {
+                        Log.d("nearby_connections", e.getMessage());
+                        senderPayloadPipe = null;
+                    }
+                }
                 result.success(true);
+                break;
+            }
+            case "stopStreaming": {
+                try {
+                    senderOutputStream.close();
+                    senderPayloadPipe[0].close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
                 break;
             }
             case "cancelPayload": {
@@ -400,14 +502,9 @@ public class NearbyConnectionsPlugin implements MethodCallHandler, FlutterPlugin
                     args.put("filePath", payload.asFile().asJavaFile().getAbsolutePath());
                 }
             } else if (payload.getType() == Payload.Type.STREAM) {
-                try {
-                    InputStream inputStream = payload.asStream().asInputStream(); 
-                    byte[] bytes = new byte[inputStream.available()];
-                    inputStream.read(bytes);
-                    args.put("bytes", bytes);
-                } catch (Exception e) {
-
-                }
+                InputStream inputStream = payload.asStream().asInputStream();
+                Log.d("nearby_connections", "Input Stream Received");
+                nearbyConnectionsStreamHandler.initializeInputReceiverStream(inputStream);
             }
 
             channel.invokeMethod("onPayloadReceived", args);
@@ -468,6 +565,9 @@ public class NearbyConnectionsPlugin implements MethodCallHandler, FlutterPlugin
     public void onAttachedToEngine(@NonNull FlutterPluginBinding binding) {
         channel = new MethodChannel(binding.getBinaryMessenger(), "nearby_connections");
         channel.setMethodCallHandler(this);
+        eventChannel = new EventChannel(binding.getBinaryMessenger(), "nearby_connections/stream");
+        nearbyConnectionsStreamHandler = new NearbyConnectionsStreamHandler();
+        eventChannel.setStreamHandler(nearbyConnectionsStreamHandler);
     }
 
     @Override

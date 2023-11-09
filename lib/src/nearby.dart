@@ -146,7 +146,9 @@ class Nearby {
   OnPayloadTransferUpdate? _onPayloadTransferUpdate;
 
   static const MethodChannel _channel =
-      const MethodChannel('nearby_connections');
+  const MethodChannel('nearby_connections');
+  static const EventChannel _eventChannel =
+  const EventChannel('nearby_connections/stream');
 
   /// convenience method
   ///
@@ -358,17 +360,21 @@ class Nearby {
     );
   }
 
-  /// Send bytes [Uint8List] payload to endpoint via Streams
-  /// This supports transfer of large payloads in bytes
+  final STREAM_CHUNK_SIZE = 100000;
+
+  /// Send stream payload
   ///
-  Future<void> sendStreamPayload(String endpointId, Uint8List bytes) async {
-    return await _channel.invokeMethod(
-      'sendStreamPayload',
-      <String, dynamic>{
+  void sendStreamPayload(String endpointId, Stream<Uint8List> stream) async {
+    stream.listen((data)  {
+       _channel.invokeListMethod('addToSenderStream', <String, dynamic>{
         'endpointId': endpointId,
-        'bytes': bytes,
-      },
-    );
+        'bytes': data,
+      });
+    });
+  }
+
+  Stream<dynamic> getReceiverStream() {
+    return _eventChannel.receiveBroadcastStream();
   }
 
   /// Use it to cancel/stop a payload transfer
