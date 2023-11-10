@@ -341,6 +341,18 @@ class _MyBodyState extends State<Body> {
               },
             ),
             ElevatedButton(
+              child: const Text("Send Stream Payload"),
+              onPressed: () async {
+                endpointMap.forEach((key, value) {
+                  String a = Random().nextInt(100).toString();
+
+                  showSnackbar("Sending $a to ${value.endpointName}, id: $key");
+                  Nearby()
+                      .sendStreamPayload(key, Uint8List.fromList(a.codeUnits));
+                });
+              },
+            ),
+            ElevatedButton(
               child: const Text("Print file names."),
               onPressed: () async {
                 final dir = (await getExternalStorageDirectory())!;
