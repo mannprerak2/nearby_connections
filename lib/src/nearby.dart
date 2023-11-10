@@ -360,8 +360,6 @@ class Nearby {
     );
   }
 
-  final STREAM_CHUNK_SIZE = 100000;
-
   /// Send stream payload
   ///
   void sendStreamPayload(String endpointId, Stream<Uint8List> stream) async {

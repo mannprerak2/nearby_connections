@@ -1,4 +1,4 @@
-## 4.0.2
+## 4.1.0
 - Added streaming support via sendStreamPayload function.
 
 ## 4.0.1
