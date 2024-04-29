@@ -11,7 +11,7 @@ import 'package:permission_handler/permission_handler.dart';
 void main() => runApp(const MyApp());
 
 class MyApp extends StatefulWidget {
-  const MyApp({Key? key}) : super(key: key);
+  const MyApp({super.key});
 
   @override
   _MyAppState createState() => _MyAppState();
@@ -32,7 +32,7 @@ class _MyAppState extends State<MyApp> {
 }
 
 class Body extends StatefulWidget {
-  const Body({Key? key}) : super(key: key);
+  const Body({super.key});
 
   @override
   _MyBodyState createState() => _MyBodyState();
@@ -323,8 +323,8 @@ class _MyBodyState extends State<Body> {
             ElevatedButton(
               child: const Text("Send File Payload"),
               onPressed: () async {
-                PickedFile? file =
-                    await ImagePicker().getImage(source: ImageSource.gallery);
+                XFile? file =
+                    await ImagePicker().pickImage(source: ImageSource.gallery);
 
                 if (file == null) return;
 
