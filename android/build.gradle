@@ -4,24 +4,25 @@ version '1.0-SNAPSHOT'
 buildscript {
     repositories {
         google()
-        jcenter()
+        mavenCentral()
     }
 
     dependencies {
-        classpath 'com.android.tools.build:gradle:4.1.2'
+        classpath 'com.android.tools.build:gradle:7.4.2'
     }
 }
 
 rootProject.allprojects {
     repositories {
         google()
-        jcenter()
+        mavenCentral()
     }
 }
 
 apply plugin: 'com.android.library'
 
 android {
+    namespace "com.pkmnapps.nearby_connections"
     compileSdkVersion 33
 
     defaultConfig {
@@ -32,6 +33,6 @@ android {
         disable 'InvalidPackage'
     }
     dependencies{
-        api 'com.google.android.gms:play-services-nearby:18.7.0'
+        api 'com.google.android.gms:play-services-nearby:19.2.0'
     }
 }
