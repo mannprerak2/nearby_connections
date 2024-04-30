@@ -14,7 +14,7 @@ class MyApp extends StatefulWidget {
   const MyApp({super.key});
 
   @override
-  _MyAppState createState() => _MyAppState();
+  State<MyApp> createState() => _MyAppState();
 }
 
 class _MyAppState extends State<MyApp> {
@@ -35,7 +35,7 @@ class Body extends StatefulWidget {
   const Body({super.key});
 
   @override
-  _MyBodyState createState() => _MyBodyState();
+  State<Body> createState() => _MyBodyState();
 }
 
 class _MyBodyState extends State<Body> {
@@ -62,12 +62,9 @@ class _MyBodyState extends State<Body> {
                   child: const Text("checkLocationPermission (<= Android 12)"),
                   onPressed: () async {
                     if (await Permission.location.isGranted) {
-                      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-                          content: Text("Location permissions granted :)")));
+                      showSnackbar("Location permissions granted :)");
                     } else {
-                      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-                          content:
-                              Text("Location permissions not granted :(")));
+                      showSnackbar("Location permissions not granted :(");
                     }
                   },
                 ),
@@ -75,12 +72,9 @@ class _MyBodyState extends State<Body> {
                   child: const Text("askLocationPermission"),
                   onPressed: () async {
                     if (await Permission.location.request().isGranted) {
-                      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-                          content: Text("Location Permission granted :)")));
+                      showSnackbar("Location permissions granted :)");
                     } else {
-                      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-                          content:
-                              Text("Location permissions not granted :(")));
+                      showSnackbar("Location permissions not granted :(");
                     }
                   },
                 ),
@@ -88,13 +82,10 @@ class _MyBodyState extends State<Body> {
                   child: const Text("checkExternalStoragePermission"),
                   onPressed: () async {
                     if (await Permission.storage.isGranted) {
-                      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-                          content:
-                              Text("External Storage permissions granted :)")));
+                      showSnackbar("External Storage permissions granted :)");
                     } else {
-                      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-                          content: Text(
-                              "External Storage permissions not granted :(")));
+                      showSnackbar(
+                          "External Storage permissions not granted :(");
                     }
                   },
                 ),
@@ -114,12 +105,9 @@ class _MyBodyState extends State<Body> {
                       Permission.bluetoothScan.isGranted,
                     ]))
                         .any((element) => false)) {
-                      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-                          content: Text("Bluethooth permissions granted :)")));
+                      showSnackbar("Bluetooth permissions granted :)");
                     } else {
-                      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-                          content:
-                              Text("Bluetooth permissions not granted :(")));
+                      showSnackbar("Bluetooth permissions not granted :(");
                     }
                   },
                 ),
@@ -139,13 +127,10 @@ class _MyBodyState extends State<Body> {
                       "checkNearbyWifiDevicesPermission (>= Android 12)"),
                   onPressed: () async {
                     if (await Permission.nearbyWifiDevices.isGranted) {
-                      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-                          content: Text(
-                              "NearbyWifiDevices permissions granted :)")));
+                      showSnackbar("NearbyWifiDevices permissions granted :)");
                     } else {
-                      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-                          content: Text(
-                              "NearbyWifiDevices permissions not granted :(")));
+                      showSnackbar(
+                          "NearbyWifiDevices permissions not granted :(");
                     }
                   },
                 ),
@@ -166,11 +151,9 @@ class _MyBodyState extends State<Body> {
                   child: const Text("checkLocationEnabled"),
                   onPressed: () async {
                     if (await Location.instance.serviceEnabled()) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text("Location is ON :)")));
+                      showSnackbar("Location is ON :)");
                     } else {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text("Location is OFF :(")));
+                      showSnackbar("Location is OFF :(");
                     }
                   },
                 ),
@@ -178,12 +161,9 @@ class _MyBodyState extends State<Body> {
                   child: const Text("enableLocationServices"),
                   onPressed: () async {
                     if (await Location.instance.requestService()) {
-                      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-                          content: Text("Location Service Enabled :)")));
+                      showSnackbar("Location Service Enabled :)");
                     } else {
-                      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-                          content:
-                              Text("Enabling Location Service Failed :(")));
+                      showSnackbar("Location Service not Enabled :(");
                     }
                   },
                 ),
@@ -358,9 +338,11 @@ class _MyBodyState extends State<Body> {
   }
 
   void showSnackbar(dynamic a) {
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-      content: Text(a.toString()),
-    ));
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(a.toString()),
+      ),
+    );
   }
 
   Future<bool> moveFile(String uri, String fileName) async {
