@@ -61,7 +61,7 @@ class _MyBodyState extends State<Body> {
                 ElevatedButton(
                   child: const Text("checkLocationPermission (<= Android 12)"),
                   onPressed: () async {
-                    if (await Permission.location.isGranted) {
+                    if (await Permission.locationWhenInUse.isGranted) {
                       showSnackbar("Location permissions granted :)");
                     } else {
                       showSnackbar("Location permissions not granted :(");
@@ -71,7 +71,9 @@ class _MyBodyState extends State<Body> {
                 ElevatedButton(
                   child: const Text("askLocationPermission"),
                   onPressed: () async {
-                    if (await Permission.location.request().isGranted) {
+                    if (await Permission.locationWhenInUse
+                        .request()
+                        .isGranted) {
                       showSnackbar("Location permissions granted :)");
                     } else {
                       showSnackbar("Location permissions not granted :(");
@@ -113,8 +115,8 @@ class _MyBodyState extends State<Body> {
                 ),
                 ElevatedButton(
                   child: const Text("askBluetoothPermission (Android 12+)"),
-                  onPressed: () {
-                    [
+                  onPressed: () async {
+                    await [
                       Permission.bluetooth,
                       Permission.bluetoothAdvertise,
                       Permission.bluetoothConnect,
