@@ -2,6 +2,7 @@
 
 -   Min SDK bump 16 -> 19
 -   Updated nearby connections (`play-services-nearby:18.7.0` -> `play-services-nearby:19.2.0`)
+-   Update gradle version 4.1.2 -> 7.4.2
 
 ## 4.0.1
 
