@@ -143,8 +143,7 @@ class Nearby {
   OnPayloadReceived? _onPayloadReceived;
   OnPayloadTransferUpdate? _onPayloadTransferUpdate;
 
-  static const MethodChannel _channel =
-      MethodChannel('nearby_connections');
+  static const MethodChannel _channel = MethodChannel('nearby_connections');
 
   /// convenience method
   ///
