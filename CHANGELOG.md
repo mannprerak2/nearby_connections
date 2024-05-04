@@ -1,3 +1,7 @@
+## 4.1.1
+
+-   Fix lints.
+
 ## 4.1.0
 
 -   Min SDK bump 16 -> 19
