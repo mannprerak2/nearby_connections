@@ -1,5 +1,7 @@
 // contains enums and typedefs
 
+// ignore_for_file: constant_identifier_names
+
 import 'package:nearby_connections/src/classes.dart';
 
 /// **P2P_CLUSTER** - best for small payloads and multiplayer games
@@ -20,19 +22,19 @@ enum PayloadType { NONE, BYTES, FILE, STREAM }
 //
 // Advertising lifecycle callbacks
 //
-typedef void OnConnectionInitiated(
+typedef OnConnectionInitiated = void Function(
     String endpointId, ConnectionInfo connectionInfo);
-typedef void OnConnectionResult(String endpointId, Status status);
-typedef void OnDisconnected(String endpointId);
+typedef OnConnectionResult = void Function(String endpointId, Status status);
+typedef OnDisconnected = void Function(String endpointId);
 
 //
 //
 //
 // Discovery lifecycle callbacks
 //
-typedef void OnEndpointFound(
+typedef OnEndpointFound = void Function(
     String endpointId, String endpointName, String serviceId);
-typedef void OnEndpointLost(String? endpointId);
+typedef OnEndpointLost = void Function(String? endpointId);
 
 //
 //
@@ -42,8 +44,8 @@ typedef void OnEndpointLost(String? endpointId);
 /// For File, this marks the start of transfer
 ///
 /// Uint8List bytes may be null, if [type] is not [PayloadType.BYTES]
-typedef void OnPayloadReceived(String endpointId, Payload payload);
+typedef OnPayloadReceived = void Function(String endpointId, Payload payload);
 
 /// Called only once for Bytes and repeatedly for File until transfer is complete
-typedef void OnPayloadTransferUpdate(
+typedef OnPayloadTransferUpdate = void Function(
     String endpointId, PayloadTransferUpdate payloadTransferUpdate);
