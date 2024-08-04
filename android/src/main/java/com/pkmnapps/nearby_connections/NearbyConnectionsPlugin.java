@@ -42,6 +42,7 @@ import io.flutter.plugin.common.MethodChannel.MethodCallHandler;
 import io.flutter.plugin.common.MethodChannel.Result;
 import io.flutter.plugin.common.PluginRegistry;
 import io.flutter.plugin.common.PluginRegistry.Registrar;
+import io.flutter.embedding.engine.plugins.service.ServiceAware;
 
 /**
  * NearbyConnectionsPlugin
@@ -449,12 +450,12 @@ public class NearbyConnectionsPlugin implements MethodCallHandler, FlutterPlugin
 		channel = new MethodChannel(binding.getBinaryMessenger(), "nearby_connections");
 		channel.setMethodCallHandler(this);
 	}
-
 	@Override
-	public void onAttachedToService(@NonNull ServicePluginBinding  binding) {
+	public void onAttachedToService(@NonNull ServicePluginBinding binding) {
 		channel = new MethodChannel(binding.getBinaryMessenger(), "nearby_connections");
 		channel.setMethodCallHandler(this);
 	}
+
 	@Override
 	public void onDetachedFromService() {
 		
