@@ -46,7 +46,7 @@ import io.flutter.plugin.common.PluginRegistry.Registrar;
 /**
  * NearbyConnectionsPlugin
  */
-public class NearbyConnectionsPlugin implements MethodCallHandler, FlutterPlugin, ActivityAware {
+public class NearbyConnectionsPlugin implements MethodCallHandler, FlutterPlugin, ActivityAware, ServiceAware {
 	private Activity activity;
 	private static final String SERVICE_ID = "com.pkmnapps.nearby_connections";
 	private static MethodChannel channel;
@@ -108,7 +108,7 @@ public class NearbyConnectionsPlugin implements MethodCallHandler, FlutterPlugin
 				String serviceId = (String) call.argument("serviceId");
 
 				assert userNickName != null;
-				if (serviceId == null || serviceId == "")
+				if (serviceId == null || "".equals(serviceId))
 					serviceId = SERVICE_ID;
 
 				AdvertisingOptions advertisingOptions = new AdvertisingOptions.Builder()
@@ -136,7 +136,7 @@ public class NearbyConnectionsPlugin implements MethodCallHandler, FlutterPlugin
 				String serviceId = (String) call.argument("serviceId");
 
 				assert userNickName != null;
-				if (serviceId == null || serviceId == "")
+				if (serviceId == null || "".equals(serviceId))
 					serviceId = SERVICE_ID;
 
 				DiscoveryOptions discoveryOptions = new DiscoveryOptions.Builder().setStrategy(getStrategy(strategy))
@@ -450,6 +450,15 @@ public class NearbyConnectionsPlugin implements MethodCallHandler, FlutterPlugin
 		channel.setMethodCallHandler(this);
 	}
 
+	@Override
+	public void onAttachedToService(@NonNull ServicePluginBinding  binding) {
+		channel = new MethodChannel(binding.getBinaryMessenger(), "nearby_connections");
+		channel.setMethodCallHandler(this);
+	}
+	@Override
+	public void onDetachedFromService() {
+		
+	}
 	@Override
 	public void onDetachedFromEngine(@NonNull FlutterPluginBinding binding) {
 	}
