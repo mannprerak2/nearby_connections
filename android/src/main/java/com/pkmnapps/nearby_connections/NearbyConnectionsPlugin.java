@@ -457,10 +457,10 @@ public class NearbyConnectionsPlugin implements MethodCallHandler, FlutterPlugin
 
 	@Override
 	public void onDetachedFromEngine(@NonNull FlutterPluginBinding binding) {
-		if (channel != null) {
+		/*if (channel != null) {
 			channel.setMethodCallHandler(null);
 			channel = null;
-		}
+		}*/
 
 		/*if (eventChannel != null) {
 			eventChannel.setStreamHandler(null);
