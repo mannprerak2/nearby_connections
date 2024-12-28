@@ -42,20 +42,18 @@ import io.flutter.plugin.common.MethodChannel.MethodCallHandler;
 import io.flutter.plugin.common.MethodChannel.Result;
 import io.flutter.plugin.common.PluginRegistry;
 import io.flutter.plugin.common.PluginRegistry.Registrar;
-import io.flutter.embedding.engine.plugins.service.ServiceAware;
-import io.flutter.embedding.engine.plugins.service.ServicePluginBinding;
-import io.flutter.embedding.engine.FlutterJNI; // Make sure to Import
+//import io.flutter.embedding.engine.FlutterJNI; // Make sure to Import
 
 
 /**
  * NearbyConnectionsPlugin
  */
-public class NearbyConnectionsPlugin implements MethodCallHandler, FlutterPlugin, ActivityAware, ServiceAware {
+public class NearbyConnectionsPlugin implements MethodCallHandler, FlutterPlugin, ActivityAware {
 	private Activity activity;
 	private static final String SERVICE_ID = "com.pkmnapps.nearby_connections";
 	private static MethodChannel channel;
 	private static PluginRegistry.Registrar pluginRegistrar;
-	private FlutterJNI flutterJNI = new FlutterJNI(); // Create the Flutter JNI OBJ
+	//private FlutterJNI flutterJNI = new FlutterJNI(); // Create the Flutter JNI OBJ
 	private NearbyConnectionsPlugin(Activity activity) {
 		this.activity = activity;
 	}
@@ -452,29 +450,7 @@ public class NearbyConnectionsPlugin implements MethodCallHandler, FlutterPlugin
 	public void onAttachedToEngine(@NonNull FlutterPluginBinding binding) {
 		channel = new MethodChannel(binding.getBinaryMessenger(), "nearby_connections");
 		channel.setMethodCallHandler(this);
-		flutterJNI.attachToNative(); // Attach To Native
-
-	}
-
-	@Override
-	public void onAttachedToService(@NonNull ServicePluginBinding binding) {
-		channel = new MethodChannel(binding.getBinaryMessenger(), "nearby_connections");
-		channel.setMethodCallHandler(this);
-		flutterJNI.attachToNative(); // Attach To Native
-	}
-
-	@Override
-	public void onDetachedFromService() {
-		if (channel != null) {
-			channel.setMethodCallHandler(null);
-			channel = null;
-		}
-
-		/*if (eventChannel != null) {
-			eventChannel.setStreamHandler(null);
-			eventChannel = null;
-		}*/
-		flutterJNI.detachFromNativeAndReleaseResources(); // Detach from Native
+		//flutterJNI.attachToNative(); // Attach To Native
 
 	}
 
@@ -489,7 +465,7 @@ public class NearbyConnectionsPlugin implements MethodCallHandler, FlutterPlugin
 			eventChannel.setStreamHandler(null);
 			eventChannel = null;
 		}*/
-		flutterJNI.detachFromNativeAndReleaseResources(); // Detach from Native
+		//flutterJNI.detachFromNativeAndReleaseResources(); // Detach from Native
 	}
 
 	@Override
