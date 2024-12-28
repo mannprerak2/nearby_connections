@@ -49,7 +49,7 @@ import io.flutter.embedding.engine.FlutterJNI; // Make sure to Import
 /**
  * NearbyConnectionsPlugin
  */
-public class NearbyConnectionsPlugin implements MethodCallHandler, FlutterPlugin, ActivityAware, ServiceAware {
+public class NearbyConnectionsPlugin implements MethodCallHandler, FlutterPlugin, ActivityAware {
 	private Activity activity;
 	private static final String SERVICE_ID = "com.pkmnapps.nearby_connections";
 	private static MethodChannel channel;
@@ -111,7 +111,7 @@ public class NearbyConnectionsPlugin implements MethodCallHandler, FlutterPlugin
 				String serviceId = (String) call.argument("serviceId");
 
 				assert userNickName != null;
-				if (serviceId == null || "".equals(serviceId))
+				if (serviceId == null || serviceId == "")
 					serviceId = SERVICE_ID;
 
 				AdvertisingOptions advertisingOptions = new AdvertisingOptions.Builder()
@@ -139,7 +139,7 @@ public class NearbyConnectionsPlugin implements MethodCallHandler, FlutterPlugin
 				String serviceId = (String) call.argument("serviceId");
 
 				assert userNickName != null;
-				if (serviceId == null || "".equals(serviceId))
+				if (serviceId == null || serviceId == "")
 					serviceId = SERVICE_ID;
 
 				DiscoveryOptions discoveryOptions = new DiscoveryOptions.Builder().setStrategy(getStrategy(strategy))
@@ -454,27 +454,7 @@ public class NearbyConnectionsPlugin implements MethodCallHandler, FlutterPlugin
 		flutterJNI.attachToNative(); // Attach To Native
 
 	}
-	@Override
-	public void onAttachedToService(@NonNull ServicePluginBinding binding) {
-		channel = new MethodChannel(binding.getBinaryMessenger(), "nearby_connections");
-		channel.setMethodCallHandler(this);
-		flutterJNI.attachToNative(); // Attach To Native
-	}
 
-	@Override
-	public void onDetachedFromService() {
-		if (channel != null) {
-			channel.setMethodCallHandler(null);
-			channel = null;
-		}
-
-		/*if (eventChannel != null) {
-			eventChannel.setStreamHandler(null);
-			eventChannel = null;
-		}*/
-		flutterJNI.detachFromNativeAndReleaseResources(); // Detach from Native
-		
-	}
 	@Override
 	public void onDetachedFromEngine(@NonNull FlutterPluginBinding binding) {
 		if (channel != null) {
