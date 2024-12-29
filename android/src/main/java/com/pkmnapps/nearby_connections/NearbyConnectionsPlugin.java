@@ -448,8 +448,10 @@ public class NearbyConnectionsPlugin implements MethodCallHandler, FlutterPlugin
 
 	@Override
 	public void onAttachedToEngine(@NonNull FlutterPluginBinding binding) {
-		//channel = new MethodChannel(binding.getBinaryMessenger(), "nearby_connections");
-		channel = new MethodChannel(binding.getFlutterEngine().getDartExecutor(), "nearby_connections");
+		System.out.println("_____onAttachedToEngine");
+		Log.d("nearby_connections", "onAttachedToEngine...");
+		channel = new MethodChannel(binding.getBinaryMessenger(), "nearby_connections");
+		//channel = new MethodChannel(binding.getFlutterEngine().getDartExecutor(), "nearby_connections");
 		channel.setMethodCallHandler(this);
 		//flutterJNI.attachToNative(); // Attach To Native
 
@@ -457,6 +459,8 @@ public class NearbyConnectionsPlugin implements MethodCallHandler, FlutterPlugin
 
 	@Override
 	public void onDetachedFromEngine(@NonNull FlutterPluginBinding binding) {
+		System.out.println("_____onDetachedFromEngine");
+		Log.d("nearby_connections", "onDetachedFromEngine");
 		if (channel != null) {
 			channel.setMethodCallHandler(null);
 			channel = null;
