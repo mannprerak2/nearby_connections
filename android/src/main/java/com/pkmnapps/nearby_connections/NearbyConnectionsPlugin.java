@@ -448,7 +448,8 @@ public class NearbyConnectionsPlugin implements MethodCallHandler, FlutterPlugin
 
 	@Override
 	public void onAttachedToEngine(@NonNull FlutterPluginBinding binding) {
-		channel = new MethodChannel(binding.getBinaryMessenger(), "nearby_connections");
+		//channel = new MethodChannel(binding.getBinaryMessenger(), "nearby_connections");
+		channel = new MethodChannel(binding.getFlutterEngine().getDartExecutor(), "nearby_connections");
 		channel.setMethodCallHandler(this);
 		//flutterJNI.attachToNative(); // Attach To Native
 
