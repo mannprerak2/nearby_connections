@@ -418,17 +418,22 @@ public class NearbyConnectionsPlugin implements MethodCallHandler, FlutterPlugin
 		@Override
 		public void onEndpointFound(@NonNull String endpointId,
 				@NonNull DiscoveredEndpointInfo discoveredEndpointInfo) {
-			Log.d("nearby_connections", "onEndpointFound");
+			Log.d("nearby_connections", "onEndpointFound "+endpointId+" "+discoveredEndpointInfo);
+			Toast.makeText(getApplicationContext(), "EndpointDiscoveryCallback  onEndpointFound " + endpointId, Toast.LENGTH_SHORT).show();
 			Map<String, Object> args = new HashMap<>();
 			args.put("endpointId", endpointId);
-			args.put("endpointName", discoveredEndpointInfo.getEndpointName());
-			args.put("serviceId", discoveredEndpointInfo.getServiceId());
+			if(discoveredEndpointInfo!=null){
+				args.put("endpointName", discoveredEndpointInfo.getEndpointName());
+				args.put("serviceId", discoveredEndpointInfo.getServiceId());`
+			}
 			dartChannel.invokeMethod("dis.onEndpointFound", args);
 		}
 
 		@Override
 		public void onEndpointLost(@NonNull String endpointId) {
-			Log.d("nearby_connections", "onEndpointLost");
+			Log.d("nearby_connections", "onEndpointLost "+endpointId );
+			Toast.makeText(getApplicationContext(), "EndpointDiscoveryCallback  onEndpointLost " + endpointId, Toast.LENGTH_SHORT).show();
+
 			Map<String, Object> args = new HashMap<>();
 			args.put("endpointId", endpointId);
 			dartChannel.invokeMethod("dis.onEndpointLost", args);
