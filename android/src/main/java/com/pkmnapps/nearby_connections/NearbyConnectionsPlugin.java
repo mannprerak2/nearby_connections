@@ -418,7 +418,7 @@ public class NearbyConnectionsPlugin implements MethodCallHandler, FlutterPlugin
 		@Override
 		public void onEndpointFound(@NonNull String endpointId,
 				@NonNull DiscoveredEndpointInfo discoveredEndpointInfo) {
-			Log.d("nearby_connections", "onEndpointFound "+endpointId+" "+discoveredEndpointInfo);
+			Log.d("nearby_connections", "onEndpointFound "+endpointId+" discoveredEndpointInfo "+discoveredEndpointInfo);
 			Toast.makeText(getApplicationContext(), "EndpointDiscoveryCallback  onEndpointFound " + endpointId, Toast.LENGTH_SHORT).show();
 			Map<String, Object> args = new HashMap<>();
 			args.put("endpointId", endpointId);
