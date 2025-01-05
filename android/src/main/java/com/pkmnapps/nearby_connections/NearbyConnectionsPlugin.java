@@ -424,7 +424,7 @@ public class NearbyConnectionsPlugin implements MethodCallHandler, FlutterPlugin
 			args.put("endpointId", endpointId);
 			if(discoveredEndpointInfo!=null){
 				args.put("endpointName", discoveredEndpointInfo.getEndpointName());
-				args.put("serviceId", discoveredEndpointInfo.getServiceId());`
+				args.put("serviceId", discoveredEndpointInfo.getServiceId());
 			}
 			dartChannel.invokeMethod("dis.onEndpointFound", args);
 		}
