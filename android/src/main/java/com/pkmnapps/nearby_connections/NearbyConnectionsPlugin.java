@@ -42,8 +42,7 @@ import io.flutter.plugin.common.MethodChannel.MethodCallHandler;
 import io.flutter.plugin.common.MethodChannel.Result;
 import io.flutter.plugin.common.PluginRegistry;
 import io.flutter.plugin.common.PluginRegistry.Registrar;
-//import io.flutter.embedding.engine.FlutterJNI; // Make sure to Import
-
+import io.flutter.plugin.common.EventChannel;
 
 /**
  * NearbyConnectionsPlugin
@@ -52,9 +51,9 @@ public class NearbyConnectionsPlugin implements MethodCallHandler, FlutterPlugin
 	private Activity activity;
 	private static final String SERVICE_ID = "com.pkmnapps.nearby_connections";
 	private static MethodChannel channel;
-	private static MethodChannel dartChannel;
+	private static EventChannel eventChannel;
 	private static PluginRegistry.Registrar pluginRegistrar;
-	//private FlutterJNI flutterJNI = new FlutterJNI(); // Create the Flutter JNI OBJ
+	private static EventChannel.EventSink eventSink;
 	private NearbyConnectionsPlugin(Activity activity) {
 		this.activity = activity;
 	}
@@ -69,8 +68,19 @@ public class NearbyConnectionsPlugin implements MethodCallHandler, FlutterPlugin
 	public static void registerWith(Registrar registrar) {
 		pluginRegistrar = registrar;
 		channel = new MethodChannel(registrar.messenger(), "nearby_connections");
-		dartChannel=channel;
 		channel.setMethodCallHandler(new NearbyConnectionsPlugin(registrar.activity()));
+//		eventChannel=new EventChannel(flutterEngine.getDartExecutor().getBinaryMessenger(), "nearby_connections/events");
+//		eventChannel.setStreamHandler(
+//				new EventChannel.StreamHandler() {
+//					@Override
+//					public void onListen(Object arguments, EventChannel.EventSink events) {
+//						eventSink=events;
+//					}
+//					@Override
+//					public void onCancel(Object arguments) {
+//						eventSink=null;
+//					}
+//				});
 	}
 
 	@Override
@@ -119,7 +129,7 @@ public class NearbyConnectionsPlugin implements MethodCallHandler, FlutterPlugin
 						.setStrategy(getStrategy(strategy)).build();
 
 				Nearby.getConnectionsClient(activity).startAdvertising(userNickName, serviceId,
-						advertConnectionLifecycleCallback, advertisingOptions)
+								advertConnectionLifecycleCallback, advertisingOptions)
 						.addOnSuccessListener(new OnSuccessListener<Void>() {
 							@Override
 							public void onSuccess(Void aVoid) {
@@ -288,7 +298,9 @@ public class NearbyConnectionsPlugin implements MethodCallHandler, FlutterPlugin
 			args.put("endpointName", connectionInfo.getEndpointName());
 			args.put("authenticationToken", connectionInfo.getAuthenticationToken());
 			args.put("isIncomingConnection", connectionInfo.isIncomingConnection());
-			dartChannel.invokeMethod("ad.onConnectionInitiated", args);
+//			channel.invokeMethod("ad.onConnectionInitiated", args);
+			args.put("method", "ad.onConnectionInitiate");
+			eventSink.success(args);
 		}
 
 		@Override
@@ -314,7 +326,9 @@ public class NearbyConnectionsPlugin implements MethodCallHandler, FlutterPlugin
 					// Unknown status code
 			}
 			args.put("statusCode", statusCode);
-			dartChannel.invokeMethod("ad.onConnectionResult", args);
+			//channel.invokeMethod("ad.onConnectionResult", args);
+			args.put("method", "ad.onConnectionResult");
+			eventSink.success(args);
 		}
 
 		@Override
@@ -322,7 +336,9 @@ public class NearbyConnectionsPlugin implements MethodCallHandler, FlutterPlugin
 			Log.d("nearby_connections", "ad.onDisconnected");
 			Map<String, Object> args = new HashMap<>();
 			args.put("endpointId", endpointId);
-			dartChannel.invokeMethod("ad.onDisconnected", args);
+			//channel.invokeMethod("ad.onDisconnected", args);
+			args.put("method", "ad.onDisconnected");
+			eventSink.success(args);
 		}
 	};
 
@@ -335,7 +351,9 @@ public class NearbyConnectionsPlugin implements MethodCallHandler, FlutterPlugin
 			args.put("endpointName", connectionInfo.getEndpointName());
 			args.put("authenticationToken", connectionInfo.getAuthenticationToken());
 			args.put("isIncomingConnection", connectionInfo.isIncomingConnection());
-			dartChannel.invokeMethod("dis.onConnectionInitiated", args);
+			//channel.invokeMethod("dis.onConnectionInitiated", args);
+			args.put("method", "dis.onConnectionInitiated");
+			eventSink.success(args);
 		}
 
 		@Override
@@ -361,7 +379,9 @@ public class NearbyConnectionsPlugin implements MethodCallHandler, FlutterPlugin
 					// Unknown status code
 			}
 			args.put("statusCode", statusCode);
-			dartChannel.invokeMethod("dis.onConnectionResult", args);
+		//	channel.invokeMethod("dis.onConnectionResult", args);
+			args.put("method", "dis.onConnectionResult");
+			eventSink.success(args);
 		}
 
 		@Override
@@ -369,7 +389,9 @@ public class NearbyConnectionsPlugin implements MethodCallHandler, FlutterPlugin
 			Log.d("nearby_connections", "dis.onDisconnected");
 			Map<String, Object> args = new HashMap<>();
 			args.put("endpointId", endpointId);
-			dartChannel.invokeMethod("dis.onDisconnected", args);
+			//channel.invokeMethod("dis.onDisconnected", args);
+			args.put("method","dis.onDisconnected");
+			eventSink.success(args);
 		}
 	};
 
@@ -394,12 +416,14 @@ public class NearbyConnectionsPlugin implements MethodCallHandler, FlutterPlugin
 				}
 			}
 
-			dartChannel.invokeMethod("onPayloadReceived", args);
+			//channel.invokeMethod("onPayloadReceived", args);
+			args.put("method","onPayloadReceived");
+			eventSink.success(args);
 		}
 
 		@Override
 		public void onPayloadTransferUpdate(@NonNull String endpointId,
-				@NonNull PayloadTransferUpdate payloadTransferUpdate) {
+											@NonNull PayloadTransferUpdate payloadTransferUpdate) {
 			// required for files and streams
 
 			Log.d("nearby_connections", "onPayloadTransferUpdate");
@@ -410,31 +434,34 @@ public class NearbyConnectionsPlugin implements MethodCallHandler, FlutterPlugin
 			args.put("bytesTransferred", payloadTransferUpdate.getBytesTransferred());
 			args.put("totalBytes", payloadTransferUpdate.getTotalBytes());
 
-			dartChannel.invokeMethod("onPayloadTransferUpdate", args);
+			//channel.invokeMethod("onPayloadTransferUpdate", args);
+			args.put("method","onPayloadTransferUpdate");
+			eventSink.success(args);
 		}
 	};
 
 	private final EndpointDiscoveryCallback endpointDiscoveryCallback = new EndpointDiscoveryCallback() {
 		@Override
 		public void onEndpointFound(@NonNull String endpointId,
-				@NonNull DiscoveredEndpointInfo discoveredEndpointInfo) {
-			Log.d("nearby_connections", "onEndpointFound "+endpointId+" discoveredEndpointInfo "+discoveredEndpointInfo);
+									@NonNull DiscoveredEndpointInfo discoveredEndpointInfo) {
+			Log.d("nearby_connections", "onEndpointFound");
 			Map<String, Object> args = new HashMap<>();
 			args.put("endpointId", endpointId);
-			if(discoveredEndpointInfo!=null){
-				args.put("endpointName", discoveredEndpointInfo.getEndpointName());
-				args.put("serviceId", discoveredEndpointInfo.getServiceId());
-			}
-			dartChannel.invokeMethod("dis.onEndpointFound", args);
+			args.put("endpointName", discoveredEndpointInfo.getEndpointName());
+			args.put("serviceId", discoveredEndpointInfo.getServiceId());
+			//channel.invokeMethod("dis.onEndpointFound", args);
+			args.put("method","dis.onEndpointFound");
+			eventSink.success(args);
 		}
 
 		@Override
 		public void onEndpointLost(@NonNull String endpointId) {
-			Log.d("nearby_connections", "onEndpointLost "+endpointId );
-
+			Log.d("nearby_connections", "onEndpointLost");
 			Map<String, Object> args = new HashMap<>();
 			args.put("endpointId", endpointId);
-			dartChannel.invokeMethod("dis.onEndpointLost", args);
+			//channel.invokeMethod("dis.onEndpointLost", args);
+			args.put("method","dis.onEndpointLost");
+			eventSink.success(args);
 		}
 	};
 
@@ -453,32 +480,24 @@ public class NearbyConnectionsPlugin implements MethodCallHandler, FlutterPlugin
 
 	@Override
 	public void onAttachedToEngine(@NonNull FlutterPluginBinding binding) {
-		System.out.println("_____onAttachedToEngine");
-		Log.d("nearby_connections", "onAttachedToEngine...");
 		channel = new MethodChannel(binding.getBinaryMessenger(), "nearby_connections");
-		//channel = new MethodChannel(binding.getFlutterEngine().getDartExecutor(), "nearby_connections");
 		channel.setMethodCallHandler(this);
-		dartChannel= new MethodChannel(binding.getFlutterEngine().getDartExecutor().getBinaryMessenger(), "nearby_connections");
-		//flutterJNI.attachToNative(); // Attach To Native
-
+		eventChannel=new EventChannel(binding.getFlutterEngine().getDartExecutor().getBinaryMessenger(), "nearby_connections/events");
+		eventChannel.setStreamHandler(
+				new EventChannel.StreamHandler() {
+					@Override
+					public void onListen(Object arguments, EventChannel.EventSink events) {
+						eventSink=events;
+					}
+					@Override
+					public void onCancel(Object arguments) {
+						eventSink=null;
+					}
+				});
 	}
 
 	@Override
 	public void onDetachedFromEngine(@NonNull FlutterPluginBinding binding) {
-		System.out.println("_____onDetachedFromEngine");
-		Log.d("nearby_connections", "onDetachedFromEngine");
-		if (channel != null) {
-			channel.setMethodCallHandler(null);
-			channel = null;
-		}
-		if (dartChannel != null) {
-			dartChannel = null;
-		}
-		/*if (eventChannel != null) {
-			eventChannel.setStreamHandler(null);
-			eventChannel = null;
-		}*/
-		//flutterJNI.detachFromNativeAndReleaseResources(); // Detach from Native
 	}
 
 	@Override
