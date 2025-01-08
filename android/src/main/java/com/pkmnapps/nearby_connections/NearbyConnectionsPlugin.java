@@ -299,7 +299,7 @@ public class NearbyConnectionsPlugin implements MethodCallHandler, FlutterPlugin
 			args.put("authenticationToken", connectionInfo.getAuthenticationToken());
 			args.put("isIncomingConnection", connectionInfo.isIncomingConnection());
 //			channel.invokeMethod("ad.onConnectionInitiated", args);
-			args.put("method", "ad.onConnectionInitiate");
+			args.put("method", "ad.onConnectionInitiated");
 			eventSink.success(args);
 		}
 
