@@ -1,3 +1,7 @@
+## 4.2.0
+
+- Replace android callbacks to use event channel.
+
 ## 4.1.1
 
 -   Fix lints.
