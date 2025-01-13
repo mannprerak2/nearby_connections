@@ -32,11 +32,14 @@ class Nearby {
               bool isIncomingConnection = args['isIncomingConnection'] ?? false;
 
               _advertConnectionInitiated?.call(
-                  endpointId, ConnectionInfo(endpointName, authenticationToken, isIncomingConnection));
+                  endpointId,
+                  ConnectionInfo(
+                      endpointName, authenticationToken, isIncomingConnection));
               break;
             case "ad.onConnectionResult":
               String endpointId = args['endpointId'] ?? '-1';
-              Status statusCode = Status.values[args['statusCode'] ?? Status.ERROR.index];
+              Status statusCode =
+                  Status.values[args['statusCode'] ?? Status.ERROR.index];
 
               _advertConnectionResult?.call(endpointId, statusCode);
 
@@ -55,12 +58,15 @@ class Nearby {
               bool isIncomingConnection = args['isIncomingConnection'] ?? false;
 
               _discoverConnectionInitiated?.call(
-                  endpointId, ConnectionInfo(endpointName, authenticationToken, isIncomingConnection));
+                  endpointId,
+                  ConnectionInfo(
+                      endpointName, authenticationToken, isIncomingConnection));
 
               break;
             case "dis.onConnectionResult":
               String endpointId = args['endpointId'] ?? '-1';
-              Status statusCode = Status.values[args['statusCode'] ?? Status.ERROR.index];
+              Status statusCode =
+                  Status.values[args['statusCode'] ?? Status.ERROR.index];
 
               _discoverConnectionResult?.call(endpointId, statusCode);
 
@@ -111,7 +117,8 @@ class Nearby {
               int bytesTransferred = args['bytesTransferred'] ?? 0;
               int totalBytes = args['totalBytes'] ?? 0;
 
-              PayloadTransferUpdate payloadTransferUpdate = PayloadTransferUpdate(
+              PayloadTransferUpdate payloadTransferUpdate =
+                  PayloadTransferUpdate(
                 id: payloadId,
                 status: PayloadStatus.values[status],
                 bytesTransferred: bytesTransferred,
@@ -124,16 +131,17 @@ class Nearby {
           return Future.value();
         } catch (e) {
           print('Error handling method call: $e');
-          return Future.value();
         }
       });
     } catch (e) {
-      throw NearbyConnectionsException('Failed to initialize Nearby Connections', e);
+      throw NearbyConnectionsException(
+          'Failed to initialize Nearby Connections', e);
     }
   }
 
   //for advertisers
-  OnConnectionInitiated? _advertConnectionInitiated, _discoverConnectionInitiated;
+  OnConnectionInitiated? _advertConnectionInitiated,
+      _discoverConnectionInitiated;
   OnConnectionResult? _advertConnectionResult, _discoverConnectionResult;
   OnDisconnected? _advertDisconnected, _discoverDisconnected;
 
@@ -150,7 +158,8 @@ class Nearby {
   /// convenience method
   ///
   /// Copy file from [sourceUri] to [destinationFilepath] and delete original.
-  Future<bool> copyFileAndDeleteOriginal(String sourceUri, String destinationFilepath) async =>
+  Future<bool> copyFileAndDeleteOriginal(
+          String sourceUri, String destinationFilepath) async =>
       await _channel.invokeMethod('copyFileAndDeleteOriginal', {
         'sourceUri': sourceUri,
         'destinationFilepath': destinationFilepath,
@@ -239,7 +248,8 @@ class Nearby {
   /// this will call the onDisconnected method on callbacks of
   /// connected endPoint
   Future<void> disconnectFromEndpoint(String endpointId) async {
-    await _channel.invokeMethod('disconnectFromEndpoint', <String, dynamic>{'endpointId': endpointId});
+    await _channel.invokeMethod(
+        'disconnectFromEndpoint', <String, dynamic>{'endpointId': endpointId});
   }
 
   /// Request Connection
