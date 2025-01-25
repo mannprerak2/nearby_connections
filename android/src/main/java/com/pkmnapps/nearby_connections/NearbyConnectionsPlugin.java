@@ -58,25 +58,6 @@ public class NearbyConnectionsPlugin implements MethodCallHandler, FlutterPlugin
 	public NearbyConnectionsPlugin() {
 	}
 
-    @Override
-    public void onAttachedToEngine(@NonNull FlutterPluginBinding binding) {
-        channel = new MethodChannel(binding.getBinaryMessenger(), "nearby_connections");
-        channel.setMethodCallHandler(this);
-        eventChannel = new EventChannel(binding.getBinaryMessenger(), "nearby_connections/events");
-        eventChannel.setStreamHandler(
-            new EventChannel.StreamHandler() {
-                @Override
-                public void onListen(Object arguments, EventChannel.EventSink events) {
-                    eventSink = events;
-                }
-                @Override
-                public void onCancel(Object arguments) {
-                    eventSink = null;
-                }
-            }
-        );
-    }
-
 	@Override
 	public void onMethodCall(MethodCall call, final Result result) {
 
