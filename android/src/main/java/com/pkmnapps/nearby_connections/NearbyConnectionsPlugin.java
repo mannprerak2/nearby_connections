@@ -40,8 +40,6 @@ import io.flutter.plugin.common.MethodCall;
 import io.flutter.plugin.common.MethodChannel;
 import io.flutter.plugin.common.MethodChannel.MethodCallHandler;
 import io.flutter.plugin.common.MethodChannel.Result;
-import io.flutter.plugin.common.PluginRegistry;
-import io.flutter.plugin.common.PluginRegistry.Registrar;
 import io.flutter.plugin.common.EventChannel;
 
 /**
@@ -50,10 +48,9 @@ import io.flutter.plugin.common.EventChannel;
 public class NearbyConnectionsPlugin implements MethodCallHandler, FlutterPlugin, ActivityAware {
 	private Activity activity;
 	private static final String SERVICE_ID = "com.pkmnapps.nearby_connections";
-	private static MethodChannel channel;
-	private static EventChannel eventChannel;
-	private static PluginRegistry.Registrar pluginRegistrar;
-	private static EventChannel.EventSink eventSink;
+  private MethodChannel channel;
+    private EventChannel eventChannel;
+    private EventChannel.EventSink eventSink;
 	private NearbyConnectionsPlugin(Activity activity) {
 		this.activity = activity;
 	}
@@ -61,27 +58,24 @@ public class NearbyConnectionsPlugin implements MethodCallHandler, FlutterPlugin
 	public NearbyConnectionsPlugin() {
 	}
 
-	/**
-	 * Legacy Plugin registration.
-	 */
-
-	public static void registerWith(Registrar registrar) {
-		pluginRegistrar = registrar;
-		channel = new MethodChannel(registrar.messenger(), "nearby_connections");
-		channel.setMethodCallHandler(new NearbyConnectionsPlugin(registrar.activity()));
-		eventChannel=new EventChannel(registrar.messenger(), "nearby_connections/events");
-		eventChannel.setStreamHandler(
-				new EventChannel.StreamHandler() {
-					@Override
-					public void onListen(Object arguments, EventChannel.EventSink events) {
-						eventSink=events;
-					}
-					@Override
-					public void onCancel(Object arguments) {
-						eventSink=null;
-					}
-				});
-	}
+    @Override
+    public void onAttachedToEngine(@NonNull FlutterPluginBinding binding) {
+        channel = new MethodChannel(binding.getBinaryMessenger(), "nearby_connections");
+        channel.setMethodCallHandler(this);
+        eventChannel = new EventChannel(binding.getBinaryMessenger(), "nearby_connections/events");
+        eventChannel.setStreamHandler(
+            new EventChannel.StreamHandler() {
+                @Override
+                public void onListen(Object arguments, EventChannel.EventSink events) {
+                    eventSink = events;
+                }
+                @Override
+                public void onCancel(Object arguments) {
+                    eventSink = null;
+                }
+            }
+        );
+    }
 
 	@Override
 	public void onMethodCall(MethodCall call, final Result result) {
