@@ -57,6 +57,6 @@ class ConnectionInfo {
   String endpointName, authenticationDigits;
   bool isIncomingConnection;
 
-  ConnectionInfo(
-      this.endpointName, this.authenticationToken, this.isIncomingConnection, this.authenticationDigits);
+  ConnectionInfo(this.endpointName, this.authenticationToken,
+      this.isIncomingConnection, this.authenticationDigits);
 }

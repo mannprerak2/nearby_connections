@@ -33,8 +33,8 @@ class Nearby {
 
             _advertConnectionInitiated?.call(
                 endpointId,
-                ConnectionInfo(
-                    endpointName, authenticationToken, isIncomingConnection, authenticationDigits));
+                ConnectionInfo(endpointName, authenticationToken,
+                    isIncomingConnection, authenticationDigits));
             break;
           case "ad.onConnectionResult":
             String endpointId = args['endpointId'] ?? '-1';
@@ -60,8 +60,8 @@ class Nearby {
 
             _discoverConnectionInitiated?.call(
                 endpointId,
-                ConnectionInfo(
-                    endpointName, authenticationToken, isIncomingConnection, authenticationDigits));
+                ConnectionInfo(endpointName, authenticationToken,
+                    isIncomingConnection, authenticationDigits));
 
             break;
           case "dis.onConnectionResult":
