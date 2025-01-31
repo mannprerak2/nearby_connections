@@ -28,12 +28,13 @@ class Nearby {
             String endpointId = args['endpointId'] ?? '-1';
             String endpointName = args['endpointName'] ?? '-1';
             String authenticationToken = args['authenticationToken'] ?? '-1';
+            String authenticationDigits = args['authenticationDigits'] ?? '-1';
             bool isIncomingConnection = args['isIncomingConnection'] ?? false;
 
             _advertConnectionInitiated?.call(
                 endpointId,
                 ConnectionInfo(
-                    endpointName, authenticationToken, isIncomingConnection));
+                    endpointName, authenticationToken, isIncomingConnection, authenticationDigits));
             break;
           case "ad.onConnectionResult":
             String endpointId = args['endpointId'] ?? '-1';
@@ -54,12 +55,13 @@ class Nearby {
             String endpointId = args['endpointId'] ?? '-1';
             String endpointName = args['endpointName'] ?? '-1';
             String authenticationToken = args['authenticationToken'] ?? '-1';
+            String authenticationDigits = args['authenticationDigits'] ?? '-1';
             bool isIncomingConnection = args['isIncomingConnection'] ?? false;
 
             _discoverConnectionInitiated?.call(
                 endpointId,
                 ConnectionInfo(
-                    endpointName, authenticationToken, isIncomingConnection));
+                    endpointName, authenticationToken, isIncomingConnection, authenticationDigits));
 
             break;
           case "dis.onConnectionResult":

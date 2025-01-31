@@ -368,7 +368,7 @@ class _MyBodyState extends State<Body> {
           child: Column(
             children: <Widget>[
               Text("id: $id"),
-              Text("Token: ${info.authenticationToken}"),
+              Text("Token: ${info.authenticationDigits}"),
               Text("Name${info.endpointName}"),
               Text("Incoming: ${info.isIncomingConnection}"),
               ElevatedButton(
