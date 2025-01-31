@@ -40,8 +40,6 @@ import io.flutter.plugin.common.MethodCall;
 import io.flutter.plugin.common.MethodChannel;
 import io.flutter.plugin.common.MethodChannel.MethodCallHandler;
 import io.flutter.plugin.common.MethodChannel.Result;
-import io.flutter.plugin.common.PluginRegistry;
-import io.flutter.plugin.common.PluginRegistry.Registrar;
 import io.flutter.plugin.common.EventChannel;
 
 /**
@@ -50,37 +48,14 @@ import io.flutter.plugin.common.EventChannel;
 public class NearbyConnectionsPlugin implements MethodCallHandler, FlutterPlugin, ActivityAware {
 	private Activity activity;
 	private static final String SERVICE_ID = "com.pkmnapps.nearby_connections";
-	private static MethodChannel channel;
-	private static EventChannel eventChannel;
-	private static PluginRegistry.Registrar pluginRegistrar;
-	private static EventChannel.EventSink eventSink;
+  private MethodChannel channel;
+    private EventChannel eventChannel;
+    private EventChannel.EventSink eventSink;
 	private NearbyConnectionsPlugin(Activity activity) {
 		this.activity = activity;
 	}
 
 	public NearbyConnectionsPlugin() {
-	}
-
-	/**
-	 * Legacy Plugin registration.
-	 */
-
-	public static void registerWith(Registrar registrar) {
-		pluginRegistrar = registrar;
-		channel = new MethodChannel(registrar.messenger(), "nearby_connections");
-		channel.setMethodCallHandler(new NearbyConnectionsPlugin(registrar.activity()));
-		eventChannel=new EventChannel(registrar.messenger(), "nearby_connections/events");
-		eventChannel.setStreamHandler(
-				new EventChannel.StreamHandler() {
-					@Override
-					public void onListen(Object arguments, EventChannel.EventSink events) {
-						eventSink=events;
-					}
-					@Override
-					public void onCancel(Object arguments) {
-						eventSink=null;
-					}
-				});
 	}
 
 	@Override
@@ -297,6 +272,7 @@ public class NearbyConnectionsPlugin implements MethodCallHandler, FlutterPlugin
 			args.put("endpointId", endpointId);
 			args.put("endpointName", connectionInfo.getEndpointName());
 			args.put("authenticationToken", connectionInfo.getAuthenticationToken());
+			args.put("authenticationDigits", connectionInfo.getAuthenticationDigits());
 			args.put("isIncomingConnection", connectionInfo.isIncomingConnection());
 //			channel.invokeMethod("ad.onConnectionInitiated", args);
 			args.put("method", "ad.onConnectionInitiated");
@@ -350,6 +326,7 @@ public class NearbyConnectionsPlugin implements MethodCallHandler, FlutterPlugin
 			args.put("endpointId", endpointId);
 			args.put("endpointName", connectionInfo.getEndpointName());
 			args.put("authenticationToken", connectionInfo.getAuthenticationToken());
+			args.put("authenticationDigits", connectionInfo.getAuthenticationDigits());
 			args.put("isIncomingConnection", connectionInfo.isIncomingConnection());
 			//channel.invokeMethod("dis.onConnectionInitiated", args);
 			args.put("method", "dis.onConnectionInitiated");

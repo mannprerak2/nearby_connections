@@ -49,12 +49,14 @@ class PayloadTransferUpdate {
 ///
 /// [endPointName] is userNickName of requester
 ///
-/// [authenticationToken] can be used to check the connection security
-/// it must be same on both devices
+/// [authenticationDigits] can be used to check the connection security,
+/// it will be the same on both devices.
 class ConnectionInfo {
-  String endpointName, authenticationToken;
+  @Deprecated('Use authenticationDigits instead')
+  String authenticationToken;
+  String endpointName, authenticationDigits;
   bool isIncomingConnection;
 
-  ConnectionInfo(
-      this.endpointName, this.authenticationToken, this.isIncomingConnection);
+  ConnectionInfo(this.endpointName, this.authenticationToken,
+      this.isIncomingConnection, this.authenticationDigits);
 }
