@@ -21,115 +21,114 @@ class Nearby {
 
   Nearby._() {
     _eventChannel.receiveBroadcastStream().listen(
-          (dynamic data) {
-            Map<dynamic, dynamic> args =data;
-            switch (args["method"]) {
-              case "ad.onConnectionInitiated":
-                String endpointId = args['endpointId'] ?? '-1';
-                String endpointName = args['endpointName'] ?? '-1';
-                String authenticationToken = args['authenticationToken'] ?? '-1';
-                bool isIncomingConnection = args['isIncomingConnection'] ?? false;
+      (dynamic data) {
+        Map<dynamic, dynamic> args = data;
+        switch (args["method"]) {
+          case "ad.onConnectionInitiated":
+            String endpointId = args['endpointId'] ?? '-1';
+            String endpointName = args['endpointName'] ?? '-1';
+            String authenticationToken = args['authenticationToken'] ?? '-1';
+            bool isIncomingConnection = args['isIncomingConnection'] ?? false;
 
-                _advertConnectionInitiated?.call(
-                    endpointId,
-                    ConnectionInfo(
-                        endpointName, authenticationToken, isIncomingConnection));
-                break;
-              case "ad.onConnectionResult":
-                String endpointId = args['endpointId'] ?? '-1';
-                Status statusCode =
+            _advertConnectionInitiated?.call(
+                endpointId,
+                ConnectionInfo(
+                    endpointName, authenticationToken, isIncomingConnection));
+            break;
+          case "ad.onConnectionResult":
+            String endpointId = args['endpointId'] ?? '-1';
+            Status statusCode =
                 Status.values[args['statusCode'] ?? Status.ERROR.index];
 
-                _advertConnectionResult?.call(endpointId, statusCode);
+            _advertConnectionResult?.call(endpointId, statusCode);
 
-                break;
-              case "ad.onDisconnected":
-                String endpointId = args['endpointId'] ?? '-1';
+            break;
+          case "ad.onDisconnected":
+            String endpointId = args['endpointId'] ?? '-1';
 
-                _advertDisconnected?.call(endpointId);
+            _advertDisconnected?.call(endpointId);
 
-                break;
+            break;
 
-              case "dis.onConnectionInitiated":
-                String endpointId = args['endpointId'] ?? '-1';
-                String endpointName = args['endpointName'] ?? '-1';
-                String authenticationToken = args['authenticationToken'] ?? '-1';
-                bool isIncomingConnection = args['isIncomingConnection'] ?? false;
+          case "dis.onConnectionInitiated":
+            String endpointId = args['endpointId'] ?? '-1';
+            String endpointName = args['endpointName'] ?? '-1';
+            String authenticationToken = args['authenticationToken'] ?? '-1';
+            bool isIncomingConnection = args['isIncomingConnection'] ?? false;
 
-                _discoverConnectionInitiated?.call(
-                    endpointId,
-                    ConnectionInfo(
-                        endpointName, authenticationToken, isIncomingConnection));
+            _discoverConnectionInitiated?.call(
+                endpointId,
+                ConnectionInfo(
+                    endpointName, authenticationToken, isIncomingConnection));
 
-                break;
-              case "dis.onConnectionResult":
-                String endpointId = args['endpointId'] ?? '-1';
-                Status statusCode =
+            break;
+          case "dis.onConnectionResult":
+            String endpointId = args['endpointId'] ?? '-1';
+            Status statusCode =
                 Status.values[args['statusCode'] ?? Status.ERROR.index];
 
-                _discoverConnectionResult?.call(endpointId, statusCode);
+            _discoverConnectionResult?.call(endpointId, statusCode);
 
-                break;
-              case "dis.onDisconnected":
-                String endpointId = args['endpointId'] ?? '-1';
+            break;
+          case "dis.onDisconnected":
+            String endpointId = args['endpointId'] ?? '-1';
 
-                _discoverDisconnected?.call(endpointId);
+            _discoverDisconnected?.call(endpointId);
 
-                break;
+            break;
 
-              case "dis.onEndpointFound":
-                String endpointId = args['endpointId'] ?? '-1';
-                String endpointName = args['endpointName'] ?? '-1';
-                String serviceId = args['serviceId'] ?? '-1';
-                _onEndpointFound?.call(endpointId, endpointName, serviceId);
+          case "dis.onEndpointFound":
+            String endpointId = args['endpointId'] ?? '-1';
+            String endpointName = args['endpointName'] ?? '-1';
+            String serviceId = args['serviceId'] ?? '-1';
+            _onEndpointFound?.call(endpointId, endpointName, serviceId);
 
-                break;
-              case "dis.onEndpointLost":
-                String endpointId = args['endpointId'] ?? '-1';
+            break;
+          case "dis.onEndpointLost":
+            String endpointId = args['endpointId'] ?? '-1';
 
-                _onEndpointLost?.call(endpointId);
+            _onEndpointLost?.call(endpointId);
 
-                break;
-              case "onPayloadReceived":
-                String endpointId = args['endpointId'] ?? '-1';
-                int type = args['type'] ?? PayloadType.NONE;
-                Uint8List bytes = args['bytes'] ?? Uint8List(0);
-                int payloadId = args['payloadId'] ?? -1;
-                String? filePath = args['filePath'];
-                String? uri = args['uri'];
+            break;
+          case "onPayloadReceived":
+            String endpointId = args['endpointId'] ?? '-1';
+            int type = args['type'] ?? PayloadType.NONE;
+            Uint8List bytes = args['bytes'] ?? Uint8List(0);
+            int payloadId = args['payloadId'] ?? -1;
+            String? filePath = args['filePath'];
+            String? uri = args['uri'];
 
-                Payload payload = Payload(
-                  type: PayloadType.values[type],
-                  bytes: bytes,
-                  id: payloadId,
-                  filePath: filePath,
-                  uri: uri,
-                );
+            Payload payload = Payload(
+              type: PayloadType.values[type],
+              bytes: bytes,
+              id: payloadId,
+              filePath: filePath,
+              uri: uri,
+            );
 
-                _onPayloadReceived?.call(endpointId, payload);
+            _onPayloadReceived?.call(endpointId, payload);
 
-                break;
-              case "onPayloadTransferUpdate":
-                String endpointId = args['endpointId'] ?? '-1';
-                int payloadId = args['payloadId'] ?? -1;
-                int status = args['status'] ?? Status.ERROR.index;
-                int bytesTransferred = args['bytesTransferred'] ?? 0;
-                int totalBytes = args['totalBytes'] ?? 0;
+            break;
+          case "onPayloadTransferUpdate":
+            String endpointId = args['endpointId'] ?? '-1';
+            int payloadId = args['payloadId'] ?? -1;
+            int status = args['status'] ?? Status.ERROR.index;
+            int bytesTransferred = args['bytesTransferred'] ?? 0;
+            int totalBytes = args['totalBytes'] ?? 0;
 
-                PayloadTransferUpdate payloadTransferUpdate = PayloadTransferUpdate(
-                  id: payloadId,
-                  status: PayloadStatus.values[status],
-                  bytesTransferred: bytesTransferred,
-                  totalBytes: totalBytes,
-                );
+            PayloadTransferUpdate payloadTransferUpdate = PayloadTransferUpdate(
+              id: payloadId,
+              status: PayloadStatus.values[status],
+              bytesTransferred: bytesTransferred,
+              totalBytes: totalBytes,
+            );
 
-                _onPayloadTransferUpdate?.call(endpointId, payloadTransferUpdate);
-                break;
-            }
+            _onPayloadTransferUpdate?.call(endpointId, payloadTransferUpdate);
+            break;
+        }
       },
     );
   }
-
 
   //for advertisers
   OnConnectionInitiated? _advertConnectionInitiated,
