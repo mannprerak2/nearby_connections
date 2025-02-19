@@ -1,3 +1,7 @@
+## 4.3.0
+
+- Remove legacy plugin dependencies for new flutter version
+
 ## 4.2.0
 
 - Replace android callbacks to use event channel.
