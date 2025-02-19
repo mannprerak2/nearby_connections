@@ -301,7 +301,6 @@ public class NearbyConnectionsPlugin implements MethodCallHandler, FlutterPlugin
 					// Unknown status code
 			}
 			args.put("statusCode", statusCode);
-
 			args.put("method", "ad.onConnectionResult");
 			eventSink.success(args);
 		}
@@ -391,6 +390,7 @@ public class NearbyConnectionsPlugin implements MethodCallHandler, FlutterPlugin
 				}
 			}
 
+
 			args.put("method","onPayloadReceived");
 			eventSink.success(args);
 		}
@@ -455,7 +455,7 @@ public class NearbyConnectionsPlugin implements MethodCallHandler, FlutterPlugin
 	public void onAttachedToEngine(@NonNull FlutterPluginBinding binding) {
 		channel = new MethodChannel(binding.getBinaryMessenger(), "nearby_connections");
 		channel.setMethodCallHandler(this);
-		eventChannel=new EventChannel(binding.getFlutterEngine().getDartExecutor().getBinaryMessenger(), "nearby_connections/events");
+		eventChannel=new EventChannel(binding.getBinaryMessenger(), "nearby_connections/events");
 		eventChannel.setStreamHandler(
 				new EventChannel.StreamHandler() {
 					@Override

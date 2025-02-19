@@ -146,7 +146,8 @@ class Nearby {
   OnPayloadTransferUpdate? _onPayloadTransferUpdate;
 
   static const MethodChannel _channel = MethodChannel('nearby_connections');
-  static const EventChannel _eventChannel = EventChannel('nearby_connections/events');
+  static const EventChannel _eventChannel =
+      EventChannel('nearby_connections/events');
 
   /// convenience method
   ///
